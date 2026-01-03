@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CuidarMed+ - Confirmar Cuenta</title>
+    <link rel="stylesheet" href="css/confirmacion.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="confirm-container">
+        <a href="index.html" class="back-to-home">
+            <i class="fas fa-arrow-left"></i>
+            Volver al inicio
+        </a>
+        
+        <div class="confirm-card">
+            <div class="confirm-header">
+                <div class="confirm-logo">
+                    <i class="fas fa-heart"></i>
+                    <span>CuidarMed+</span>
+                </div>
+                <h1 class="confirm-title">Confirma tu cuenta</h1>
+                <p class="confirm-subtitle">Hemos enviado un código de verificación a tu correo electrónico</p>
+            </div>
+
+            <div class="confirm-feedback" id="confirmFeedback" role="alert" aria-live="polite"></div>
+
+            <form class="confirm-form" id="confirmForm">
+                <div class="form-group">
+                    <label for="email">Correo electrónico</label>
+                    <div class="input-icon">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="email" name="email" placeholder="tucorreo@ejemplo.com" required readonly>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="verificationCode">Código de verificación</label>
+                    <div class="input-icon">
+                        <i class="fas fa-key"></i>
+                        <input type="text" id="verificationCode" name="verificationCode" 
+                               placeholder="Ingresa el código de 6 caracteres" 
+                               maxlength="6" 
+                               pattern="[A-Za-z0-9]{6}"
+                               required
+                               autocomplete="off"
+                               style="text-transform: uppercase;">
+                    </div>
+                    <small class="form-help">Ingresa el código de 6 caracteres que recibiste por email</small>
+                </div>
+
+                <button type="submit" class="confirm-button" id="confirmButton">
+                    <i class="fas fa-check-circle"></i>
+                    Confirmar cuenta
+                </button>
+            </form>
+
+            <div class="resend-section">
+                <p>¿No recibiste el código?</p>
+                <button type="button" class="resend-button" id="resendButton">
+                    <i class="fas fa-redo"></i>
+                    Reenviar código
+                </button>
+            </div>
+
+            <div class="login-link">
+                <p>¿Ya confirmaste tu cuenta? <a href="login.html">Iniciar sesión</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/auth/confirmacion.js"></script>
+</body>
+</html>
+

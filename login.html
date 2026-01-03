@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CuidarMed+ - Iniciar Sesión</title>
+    <link rel="stylesheet" href="css/login.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="login-container">       
+        <div class="login-card">
+            <a href="index.html" class="back-to-home-inline">
+                <i class="fas fa-arrow-left"></i>
+                Volver
+            </a>
+            <div class="login-illustration">
+                <img src="assets/login-illustration.svg" alt="Bienvenido a CuidarMed+">
+                <div>
+                    <h2>Bienvenidxs</h2>
+                    <p>Gestioná tus servicios, consultas y clientes desde un solo lugar.</p>
+                </div>
+            </div>
+
+            <div class="login-content">
+                <div class="login-header">
+                    <div class="login-logo">
+                        <img src="img\Logo-Blanco.png" alt="logo-Hygea">
+                    </div>
+                    <h1 class="login-title">Iniciar Sesión</h1>
+                    <p class="login-subtitle">Accede a tu cuenta para continuar</p>
+                </div>
+
+                <div class="login-feedback" id="loginFeedback" role="alert" aria-live="polite"></div>
+
+                <form class="login-form" id="loginForm">
+                    <div class="form-group">
+                        <label for="email">Correo electrónico</label>
+                        <div class="input-icon">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="email" name="email" placeholder="tucorreo@ejemplo.com" autocomplete="email" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Contraseña</label>
+                        <div class="input-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="password" name="password" placeholder="Ingresa tu contraseña" autocomplete="current-password" required>
+                        </div>
+                    </div>
+
+                    <div class="forgot-links">
+                        <a href="blanqueo.html" class="forgot-link" id="forgotPassword">Olvidé mi clave</a>
+                    </div>
+
+                    <button type="submit" class="login-button" id="loginButton">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Iniciar Sesión
+                    </button>
+
+                    <button type="button" class="register-button" id="goRegisterBtn">
+                        <i class="fas fa-user-plus"></i>
+                        Crear Cuenta
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="js/auth/login.js"></script>
+</body>
+</html>

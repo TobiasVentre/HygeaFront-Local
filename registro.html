@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CuidarMed+ - Registro</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/registro.css">
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-card">
+            <a href="login.html" class="back-to-home-inline">
+                <i class="fas fa-arrow-left"></i>
+                Volver
+            </a>
+            <div class="register-header">
+                <div class="register-logo">
+                    <i class="fas fa-heart"></i>
+                    <span>CuidarMed+</span>
+                </div>
+                <h1 class="register-title">Registro</h1>
+                <p class="register-subtitle">Crea tu cuenta para acceder a nuestra plataforma</p>
+            </div>
+            <form class="register-form" id="registerForm">
+                <div class="left-column">
+                    <div class="form-group role-selection-group">
+                        <label>Rol</label>
+                        <div class="role-card-group" id="roleCardGroup">
+                            <button type="button" class="role-card active" data-role="Patient" aria-pressed="true">
+                                <span class="role-card-icon"><i class="fas fa-user"></i></span>
+                                <span class="role-card-title">Paciente</span>
+                                <span class="role-card-description">Turnos y mi historia</span>
+                            </button>
+                            <button type="button" class="role-card" data-role="Doctor" aria-pressed="false">
+                                <span class="role-card-icon"><i class="fas fa-user-md"></i></span>
+                                <span class="role-card-title">Doctor</span>
+                                <span class="role-card-description">Panel y pacientes</span>
+                            </button>
+                        </div>
+                        <input type="hidden" id="role" name="role" value="Patient">
+                        <div class="error-message" id="roleError"></div>
+                    </div>
+
+                    <div class="form-section">
+                    <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName">Nombre</label>
+                        <div class="input-icon">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="firstName" name="firstName" placeholder="Tu nombre" required>
+                        </div>
+                        <div class="error-message" id="firstNameError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lastName">Apellido</label>
+                        <div class="input-icon">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="lastName" name="lastName" placeholder="Tu apellido" required>
+                        </div>
+                        <div class="error-message" id="lastNameError"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Correo Electrónico</label>
+                    <div class="input-icon">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="email" name="email" placeholder="tu@email.com" required>
+                    </div>
+                    <div class="error-message" id="emailError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="dni">DNI</label>
+                    <div class="input-icon">
+                        <input type="text" id="dni" name="dni" placeholder="xx.xxx.xxx" required>
+                    </div>
+                    <div class="error-message" id="dniError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Teléfono</label>
+                    <div class="input-icon">
+                        <i class="fas fa-phone"></i>
+                        <input type="tel" id="phone" name="phone" placeholder="+54 9 11 1234-5678" required>
+                    </div>
+                    <div class="error-message" id="phoneError"></div>
+                </div>
+                    </div>
+                </div>
+
+                <div class="right-column">
+                    <div class="role-fields role-patient" id="patientFields">
+                        <h3 class="role-section-title">Información del paciente</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="patientBirthDate">Fecha de nacimiento</label>
+                                <input type="date" id="patientBirthDate" name="patientBirthDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="patientDomicile">Dirección</label>
+                                <input type="text" id="patientDomicile" name="patientDomicile" placeholder="Calle y número" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="patientHealthPlan">Obra social</label>
+                                <input type="text" id="patientHealthPlan" name="patientHealthPlan" placeholder="Ej. OSDE" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="patientMembershipNumber">Número de afiliado</label>
+                                <input type="text" id="patientMembershipNumber" name="patientMembershipNumber" placeholder="XXXXXX" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="role-fields role-doctor hidden" id="doctorFields">
+                        <h3 class="role-section-title">Información del doctor</h3>
+                        <div class="form-group">
+                            <label for="doctorLicense">Número de matrícula</label>
+                            <input type="text" id="doctorLicense" name="doctorLicense" placeholder="Matrícula profesional">
+                        </div>
+                        <div class="form-group">
+                            <label for="doctorSpecialty">Especialidad <span style="color: #dc2626;">*</span></label>
+                            <select id="doctorSpecialty" name="doctorSpecialty" required>
+                                <option value="">Seleccionar especialidad</option>
+                                <option value="Neurologo">Neurologo</option>
+                                <option value="Pediatra">Pediatra</option>
+                                <option value="Clinico">Clinico</option>
+                                <option value="Cardiologo">Cardiologo</option>
+                                <option value="Cirujano">Cirujano</option>
+                                <option value="Dermatologo">Dermatologo</option>
+                                <option value="Psiquiatra">Psiquiatra</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="doctorBiography">Biografía profesional</label>
+                            <textarea id="doctorBiography" name="doctorBiography" rows="4" placeholder="Experiencia, instituciones, etc."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Contraseña</label>
+                        <div class="input-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="password" name="password" placeholder="Mínimo 8 caracteres" required>
+                        </div>
+                        <div class="password-strength" id="passwordStrength">
+                            <div class="strength-bar">
+                                <div class="strength-fill"></div>
+                            </div>
+                            <span id="strengthText">Ingresa una contraseña</span>
+                        </div>
+                        <div class="error-message" id="passwordError"></div>
+                    </div>
+
+                    <div class="form-group confirm-password-group">
+                        <label for="confirmPassword">Confirmar Contraseña</label>
+                        <div class="input-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Repite tu contraseña" required>
+                        </div>
+                        <div class="error-message" id="confirmPasswordError"></div>
+                    </div>
+
+                    <div class="terms-checkbox">
+                        <input type="checkbox" id="terms" name="terms" required>
+                        <label for="terms">
+                            Acepto los <a href="#" id="termsLink">Términos y Condiciones</a> y la <a href="#" id="privacyLink">Política de Privacidad</a>
+                        </label>
+                        <div class="error-message" id="termsError"></div>
+                    </div>
+
+                    <button type="submit" class="register-button" id="registerButton">
+                        <i class="fas fa-user-plus"></i>
+                        Crear Cuenta
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="js/auth/register.js"></script>
+</body>
+</html>
+
+
+

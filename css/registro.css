@@ -1,0 +1,691 @@
+        /* Estilos específicos para la página de registro */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+        body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #fff;
+}
+
+        .register-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e40af 0%, #10b981 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .register-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 50%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.1)"/></svg>') no-repeat;
+            background-size: cover;
+            opacity: 0.3;
+        }
+
+        .register-card {
+            background: white;
+            padding: 2.5rem 2rem;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 1320px;
+            position: relative;
+            z-index: 2;
+            box-sizing: border-box;
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            margin-top: 0.5rem;
+            width: 100%;
+        }
+
+        .register-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 0.5rem;
+        }
+
+        .register-logo i {
+            color: #2563eb;
+        }
+
+        .register-title {
+            font-size: 1.5rem;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .register-subtitle {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .register-form {
+            margin-bottom: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2.5rem;
+            align-items: start;
+            margin-top: 0;
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .right-column .role-fields {
+            margin-top: 0;
+            margin-bottom: 0;
+            width: 100%;
+        }
+
+        .profile-image-group {
+            margin-bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .profile-image-group label {
+            display: block;
+            margin-bottom: 0.75rem;
+            color: #374151;
+            font-weight: 500;
+            text-align: center;
+            font-size: 0.95rem;
+            width: 100%;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 0;
+            align-items: start;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .form-row .form-group {
+            margin-bottom: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-row .form-group label {
+            margin-bottom: 0.5rem;
+        }
+
+        .form-row .form-group .input-icon {
+            flex: 0 0 auto;
+        }
+
+        .form-row .form-group .error-message {
+            flex: 0 0 auto;
+            margin-top: 0.25rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .form-section .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            color: #374151;
+            font-weight: 500;
+            line-height: 1.4;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            background: #f9fafb;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            background: white;
+        }
+
+        .form-group input::placeholder {
+            color: #9ca3af;
+        }
+
+        .input-icon {
+            position: relative;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .input-icon i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            font-size: 1rem;
+        }
+
+        .input-icon input {
+            padding-left: 3rem;
+            box-sizing: border-box;
+        }
+
+        .role-fields {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 0;
+            background: #f9fafb;
+        }
+
+        .role-fields.hidden {
+            display: none;
+        }
+
+        .role-section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1rem;
+            margin-top: 0;
+        }
+
+        .role-fields .form-row {
+            margin-bottom: 1rem;
+        }
+
+        .role-fields .form-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .role-fields .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .role-fields .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .role-card-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 0;
+        }
+
+        .role-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            background: #ffffff;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.375rem;
+            color: #1f2937;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+            text-align: center;
+            font-weight: 500;
+            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05);
+        }
+
+        .role-card:hover {
+            transform: translateY(-2px);
+            border-color: #2563eb;
+            box-shadow: 0 10px 24px rgba(37, 99, 235, 0.15);
+        }
+
+        .role-card.active {
+            border-color: #2563eb;
+            background: rgba(37, 99, 235, 0.08);
+            box-shadow: 0 12px 28px rgba(37, 99, 235, 0.2);
+        }
+
+        .role-card:focus-visible {
+            outline: 3px solid rgba(37, 99, 235, 0.3);
+            outline-offset: 3px;
+        }
+
+        .role-card-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(37, 99, 235, 0.12);
+            color: #1d4ed8;
+            font-size: 1.1rem;
+        }
+
+        .role-card-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .role-card-description {
+            font-size: 0.8rem;
+            color: #4b5563;
+        }
+
+        .password-strength {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            margin-bottom: 0;
+        }
+
+        .strength-bar {
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            margin-top: 0.25rem;
+            margin-bottom: 0;
+            overflow: hidden;
+            display: none;
+        }
+
+        .strength-fill {
+            height: 100%;
+            transition: width 0.3s, background-color 0.3s;
+            width: 0%;
+        }
+
+        .strength-weak .strength-fill {
+            width: 25%;
+            background: #ef4444;
+        }
+
+        .strength-medium .strength-fill {
+            width: 50%;
+            background: #f59e0b;
+        }
+
+        .strength-strong .strength-fill {
+            width: 75%;
+            background: #10b981;
+        }
+
+        .strength-very-strong .strength-fill {
+            width: 100%;
+            background: #059669;
+        }
+
+        .terms-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .terms-checkbox input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+            margin-top: 0.25rem;
+        }
+
+        .terms-checkbox label {
+            font-size: 0.9rem;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .terms-checkbox a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .terms-checkbox a:hover {
+            text-decoration: underline;
+        }
+
+        .register-button {
+            width: 100%;
+            padding: 0.75rem;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .register-button:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .register-button:active {
+            transform: translateY(0);
+        }
+
+        .register-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .back-to-home-inline {
+            position: absolute;
+            top: 1.5rem;
+            left: 1.5rem;
+            color: #2563eb;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            background: #e0e7ff;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            transition: background 0.3s;
+            z-index: 10;
+        }
+
+        .back-to-home-inline:hover {
+            background: #c7d2fe;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            margin-bottom: 0;
+            display: none;
+            min-height: 0;
+            line-height: 1.25rem;
+        }
+
+        .form-group.error input,
+        .form-group.error select {
+            border-color: #ef4444;
+        }
+
+        .form-group.error .error-message {
+            display: block;
+        }
+
+        .confirm-password-group {
+            margin-top: 0;
+            margin-bottom: 1rem;
+        }
+
+        .role-selection-group {
+            margin-top: 0;
+            margin-bottom: 1rem;
+        }
+
+        .role-selection-group label {
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+            display: block;
+        }
+
+        .profile-image-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            width: 100%;
+        }
+
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 0;
+        }
+
+        .profile-section .form-group {
+            margin-bottom: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .profile-section .form-group label {
+            text-align: center;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .register-header {
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .register-container {
+                padding: 1rem;
+            }
+            
+            .register-card {
+                padding: 2rem;
+                max-width: 100%;
+            }
+
+            .back-to-home-inline {
+                top: 1rem;
+                left: 1rem;
+                font-size: 0.85rem;
+                padding: 0.4rem 0.8rem;
+            }
+            
+            .register-title {
+                font-size: 1.5rem;
+            }
+            
+            .register-form {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .left-column, .right-column {
+                width: 100%;
+            }
+
+            .profile-image-preview {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+        }
+
+        /* Animaciones */
+        .register-card {
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-group input:focus + i,
+        .form-group select:focus + i {
+            color: #2563eb;
+        }
+
+        /* Profile Image Styles */
+        .profile-image-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .profile-image-preview {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid #e5e7eb;
+            background: #f9fafb;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .profile-image-preview:hover {
+            border-color: #2563eb;
+            transform: scale(1.05);
+        }
+
+        .profile-image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .profile-image-preview:hover .profile-image-overlay {
+            opacity: 1;
+        }
+
+        .btn-select-image {
+            padding: 0.5rem 1rem;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-select-image:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-select-image:active {
+            transform: translateY(0);
+        }
+
+        /* Responsive adjustments for new fields */
+        @media (max-width: 768px) {
+            .role-card-group {
+                grid-template-columns: 1fr;
+            }
+
+            .role-card {
+                padding: 1.25rem;
+            }
+
+            .profile-section {
+                position: static;
+                align-items: center;
+                gap: 1.25rem;
+            }
+
+            .profile-section .register-header {
+                text-align: center;
+            }
+
+            .register-logo {
+                justify-content: center;
+            }
+
+            .profile-image-preview {
+                width: 120px;
+                height: 120px;
+            }
+        }

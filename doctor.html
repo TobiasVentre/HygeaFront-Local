@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CuidarMed+ - Panel Médico</title>
+    <link rel="stylesheet" href="css/doctor.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <i class="fas fa-heart"></i>
+            <span>CuidarMed+</span>
+        </div>
+        <div class="actions">
+            <div class="user-menu" id="userMenu">
+                <button class="user-btn" id="userBtn">
+                    <i class="fas fa-user-circle" style="font-size: 1.5rem;"></i>
+                    <span id="userMenuName">Mi cuenta</span>
+                    <i class="fas fa-chevron-down" style="font-size:0.8rem;"></i>
+                </button>
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard">
+        <div class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-heart"></i>
+                    <span>CuidarMed+</span>
+                </div>
+                <p class="panel-title">Panel Médico</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="inicio">
+                    <i class="fas fa-home"></i>
+                    Inicio
+                </a>
+                <a href="#" class="nav-item" data-section="agenda">
+                    <i class="fas fa-calendar"></i>
+                    Agenda
+                </a>
+                <a href="#" class="nav-item" data-section="consultas">
+                    <i class="fas fa-list"></i>
+                    Historial de Consultas
+                    
+                </a>
+                <a href="#" class="nav-item" data-section="historia">
+                    <i class="fas fa-chart-line"></i>
+                    Historia Clínica
+                </a>
+                <a href="#" class="nav-item" data-section="recetas">
+                    <i class="fas fa-file-medical"></i>
+                    Recetas
+                </a>
+                <a href="#" class="nav-item" data-section="perfil">
+                    <i class="fas fa-user"></i>
+                    Perfil
+                </a>
+            </nav>
+        </div>
+
+        <div class="dashboard-content">
+            <div id="mainDashboardSection">
+            <!-- Welcome Section -->
+            <div class="welcome-section">
+                <div class="welcome-header">
+                    <div class="welcome-copy">
+                        <h2 id="welcome-name">Bienvenido</h2>
+                        <p id="welcome-message">Panel de gestión médica</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="card-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-number" id="patients-today">0</div>
+                        <div class="card-label">Consultas programadas</div>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon green">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-number" id="weekly-appointments">0</div>
+                        <div class="card-label">Turnos asignados</div>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-number" id="active-consultation">0</div>
+                        <div class="card-label">Consulta activa</div>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon">
+                        <i class="fas fa-file-medical"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-number" id="prescriptions-today">0</div>
+                        <div class="card-label">Emitidas hoy</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Historial de Consultas Section -->
+                <div class="dashboard-section">
+                    <div class="section-header">
+                        <div>
+                            <h3>Historial de Consultas</h3>
+                            <p>Filtra las consultas por fecha</p>
+                        </div>
+                    </div>
+                    <div class="consultations-list" id="consultations-list">
+                        <!-- Las consultas se cargarán dinámicamente desde el backend -->
+                    </div>
+                </div>
+
+                <!-- Agenda Semanal Section -->
+                <div class="dashboard-section">
+                    <div class="section-header">
+                        <div>
+                            <h3>Agenda Semanal</h3>
+                            <p>Vista general de la semana</p>
+                        </div>
+                    </div>
+                    <div class="weekly-schedule" id="weekly-schedule">
+                        <!-- La agenda semanal se cargará dinámicamente desde el backend -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acciones Rápidas Section -->
+            <div class="quick-actions">
+                <h3>Acciones Rápidas</h3>
+                <div class="actions-grid">
+                    <div class="action-btn" id="emitPrescription">
+                        <i class="fas fa-file-medical"></i>
+                        <span>Emitir Receta</span>
+                    </div>
+                    <div class="action-btn" id="viewPatients">
+                        <i class="fas fa-users"></i>
+                        <span>Ver Pacientes</span>
+                    </div>
+                    <div class="action-btn" id="manageSchedule">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Gestionar Agenda</span>
+                    </div>
+                </div>
+            </div>
+
+            </div>
+
+            <!-- Perfil del Profesional -->
+            <div class="dashboard-section profile-section hidden" id="doctorProfileSection">
+                <!-- Page Header (Sticky) -->
+                <header class="profile-page-header" id="profilePageHeader">
+                    <div class="profile-header-content">
+                        <div>
+                            <h2 class="profile-page-title">Perfil Profesional</h2>
+                            <p class="profile-page-subtitle">Datos visibles para tus pacientes</p>
+                        </div>
+                        <button class="btn btn-primary" id="editDoctorProfile" aria-label="Editar perfil">
+                            <i class="fas fa-edit"></i>
+                            Editar Perfil
+                        </button>
+                    </div>
+                </header>
+
+                <!-- Profile Content -->
+                <main class="profile-content-wrapper">
+                    <section class="profile-content">
+                        <form id="doctorProfileForm" class="profile-form" novalidate>
+                            <!-- Información de contacto -->
+                            <div class="profile-card profile-card--content">
+                                <header class="profile-card-header">
+                                    <h3 class="profile-card-title">
+                                        <i class="fas fa-user-circle" aria-hidden="true"></i>
+                                        Información de contacto
+                                    </h3>
+                                </header>
+                                <div class="profile-card-body">
+                                    <div class="profile-fields-row">
+                                        <div class="profile-field">
+                                            <label class="profile-label" for="profileFirstNameInput">Nombre</label>
+                                            <input type="text" 
+                                                   id="profileFirstNameInput" 
+                                                   name="firstName" 
+                                                   class="profile-input" 
+                                                   placeholder="Nombre" 
+                                                   disabled
+                                                   aria-label="Nombre">
+                                        </div>
+                                        <div class="profile-field">
+                                            <label class="profile-label" for="profileLastNameInput">Apellido</label>
+                                            <input type="text" 
+                                                   id="profileLastNameInput" 
+                                                   name="lastName" 
+                                                   class="profile-input" 
+                                                   placeholder="Apellido" 
+                                                   disabled
+                                                   aria-label="Apellido">
+                                        </div>
+                                    </div>
+                                    <div class="profile-field">
+                                        <label class="profile-label" for="profileEmailInput">Email</label>
+                                        <input type="email" 
+                                               id="profileEmailInput" 
+                                               name="email" 
+                                               class="profile-input" 
+                                               placeholder="correo@ejemplo.com" 
+                                               required 
+                                               disabled
+                                               aria-label="Email">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Información profesional -->
+                            <div class="profile-card profile-card--content">
+                                <header class="profile-card-header">
+                                    <h3 class="profile-card-title">
+                                        <i class="fas fa-stethoscope" aria-hidden="true"></i>
+                                        Información profesional
+                                    </h3>
+                                </header>
+                                <div class="profile-card-body">
+                                    <div class="profile-field">
+                                        <label class="profile-label" for="profileSpecialtyInput">Especialidad</label>
+                                        <div class="profile-specialty-wrapper">
+                                            <select 
+                                                   id="profileSpecialtyInput" 
+                                                   name="specialty" 
+                                                   class="profile-input" 
+                                                   disabled
+                                                   aria-label="Especialidad">
+                                                <option value="">Seleccionar especialidad</option>
+                                                <option value="Neurologo">Neurologo</option>
+                                                <option value="Pediatra">Pediatra</option>
+                                                <option value="Clinico">Clinico</option>
+                                                <option value="Cardiologo">Cardiologo</option>
+                                                <option value="Cirujano">Cirujano</option>
+                                                <option value="Dermatologo">Dermatologo</option>
+                                                <option value="Psiquiatra">Psiquiatra</option>
+                                            </select>
+                                            <span class="profile-specialty-chip" id="specialtyChip" aria-hidden="true"></span>
+                                        </div>
+                                    </div>
+                                    <div class="profile-professional-extras" aria-label="Información profesional adicional">
+                                        <div class="profile-chips-container" id="professionalChips" role="list">
+                                        </div>
+                                        <div class="profile-location" role="group" aria-label="Ubicación del consultorio">
+                                            <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                                            <span>Consultorio Onsari</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Biografía -->
+                            <div class="profile-card profile-card--content">
+                                <header class="profile-card-header">
+                                    <h3 class="profile-card-title">
+                                        <i class="fas fa-file-alt" aria-hidden="true"></i>
+                                        Biografía
+                                    </h3>
+                                </header>
+                                <div class="profile-card-body">
+                                    <div class="profile-field">
+                                        <label class="profile-label" for="profileBioInput">Descripción profesional</label>
+                                        <div class="profile-biography-wrapper">
+                                            <textarea id="profileBioInput" 
+                                                      name="biography" 
+                                                      class="profile-textarea" 
+                                                      rows="6" 
+                                                      placeholder="Comparte tu experiencia y enfoque profesional." 
+                                                      disabled
+                                                      aria-label="Biografía profesional"></textarea>
+                                            <button type="button" 
+                                                    class="profile-biography-toggle hidden" 
+                                                    id="bioToggle"
+                                                    aria-expanded="false"
+                                                    aria-controls="profileBioInput">
+                                                <span class="bio-toggle-text">Ver más</span>
+                                                <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Acciones del formulario -->
+                            <div class="profile-actions hidden" id="profileActions">
+                                <button type="button" 
+                                        class="btn btn-secondary" 
+                                        id="cancelProfileEdit"
+                                        aria-label="Cancelar edición">
+                                    <i class="fas fa-times" aria-hidden="true"></i>
+                                    Cancelar
+                                </button>
+                                <button type="submit" 
+                                        class="btn btn-primary" 
+                                        id="saveProfile"
+                                        aria-label="Guardar cambios">
+                                    <i class="fas fa-save" aria-hidden="true"></i>
+                                    Guardar Cambios
+                                </button>
+                            </div>
+                        </form>
+                    </section>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <div id="prescription-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Crear Receta Médica</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="prescription-form">
+                    <div class="form-group">
+                        <label for="prescription-patient-name">Paciente</label>
+                        <div style="position: relative;">
+                            <input type="text" id="prescription-patient-name" name="patient-name" placeholder="Buscar paciente por nombre..." required autocomplete="off">
+                            <div id="patient-suggestions" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #d1d5db; border-radius: 0.375rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-height: 300px; overflow-y: auto; z-index: 1000; margin-top: 0.25rem;"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="prescription-diagnosis">Diagnóstico</label>
+                        <input type="text" id="prescription-diagnosis" name="diagnosis" placeholder="Ingrese el diagnóstico" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="prescription-medication">Medicamento</label>
+                        <input type="text" id="prescription-medication" name="medication" placeholder="Nombre del medicamento" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="prescription-dosage">Dosis</label>
+                        <input type="text" id="prescription-dosage" name="dosage" placeholder="Ej: 1 comprimido" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="prescription-frequency">Frecuencia</label>
+                        <input type="text" id="prescription-frequency" name="frequency" placeholder="Ej: cada 8 horas" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="prescription-duration">Duración del tratamiento</label>
+                        <input type="text" id="prescription-duration" name="duration" placeholder="Ej: 7 días" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="prescription-additional-instructions">Instrucciones adicionales</label>
+                        <input type="text" id="prescription-additional-instructions" name="additional-instructions" placeholder="Indicaciones especiales para el paciente">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancel-prescription">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Generar Receta</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Reprogramar turno (DOCTOR) -->
+    <div id="reschedule-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Reprogramar turno</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Paciente</label>
+                    <input id="reschedulePatient" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Médico</label>
+                    <input id="rescheduleDoctor" disabled>
+                </div>
+
+                <!-- 🔹 Igual que el paciente: date oculto + calendario custom -->
+                <div class="form-group">
+                    <label>Nuevo día</label>
+                    <div class="custom-date-picker-wrapper">
+                        <input 
+                            type="date" 
+                            id="date" 
+                            name="date" 
+                            required 
+                            style="display: none;"
+                        >
+                        <div id="custom-calendar" class="custom-calendar"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Nuevo horario</label>
+                    <select id="time">
+                        <option value="">Seleccionar hora</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Motivo (opcional)</label>
+                    <textarea id="rescheduleReason"></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelReschedule">Cancelar</button>
+                <button class="btn btn-primary" id="saveReschedule">Guardar</button>
+            </div>
+        </div>
+    </div>
+<!-- TEMPLATE: Tarjeta de turno -->
+<template id="template-appointment-card">
+    <div class="appointment-card">
+
+        <!-- HEADER dinámico según estado -->
+        <div class="appointment-header status-bg">
+            <div class="appointment-header-left">
+                <h4 class="appointment-patient"></h4>
+            </div>
+
+            <!-- Badge solo para estados finales -->
+            <span class="appointment-status-badge hidden"></span>
+
+            <!-- Select para editar estado -->
+            <select class="appointment-status-select hidden"></select>
+        </div>
+
+        <div class="appointment-info">
+            <div class="info-row">
+                <i class="fas fa-clock icon"></i>
+                <span class="appointment-time"></span>
+            </div>
+
+            <div class="info-row">
+                <i class="fas fa-user icon"></i>
+                <span class="appointment-dni"></span>
+            </div>
+
+            <div class="info-row">
+                <i class="fas fa-stethoscope icon"></i>
+                <span class="appointment-reason"></span>
+            </div>
+        </div>
+
+        <div class="appointment-actions"></div>
+    </div>
+</template>
+
+
+<template id="template-day-card">
+    <div class="agenda-day-card">
+        
+        <div class="agenda-day-header">
+            <div>
+                <h3 class="agenda-day-title"></h3>
+                <p class="agenda-day-subtitle"></p>
+            </div>
+
+            <span class="agenda-day-count"></span>
+        </div>
+
+        <div class="appointments-grid"></div>
+    </div>
+</template>
+
+
+
+    <script type="module">
+    import { initializeDoctorPanel } from './js/doctor-js/doctor-main.js';
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initializeDoctorPanel();
+        });
+    } else {
+        initializeDoctorPanel();
+    }
+</script>
+    <script>
+        (function(){
+            const btn = document.getElementById('userBtn');
+            const dropdown = document.getElementById('userDropdown');
+            const menu = document.getElementById('userMenu');
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (btn && dropdown) {
+                btn.addEventListener('click', function(e){
+                    e.stopPropagation();
+                    const isOpen = dropdown.style.display === 'block';
+                    dropdown.style.display = isOpen ? 'none' : 'block';
+                    menu.classList.toggle('active', !isOpen);
+                });
+                document.addEventListener('click', function(e){
+                    if (!menu.contains(e.target)) {
+                        dropdown.style.display = 'none';
+                        menu.classList.remove('active');
+                    }
+                });
+            }
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e){
+                    e.preventDefault();
+                    try { localStorage.clear(); } catch(_) {}
+                    window.location.href = 'index.html';
+                });
+            }
+        })();
+
+        (function() {
+            'use strict';
+
+            // Header sticky con sombra al hacer scroll
+            const profilePageHeader = document.getElementById('profilePageHeader');
+            const profileSection = document.getElementById('doctorProfileSection');
+            
+            if (profilePageHeader && profileSection) {
+                const observer = new IntersectionObserver(function(entries) {
+                    entries.forEach(function(entry) {
+                        if (entry.intersectionRatio < 1) {
+                            profilePageHeader.classList.add('sticky');
+                        } else {
+                            profilePageHeader.classList.remove('sticky');
+                        }
+                    });
+                }, {
+                    threshold: [0, 1],
+                    rootMargin: '-60px 0px 0px 0px'
+                });
+                
+                const headerTrigger = document.createElement('div');
+                headerTrigger.style.position = 'absolute';
+                headerTrigger.style.top = '0';
+                headerTrigger.style.height = '1px';
+                profileSection.insertBefore(headerTrigger, profileSection.firstChild);
+                
+                observer.observe(headerTrigger);
+            }
+
+            // Toggle de biografía expandible
+            const bioTextarea = document.getElementById('profileBioInput');
+            const bioToggle = document.getElementById('bioToggle');
+            
+            function checkBioLength() {
+                if (!bioTextarea || !bioToggle) return;
+                
+                const text = bioTextarea.value || '';
+                const lines = text.split('\n').length;
+                const hasLongContent = lines > 3 || text.length > 200;
+                
+                if (hasLongContent && !bioTextarea.disabled) {
+                    bioToggle.classList.remove('hidden');
+                    bioTextarea.setAttribute('data-expanded', 'false');
+                    bioToggle.setAttribute('aria-expanded', 'false');
+                    bioToggle.querySelector('.bio-toggle-text').textContent = 'Ver más';
+                } else {
+                    bioToggle.classList.add('hidden');
+                }
+            }
+            
+            if (bioToggle && bioTextarea) {
+                checkBioLength();
+                bioTextarea.addEventListener('input', checkBioLength);
+                
+                bioToggle.addEventListener('click', function() {
+                    const isExpanded = bioTextarea.getAttribute('data-expanded') === 'true';
+                    
+                    if (isExpanded) {
+                        bioTextarea.setAttribute('data-expanded', 'false');
+                        bioToggle.setAttribute('aria-expanded', 'false');
+                        bioToggle.querySelector('.bio-toggle-text').textContent = 'Ver más';
+                    } else {
+                        bioTextarea.setAttribute('data-expanded', 'true');
+                        bioToggle.setAttribute('aria-expanded', 'true');
+                        bioToggle.querySelector('.bio-toggle-text').textContent = 'Ver menos';
+                    }
+                });
+            }
+
+            // Actualizar chip de especialidad cuando cambia el input
+            const specialtyInput = document.getElementById('profileSpecialtyInput');
+            const specialtyChip = document.getElementById('specialtyChip');
+            
+            function updateSpecialtyChip() {
+                if (!specialtyInput || !specialtyChip) return;
+                
+                const value = specialtyInput.value.trim();
+                if (value && !specialtyInput.disabled) {
+                    specialtyChip.textContent = value;
+                    specialtyChip.setAttribute('aria-hidden', 'false');
+                } else {
+                    specialtyChip.textContent = '';
+                    specialtyChip.setAttribute('aria-hidden', 'true');
+                }
+            }
+            
+            if (specialtyInput && specialtyChip) {
+                specialtyInput.addEventListener('input', updateSpecialtyChip);
+                setTimeout(updateSpecialtyChip, 500);
+            }
+
+            // Navegación del breadcrumb
+            const breadcrumbLink = document.querySelector('.breadcrumb-link');
+            if (breadcrumbLink) {
+                breadcrumbLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const navItem = document.querySelector('.nav-item[data-section="inicio"]');
+                    if (navItem) {
+                        navItem.click();
+                    }
+                });
+            }
+        })();
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+</body>
+</html>

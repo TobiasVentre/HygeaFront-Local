@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CuidarMed+ - Panel Paciente</title>
+    <link rel="stylesheet" href="css/patient.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <i class="fas fa-heart"></i>
+            <span>CuidarMed+</span>
+        </div>
+        <div class="actions">
+            <div class="user-menu" id="userMenu">
+                <button class="user-btn" id="userBtn">
+                    <i class="fas fa-user-circle" style="font-size: 1.5rem;"></i>
+                    <span id="userMenuName">Mi cuenta</span>
+                    <i class="fas fa-chevron-down" style="font-size:0.8rem;"></i>
+                </button>
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Vista del Paciente -->
+    <div class="dashboard">
+        <div class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-heart"></i>
+                    <span>CuidarMed+</span>
+                </div>
+                <p class="panel-title">Panel Paciente</p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="inicio">
+                    <i class="fas fa-home"></i>
+                    Inicio
+                </a>
+                <a href="#" class="nav-item" data-section="turnos">
+                    <i class="fas fa-calendar"></i>
+                    Mis Turnos
+                </a>
+                <a href="#" class="nav-item" data-section="recetas">
+                    <i class="fas fa-prescription-bottle-medical"></i>
+                    Mis Recetas
+                </a>
+                <a href="#" class="nav-item" data-section="historial">
+                    <i class="fas fa-file-medical"></i>
+                    Historial Médico
+                </a>
+                <a href="#" class="nav-item" data-section="perfil">
+                    <i class="fas fa-user"></i>
+                    Perfil
+                </a>
+            </nav>
+        </div>
+        
+        <div class="dashboard-content">
+            <!-- Welcome Section -->
+            <div class="welcome-section">
+                <div class="welcome-header">
+                    <div class="welcome-copy">
+                        <h2 id="welcome-name">Bienvenido</h2>
+                        <p id="welcome-message">Aquí está el resumen de tu atención médica</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="card-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-number" id="confirmed-appointments">0</div>
+                        <div class="card-label">Turnos confirmados</div>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon green">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-number" id="consultations-year">0</div>
+                        <div class="card-label">Este año</div>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon">
+                        <i class="fas fa-file-medical"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-number" id="active-prescriptions">0</div>
+                        <div class="card-label">Disponibles</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Próximos Turnos Section -->
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <div>
+                        <h3>Próximos Turnos</h3>
+                        <p>Tus consultas programadas</p>
+                    </div>
+                    <div class="section-header-actions">
+                        <!-- Botón para Agendar Turno -->
+                        <button class="btn btn-primary" id="newAppointment">
+                            <i class="fas fa-calendar-plus"></i>
+                            Agendar Turno
+                        </button>
+                        <!-- Menú Desplegable -->
+                        <select id="status-filter">
+                            <option value="">-- Filtrar por Estado --</option>
+                            <option value="SCHEDULED">Programado</option>
+                            <option value="CONFIRMED">Confirmado</option>
+                            <option value="CANCELLED">Cancelado</option>
+                            <option value="COMPLETED">Completado</option>
+                            <option value="IN_PROGRESS">En curso</option>
+                            <option value="NO_SHOW">Ausente</option>
+                            <option value="RESCHEDULED">Reprogramado</option>
+                        </select>
+
+                    </div>
+                </div>
+                <div class="appointments-list" id="appointments-list">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Cargando turnos...</p>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Historial Médico Reciente -->
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <div>
+                        <h3>Historial Médico Reciente</h3>
+                        <p>Últimas consultas realizadas</p>
+                    </div>
+                    <!-- ✅ NUEVO: Botón de actualizar -->
+                <div class="section-header-actions">
+                    <button class="btn btn-secondary" id="refreshRecentHistory" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                        <i class="fas fa-sync-alt"></i> Actualizar
+                    </button>
+                </div>
+                </div>
+                <div class="history-list" id="history-list-inicio">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Cargando historial...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agendar turno -->
+    <div id="appointment-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Agendar Nuevo Turno</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="appointment-form">
+                    <div class="appointment-form-top">
+                        <div class="form-group">
+                            <label for="specialty">Especialidad:</label>
+                            <select id="specialty" name="specialty" required>
+                                <option value="">Seleccionar especialidad</option>
+                                <option value="cardiologia">Cardiología</option>
+                                <option value="psiquiatria">Psiquiatría</option>
+                                <option value="cirugia">Cirugía</option>
+                                <option value="clinico">Clínico</option>
+                                <option value="dermatologia">Dermatología</option>
+                                <option value="traumatologia">Traumatología</option>
+                                <option value="pediatria">Pediatría</option>
+                                <option value="ginecologia">Ginecología</option>
+                                <option value="neurologia">Neurología</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="doctor">Médico:</label>
+                            <select id="doctor" name="doctor" required>
+                                <option value="">Seleccionar médico</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="appointment-form-main">
+                        <div class="appointment-form-left">
+                            <div class="form-group">
+                                <label for="date">Fecha:</label>
+                                <div class="custom-date-picker-wrapper">
+                                    <input type="date" id="date" name="date" required style="display: none;">
+                                    <div id="custom-calendar" class="custom-calendar"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="appointment-form-right">
+                            <div class="form-group">
+                                <label for="time">Hora:</label>
+                                <select id="time" name="time" required>
+                                    <option value="">Seleccionar hora</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="reason">Motivo de consulta:</label>
+                                <textarea id="reason" name="reason" rows="5" required placeholder="Describe el motivo de tu consulta..."></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" id="cancel-appointment">Cancelar</button>
+                                <button type="submit" class="btn btn-primary">Agendar Turno</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para ver receta -->
+    <div id="prescription-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Receta Médica</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="prescription-content">
+                    <!-- Contenido de la receta se cargará aquí -->
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary" id="download-prescription">
+                        <i class="fas fa-download"></i>
+                        Descargar PDF
+                    </button>
+                    <button class="btn btn-secondary" id="close-prescription">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Encuentro / Consulta -->
+<div id="encounter-modal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Detalles de la Consulta</h3>
+            <button class="close-modal" onclick="closeEncounterModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="encounterDate"></div>
+            <div id="encounterDoctor"></div>
+            <div id="encounterReason"></div>
+
+            <h4>Evaluación Clínica (SOAP)</h4>
+
+            <div class="soap-section">
+                <strong><i class="fa-solid fa-angle-right"></i> Subjetivo:</strong>
+                <p id="soapSubjective"></p>
+            </div>
+
+            <div class="soap-section">
+                <strong><i class="fa-solid fa-angle-right"></i> Objetivo:</strong>
+                <p id="soapObjective"></p>
+            </div>
+
+            <div class="soap-section">
+                <strong><i class="fa-solid fa-angle-right"></i> Evaluación:</strong>
+                <p id="soapAssessment"></p>
+            </div>
+
+            <div class="soap-section">
+                <strong><i class="fa-solid fa-angle-right"></i> Plan:</strong>
+                <p id="soapPlan"></p>
+            </div>
+        </div>
+        <div class="modal-footer">
+    <button class="btn btn-secondary" onclick="closeEncounterModal()">Cerrar</button>
+    <button class="btn btn-primary" id="download-encounter">Descargar PDF</button>
+</div>
+    </div>
+</div>
+<!-- Template para historial médico completo -->
+<template id="history-card-template">
+    <div class="history-full-card">
+        <div class="history-full-header">
+            <div class="history-full-info">
+                <div class="history-date">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span class="meta-label">Fecha:</span>
+                    <span class="meta-value"></span>
+                </div>
+                <div class="history-doctor">
+                    <i class="fas fa-user-md"></i>
+                    <span class="meta-label">Médico:</span>
+                    <span class="meta-value"></span>
+                    <span class="meta-specialty"></span>
+                </div>
+                <div class="history-reason">
+                    <i class="fas fa-stethoscope"></i>
+                    <span class="meta-label">Motivo:</span>
+                    <span class="meta-value"></span>
+                </div>
+            </div>
+            <button class="btn-history-details">
+                <i class="fas fa-download"></i>
+                Descargar PDF
+            </button>
+        </div>
+
+        <!-- Contenido SOAP directamente en la card -->
+        <div class="history-soap">
+            <div class="soap-section">
+                <strong>Subjetivo</strong>
+                <p class="soap-subjective"></p>
+            </div>
+            <div class="soap-section">
+                <strong>Objetivo</strong>
+                <p class="soap-objective"></p>
+            </div>
+            <div class="soap-section">
+                <strong>Evaluación</strong>
+                <p class="soap-assessment"></p>
+            </div>
+            <div class="soap-section">
+                <strong>Plan</strong>
+                <p class="soap-plan"></p>
+            </div>
+        </div>
+    </div>
+</template>
+<!-- Contenedor donde se insertarán las recetas -->
+<div id="prescriptions-list-full"></div>
+
+<template id="template-prescription-card">
+    <div class="prescription-card">
+        
+        <div class="prescription-card-header">
+            <div class="prescription-card-header-left">
+                <i class="fa-solid fa-file-medical prescription-card-icon"></i>
+                <h4 class="prescription-card-title"></h4>
+            </div>
+
+            <button class="btn-prescription-view">
+                <i class="fas fa-download"></i> Descargar
+            </button>
+        </div>
+
+        <div class="prescription-card-body">
+            <p><strong>Diagnóstico:</strong> <span class="prescription-diagnosis"></span></p>
+            <p><strong>Medicación:</strong> <span class="prescription-medication"></span></p>
+            <p><strong>Dosis:</strong> <span class="prescription-dosage"></span></p>
+            <p><strong>Frecuencia:</strong> <span class="prescription-frequency"></span></p>
+            <p><strong>Duración:</strong> <span class="prescription-duration"></span></p>
+            <p><strong>Instrucciones:</strong> <span class="prescription-instructions"></span></p>
+            <p><i class="fas fa-user-md"></i> <span class="prescription-doctor"></span></p>
+            <p><i class="fas fa-calendar-alt"></i> <span class="prescription-date"></span></p>
+        </div>
+
+    </div>
+</template>
+
+
+
+
+    <!-- IMPORTANTE: Cargar como módulo ES6 -->
+    <script type="module" src="js/patients-js/patient-main.js"></script>
+    <!--<script type="module" src="js/patient.js"></script>-->
+    <!--<script src="js/patient.js"></script>-->
+    
+    <!-- Script para dropdown del menú de usuario -->
+    <script>
+        (function(){
+            const btn = document.getElementById('userBtn');
+            const dropdown = document.getElementById('userDropdown');
+            const menu = document.getElementById('userMenu');
+            
+            if (btn && dropdown) {
+                btn.addEventListener('click', function(e){
+                    e.stopPropagation();
+                    const isOpen = dropdown.style.display === 'block';
+                    dropdown.style.display = isOpen ? 'none' : 'block';
+                    menu.classList.toggle('active', !isOpen);
+                });
+                
+                document.addEventListener('click', function(e){
+                    if (!menu.contains(e.target)) {
+                        dropdown.style.display = 'none';
+                        menu.classList.remove('active');
+                    }
+                });
+            }
+        })();
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+</body>
+</html>

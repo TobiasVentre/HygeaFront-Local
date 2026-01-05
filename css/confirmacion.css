@@ -11,7 +11,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #1e40af 0%, #10b981 100%);
+    background: linear-gradient(135deg, #000000 0%, #1e40af 100%);
     padding: 20px;
     position: relative;
 }
@@ -87,6 +87,8 @@ body {
     font-weight: bold;
     color: #2563eb;
     margin-bottom: 20px;
+    background: linear-gradient(135deg, #1e40af 0%, black 100%);
+    border-radius: 33px;
 }
 
 .confirm-logo i {
@@ -173,7 +175,7 @@ body {
 
 .input-icon input:focus {
     outline: none;
-    border-color: #10b981;
+    border-color: #1e40af;
     box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
@@ -192,7 +194,7 @@ body {
 .confirm-button {
     width: 100%;
     padding: 14px;
-    background: linear-gradient(135deg, #1e40af 0%, #10b981 100%);
+    background: linear-gradient(135deg, #000000 0%, #1e40af 100%);
     color: white;
     border: none;
     border-radius: 10px;
@@ -209,7 +211,7 @@ body {
 
 .confirm-button:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 10px 20px rgba(33, 16, 185, 0.3);
 }
 
 .confirm-button:active:not(:disabled) {
@@ -236,8 +238,8 @@ body {
 
 .resend-button {
     background: transparent;
-    border: 2px solid #10b981;
-    color: #10b981;
+    border: 2px solid #1e40af;
+    color: #1e40af;
     padding: 10px 20px;
     border-radius: 8px;
     font-size: 14px;
@@ -250,7 +252,7 @@ body {
 }
 
 .resend-button:hover:not(:disabled) {
-    background: #10b981;
+    background: #1e40af;
     color: white;
 }
 
@@ -273,7 +275,7 @@ body {
 }
 
 .login-link a {
-    color: #10b981;
+    color: #1e40af;
     text-decoration: none;
     font-weight: 500;
 }

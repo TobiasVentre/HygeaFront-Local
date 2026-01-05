@@ -11,7 +11,7 @@ export class ChatComponent {
     this.currentUserName = config.currentUserName;
     this.otherUserName = config.otherUserName;
     this.token = config.token;
-    this.theme = config.theme || "doctor"; // 'doctor' o 'patient'
+    this.theme = config.theme || "doctor"; // 'doctor' o 'client'
     this.container = config.container;
     this.config = config;
 
@@ -405,9 +405,9 @@ async loadMessages() {
                 userIdForRead = this.config.doctorId || this.currentUserId;
                 userRole = 'Doctor';
             } else {
-                // Para paciente: usar el patientId del chatRoom o de config
-                userIdForRead = this.config.patientId || this.currentUserId;
-                userRole = 'Patient';
+                // Para paciente: usar el clientId del chatRoom o de config
+                userIdForRead = this.config.clientId || this.currentUserId;
+                userRole = 'client';
             }
             
             console.log("✅ ID final para markAsRead:", {
@@ -521,7 +521,7 @@ addMessage(message, append = true) {
     const senderRole = message.senderRole || message.SenderRole;
     
     // ✅ Comparar por ROLE en vez de por ID
-    const myRole = this.theme === "doctor" ? "Doctor" : "Patient";
+    const myRole = this.theme === "doctor" ? "Doctor" : "Client";
     const isOwn = senderRole === myRole;
     
     console.log("🎨 [UI] Mensaje:", { senderRole, myRole, isOwn, message: message.message });
@@ -807,7 +807,7 @@ async sendMessage() {
             SenderInfo: {
                 Id: this.currentUserId,
                 Name: this.currentUserName,
-                Role: this.theme === "doctor" ? "Doctor" : "Patient"  // ✅ Esto ya lo tenías
+                Role: this.theme === "doctor" ? "Doctor" : "Client"  // ✅ Esto ya lo tenías
             }
         };
 

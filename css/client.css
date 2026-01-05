@@ -172,11 +172,14 @@ body {
 .logo {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.75rem;
     font-size: 1.5rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
     color: #1f2937;
+    background: linear-gradient(135deg, #1e40af 0%, black 100%);
+    border-radius: 33px;
 }
 
 .logo i {

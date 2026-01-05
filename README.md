@@ -45,8 +45,8 @@ Luego abre tu navegador en: **http://localhost:8000**
 - `index.html` - Página principal
 - `login.html` - Página de inicio de sesión
 - `registro.html` - Página de registro
-- `patient.html` - Panel del paciente
-- `doctor.html` - Panel del doctor
+- `client.html` - Panel del cliente
+- `fumigator.html` - Panel del fumigador
 - `css/` - Estilos CSS
 - `js/` - Scripts JavaScript
 - `assets/` - Imágenes y recursos

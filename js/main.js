@@ -1,5 +1,5 @@
 import { DoctorView } from "./view/doctor.js";
-import { PatientView } from "./view/patient.js";
+import { clientView } from "./view/client.js";
 import { clearElement } from "./utils/domUtils.js";
 
 function initDemoNavigation() {
@@ -34,8 +34,8 @@ function initDemoNavigation() {
         case "doctor":
           await DoctorView();
           break;
-        case "patient":
-          await PatientView();
+        case "client":
+          await clientView();
           break;
         case "login":
           container.innerHTML = "<h2>Pantalla de Login (en desarrollo)</h2>";

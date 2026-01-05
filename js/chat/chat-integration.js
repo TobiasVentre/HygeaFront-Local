@@ -18,7 +18,7 @@ export async function handleAppointmentChatCreation(appointment) {
         }
 
         const doctorId = appointment.doctorId || appointment.DoctorId;
-        const patientId = appointment.patientId || appointment.PatientId;
+        const clientId = appointment.clientId || appointment.clientId;
         const appointmentId = appointment.appointmentId || appointment.AppointmentId;
         const userId = appointment.currentUserId;
 
@@ -45,7 +45,7 @@ export async function handleAppointmentChatCreation(appointment) {
         const { Api } = await import('../api.js')
 
         let doctorInfo = null
-        let patientInfo = null
+        let clientInfo = null
 
         // Obtenemos la informacion del doctor
         try {
@@ -70,32 +70,32 @@ export async function handleAppointmentChatCreation(appointment) {
             };
         }
 
-        // Obtener info del paciente
+        // Obtener info del cliente
         try {
-            const patient = await Api.get(`v1/Patient/${patientId}`);
-            const firstName = patient.firstName || patient.FirstName || patient.name || "";
-            const lastName = patient.lastName || patient.LastName || "";
-            const fullName = `${firstName} ${lastName}`.trim() || "Paciente";
+            const client = await Api.get(`v1/Client/${clientId}`);
+            const firstName = client.firstName || client.FirstName || client.name || "";
+            const lastName = client.lastName || client.LastName || "";
+            const fullName = `${firstName} ${lastName}`.trim() || "Cliente";
             
-            patientInfo = {
-                Id: patient.userId || patient.UserId || patientId,
+            clientInfo = {
+                Id: client.userId || client.UserId || clientId,
                 Name: fullName,
-                Email: patient.email || patient.Email || "",
-                Role: "Patient"
+                Email: client.email || client.Email || "",
+                Role: "Client"
             };
         } catch (error) {
-            console.warn('⚠️ No se pudo obtener info del paciente:', error.message);
-            patientInfo = {
-                Id: patientId,
-                Name: "Paciente",
+            console.warn('⚠️ No se pudo obtener info del cliente:', error.message);
+            clientInfo = {
+                Id: clientId,
+                Name: "Client",
                 Email: "",
-                Role: "Patient"
+                Role: "Client"
             };
         }
 
         console.log('➕ Creando nueva sala de chat...');
-        console.log('📤 Enviando al backend:', { doctorInfo, patientInfo });
-        const newRoom = await createChatRoom(doctorId, patientId, appointmentId, doctorInfo, patientInfo);
+        console.log('📤 Enviando al backend:', { doctorInfo, clientInfo });
+        const newRoom = await createChatRoom(doctorId, clientId, appointmentId, doctorInfo, clientInfo);
         console.log('✅ Sala de chat creada:', newRoom);
 
         return newRoom;

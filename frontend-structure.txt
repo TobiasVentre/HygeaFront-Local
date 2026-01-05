@@ -1,0 +1,118 @@
+Listado de rutas de carpetas
+El número de serie del volumen es 20EF-55FF
+C:.
+¦   blanqueo.html
+¦   confirmacion.html
+¦   doctor.html
+¦   frontend-structure.txt
+¦   index.html
+¦   login.html
+¦   patient.html
+¦   README.md
+¦   registro.html
+¦   start-server.bat
+¦   start-server.ps1
+¦   
++---.vs
+¦   ¦   slnx.sqlite
+¦   ¦   VSWorkspaceState.json
+¦   ¦   
+¦   +---Frontend
+¦   ¦   +---v17
+¦   ¦           .wsuo
+¦   ¦           DocumentLayout.backup.json
+¦   ¦           DocumentLayout.json
+¦   ¦           
+¦   +---Frontend.slnx
+¦       +---config
+¦       ¦       applicationhost.config
+¦       ¦       
+¦       +---FileContentIndex
+¦       ¦       2c064944-d097-4eaf-af69-c34bf36ea056.vsidx
+¦       ¦       8be9a788-0e74-47fb-8d16-75b6e0fc600d.vsidx
+¦       ¦       
+¦       +---v18
+¦               DocumentLayout.json
+¦               
++---.vscode
+¦       launch.json
+¦       settings.json
+¦       
++---css
+¦       blanqueo.css
+¦       confirmacion.css
+¦       doctor.css
+¦       login.css
+¦       patient.css
+¦       registro.css
+¦       reseteo.css
+¦       styles.css
+¦       
++---img
+¦       login-illustration.svg
+¦       Logo-Blanco.png
+¦       
++---js
+    ¦   api.js
+    ¦   blanqueo.js
+    ¦   main.js
+    ¦   reseteo.js
+    ¦   script.js
+    ¦   state.js
+    ¦   
+    +---apis
+    ¦       authms.js
+    ¦       directoryms.js
+    ¦       
+    +---auth
+    ¦       confirmacion.js
+    ¦       login.js
+    ¦       register.js
+    ¦       
+    +---chat
+    ¦       chat-component.js
+    ¦       chat-integration.js
+    ¦       chat-service.js
+    ¦       
+    +---doctor-js
+    ¦       appointment-state-machine.js
+    ¦       doctor-appointments.js
+    ¦       doctor-calendar.js
+    ¦       doctor-clinical.js
+    ¦       doctor-core.js
+    ¦       doctor-encounters.js
+    ¦       doctor-main.js
+    ¦       doctor-navigation.js
+    ¦       doctor-prescriptions.js
+    ¦       doctor-profile.js
+    ¦       doctor-schedule.js
+    ¦       doctor-ui.js
+    ¦       
+    +---patients-js
+    ¦       patient-appointment-form.js
+    ¦       patient-appointments.js
+    ¦       patient-calendar.js
+    ¦       patient-dashboard.js
+    ¦       patient-data.js
+    ¦       patient-filters.js
+    ¦       patient-history-recent.js
+    ¦       patient-history.js
+    ¦       patient-main.js
+    ¦       patient-navigation.js
+    ¦       patient-notifications.js
+    ¦       patient-prescriptions-list.js
+    ¦       patient-prescriptions.js
+    ¦       patient-profile-form.js
+    ¦       patient-profile.js
+    ¦       patient-state.js
+    ¦       patient-ui.js
+    ¦       patient-utils.js
+    ¦       patient-video-call.js
+    ¦       
+    +---utils
+    ¦       domUtils.js
+    ¦       
+    +---view
+            doctor.js
+            patient.js
+            

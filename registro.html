@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CuidarMed+ - Registro</title>
+    <title>Hygea - Registro</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/registro.css">
 </head>
@@ -16,8 +16,7 @@
             </a>
             <div class="register-header">
                 <div class="register-logo">
-                    <i class="fas fa-heart"></i>
-                    <span>CuidarMed+</span>
+                    <img src="img\Logo-Blanco.png" alt="logo-Hygea">
                 </div>
                 <h1 class="register-title">Registro</h1>
                 <p class="register-subtitle">Crea tu cuenta para acceder a nuestra plataforma</p>
@@ -27,18 +26,18 @@
                     <div class="form-group role-selection-group">
                         <label>Rol</label>
                         <div class="role-card-group" id="roleCardGroup">
-                            <button type="button" class="role-card active" data-role="Patient" aria-pressed="true">
+                            <button type="button" class="role-card active" data-role="Client" aria-pressed="true">
                                 <span class="role-card-icon"><i class="fas fa-user"></i></span>
-                                <span class="role-card-title">Paciente</span>
-                                <span class="role-card-description">Turnos y mi historia</span>
+                                <span class="role-card-title">Cliente</span>
+                                <span class="role-card-description">Turnos y mis servicios</span>
                             </button>
-                            <button type="button" class="role-card" data-role="Doctor" aria-pressed="false">
+                            <button type="button" class="role-card" data-role="Fumigator" aria-pressed="false">
                                 <span class="role-card-icon"><i class="fas fa-user-md"></i></span>
-                                <span class="role-card-title">Doctor</span>
-                                <span class="role-card-description">Panel y pacientes</span>
+                                <span class="role-card-title">Fumigador</span>
+                                <span class="role-card-description">Panel y clientes</span>
                             </button>
                         </div>
-                        <input type="hidden" id="role" name="role" value="Patient">
+                        <input type="hidden" id="role" name="role" value="Client">
                         <div class="error-message" id="roleError"></div>
                     </div>
 
@@ -92,52 +91,39 @@
                 </div>
 
                 <div class="right-column">
-                    <div class="role-fields role-patient" id="patientFields">
+                    <div class="role-fields role-client" id="clientFields">
                         <h3 class="role-section-title">Información del paciente</h3>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="patientBirthDate">Fecha de nacimiento</label>
-                                <input type="date" id="patientBirthDate" name="patientBirthDate" required>
+                                <label for="clientBirthDate">Fecha de nacimiento</label>
+                                <input type="date" id="clientBirthDate" name="clientBirthDate" required>
                             </div>
                             <div class="form-group">
-                                <label for="patientDomicile">Dirección</label>
-                                <input type="text" id="patientDomicile" name="patientDomicile" placeholder="Calle y número" required>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="patientHealthPlan">Obra social</label>
-                                <input type="text" id="patientHealthPlan" name="patientHealthPlan" placeholder="Ej. OSDE" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="patientMembershipNumber">Número de afiliado</label>
-                                <input type="text" id="patientMembershipNumber" name="patientMembershipNumber" placeholder="XXXXXX" required>
+                                <label for="clientDomicile">Dirección</label>
+                                <input type="text" id="clientDomicile" name="clientDomicile" placeholder="Calle y número" required>
                             </div>
                         </div>
                     </div>
 
-                    <div class="role-fields role-doctor hidden" id="doctorFields">
-                        <h3 class="role-section-title">Información del doctor</h3>
+                    <div class="role-fields role-fumigator hidden" id="fumigatorFields">
+                        <h3 class="role-section-title">Información del fumigador</h3>
                         <div class="form-group">
-                            <label for="doctorLicense">Número de matrícula</label>
-                            <input type="text" id="doctorLicense" name="doctorLicense" placeholder="Matrícula profesional">
+                            <label for="fumigatorLicense">Número de matrícula</label>
+                            <input type="text" id="fumigatorLicense" name="fumigatorLicense" placeholder="Matrícula profesional">
                         </div>
                         <div class="form-group">
-                            <label for="doctorSpecialty">Especialidad <span style="color: #dc2626;">*</span></label>
-                            <select id="doctorSpecialty" name="doctorSpecialty" required>
+                            <label for="fumigatorSpecialty">Especialidad <span style="color: #dc2626;">*</span></label>
+                            <select id="fumigatorSpecialty" name="fumigatorSpecialty" required>
                                 <option value="">Seleccionar especialidad</option>
-                                <option value="Neurologo">Neurologo</option>
-                                <option value="Pediatra">Pediatra</option>
-                                <option value="Clinico">Clinico</option>
-                                <option value="Cardiologo">Cardiologo</option>
-                                <option value="Cirujano">Cirujano</option>
-                                <option value="Dermatologo">Dermatologo</option>
-                                <option value="Psiquiatra">Psiquiatra</option>
+                                <option value="limpiezaTanque">Limpieza de tanques</option>
+                                <option value="trampasFisicas">Trampas fisicas</option>
+                                <option value="insectos">Insectos</option>
+                                <option value="cocina">Servicio de chef</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="doctorBiography">Biografía profesional</label>
-                            <textarea id="doctorBiography" name="doctorBiography" rows="4" placeholder="Experiencia, instituciones, etc."></textarea>
+                            <label for="fumigatorBiography">Biografía profesional</label>
+                            <textarea id="fumigatorBiography" name="fumigatorBiography" rows="4" placeholder="Experiencia, instituciones, etc."></textarea>
                         </div>
                     </div>
 

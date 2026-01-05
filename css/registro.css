@@ -62,6 +62,8 @@
             font-weight: bold;
             color: #2563eb;
             margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #1e40af 0%, black 100%);
+            border-radius: 33px;
         }
 
         .register-logo i {

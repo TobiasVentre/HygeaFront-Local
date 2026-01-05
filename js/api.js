@@ -1,3 +1,18 @@
+/**
+ * API Gateway FrontEnd
+ * --------------------
+ * Capa centralizada para el consumo de microservicios.
+ * - Maneja headers, autenticación y tokens JWT
+ * - Renueva accessToken automáticamente usando refreshToken
+ * - Implementa keep-alive para evitar expiración por inactividad
+ * - Reintenta requests ante 401 de forma transparente
+ * - Permite fallback entre múltiples base URLs por servicio
+ *
+ * Este archivo asume que el AuthMS expone un endpoint de refresh
+ * y que los tokens se almacenan en localStorage.
+ */
+
+
 const defaultHostnames = [window.location.hostname || "localhost", "localhost", "127.0.0.1"];
 
 
@@ -7,7 +22,7 @@ const DIRECTORY_API_BASE_URLS = [
 
 
 const AUTH_API_BASE_URLS = [
-  "http://localhost:9000/auth/api/v1"
+  "http://localhost:5093/api/v1"
 ];
 
 

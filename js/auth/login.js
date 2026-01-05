@@ -1,3 +1,20 @@
+/**
+ * Login Controller (FrontEnd)
+ * ---------------------------
+ * Este archivo gestiona el flujo completo de inicio de sesión:
+ * - Manejo del formulario y validaciones básicas
+ * - Llamada al Auth Microservice para autenticar credenciales
+ * - Persistencia de access/refresh tokens
+ * - Decodificación del JWT para obtener datos del usuario
+ * - Inicialización del estado global y del keep-alive de sesión
+ * - Redirección según rol
+ *
+ * Requiere:
+ * - AuthMS operativo que retorne accessToken (JWT) y refreshToken
+ * - JWT con claims de rol, email e identificador de usuario
+ * - api.js configurado para refresh de tokens
+ */
+
 import { login as loginApi } from "../apis/authms.js";
 import { setUser } from "../state.js";
 
@@ -144,7 +161,21 @@ form?.addEventListener("submit", async (event) => {
     }
 
     // Redirigir según rol
-    const target = role && role.toLowerCase() === "doctor" ? "doctor.html" : "patient.html";
+    let target = "login.html"; // fallback seguro
+
+    switch (role?.toLowerCase()) {
+      case "fumigator":
+        target = "fumigator.html";
+        break;
+      case "client":
+        target = "client.html";
+        break;
+      case "admin":
+        target = "admin.html"; // o futura admin.html
+        break;
+      default:
+        console.warn("Rol desconocido, redirigiendo a login:", role);
+    }
     window.location.href = target;
 
   } catch (error) {

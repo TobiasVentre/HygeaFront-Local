@@ -10,20 +10,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const roleCards = Array.from(document.querySelectorAll(".role-card"));
 
 
-    const patientFieldsSection = document.getElementById("patientFields");
-    const doctorFieldsSection = document.getElementById("doctorFields");
+    const clientFieldsSection = document.getElementById("clientFields");
+    const fumigatorFieldsSection = document.getElementById("fumigatorFields");
 
-    const patientFieldInputs = [
-        document.getElementById("patientBirthDate"),
-        document.getElementById("patientDomicile"),
-        document.getElementById("patientHealthPlan"),
-        document.getElementById("patientMembershipNumber"),
+    const clientFieldInputs = [
+        document.getElementById("clientBirthDate"),
+        document.getElementById("clientDomicile"),
         document.getElementById("phone")
     ];
 
-    const doctorRequiredInputs = [
-        document.getElementById("doctorLicense"),
-        document.getElementById("doctorSpecialty"),
+    const fumigatorRequiredInputs = [
+        document.getElementById("fumigatorLicense"),
+        document.getElementById("fumigatorSpecialty"),
         document.getElementById("phone")
     ];
 
@@ -38,18 +36,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updateRoleSections(selectedRole) {
-        const isDoctor = selectedRole === "Doctor";
+        const isFumigator = selectedRole === "Fumigator";
 
-        if (patientFieldsSection) {
-            patientFieldsSection.classList.toggle("hidden", isDoctor);
+        if (clientFieldsSection) {
+            clientFieldsSection.classList.toggle("hidden", isFumigator);
         }
 
-        if (doctorFieldsSection) {
-            doctorFieldsSection.classList.toggle("hidden", !isDoctor);
+        if (fumigatorFieldsSection) {
+            fumigatorFieldsSection.classList.toggle("hidden", !isFumigator);
         }
 
-        setRequired(patientFieldInputs, !isDoctor);
-        setRequired(doctorRequiredInputs, isDoctor);
+        setRequired(clientFieldInputs, !isFumigator);
+        setRequired(fumigatorRequiredInputs, isFumigator);
     }
 
     function updateRoleCards(selectedRole) {
@@ -61,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function setRole(newRole) {
-        const normalizedRole = newRole === "Doctor" ? "Doctor" : "Patient";
+        const normalizedRole = newRole === "Fumigator" ? "Fumigator" : "Client";
         roleInput.value = normalizedRole;
         updateRoleCards(normalizedRole);
         updateRoleSections(normalizedRole);
@@ -71,14 +69,15 @@ document.addEventListener("DOMContentLoaded", () => {
         card.addEventListener("click", () => setRole(card.dataset.role));
     });
 
-    setRole(roleInput.value || roleCards[0]?.dataset.role || "Patient");
+    setRole(roleInput.value || roleCards[0]?.dataset.role || "Client");
     
     // Submit del formulario
 
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
 
-        const selectedRole = roleInput.value || "Patient";
+        const selectedRole = roleInput.value || "Client";
+        const apiRole = selectedRole === "Fumigator" ? "fumigator" : "client";
 
         const password = document.getElementById("password").value;
         const confirmPassword = document.getElementById("confirmPassword").value;
@@ -93,34 +92,31 @@ document.addEventListener("DOMContentLoaded", () => {
         const dni = document.getElementById("dni").value.trim();
         
 
-        const patientExtras = {
-            birthDate: document.getElementById("patientBirthDate")?.value || "",
-            address: document.getElementById("patientDomicile")?.value.trim() || "",
-            healthPlan: document.getElementById("patientHealthPlan")?.value.trim() || "",
-            membershipNumber: document.getElementById("patientMembershipNumber")?.value.trim() || "",
-            phone: document.getElementById("phone")?.value.trim() || "",
+        const clientExtras = {
+            birthDate: document.getElementById("clientBirthDate")?.value || "",
+            address: document.getElementById("clientDomicile")?.value.trim() || "",
+ phone: document.getElementById("phone")?.value.trim() || "",
         };
         
         // Log para debugging
         console.log("=== DATOS CAPTURADOS DEL FORMULARIO ===");
-        console.log("patientExtras completo:", JSON.stringify(patientExtras, null, 2));
-        console.log("membershipNumber capturado:", patientExtras.membershipNumber);
-        console.log("membershipNumber elemento:", document.getElementById("patientMembershipNumber")?.value);
-        console.log("healthPlan capturado:", patientExtras.healthPlan);
+        console.log("clientExtras completo:", JSON.stringify(clientExtras, null, 2));
+        console.log("membershipNumber capturado:", clientExtras.membershipNumber);
+        console.log("healthPlan capturado:", clientExtras.healthPlan);
 
-        const doctorExtras = {
-            licenseNumber: document.getElementById("doctorLicense")?.value.trim() || "",
-            specialty: document.getElementById("doctorSpecialty")?.value.trim() || "",
-            biography: document.getElementById("doctorBiography")?.value.trim() || "",
+        const fumigatorExtras = {
+            licenseNumber: document.getElementById("fumigatorLicense")?.value.trim() || "",
+            specialty: document.getElementById("fumigatorSpecialty")?.value.trim() || "",
+            biography: document.getElementById("fumigatorBiography")?.value.trim() || "",
             phone: document.getElementById("phone")?.value.trim() || "",
         };
 
      
         // Log para debugging de especialidad
-        console.log("=== DOCTOR EXTRAS ===");
-        console.log("doctorExtras completo:", JSON.stringify(doctorExtras, null, 2));
-        console.log("specialty capturado:", doctorExtras.specialty);
-        console.log("specialty elemento:", document.getElementById("doctorSpecialty")?.value);
+        console.log("=== FUMIGADOR EXTRAS ===");
+        console.log("fumigatorExtras completo:", JSON.stringify(fumigatorExtras, null, 2));
+        console.log("specialty capturado:", fumigatorExtras.specialty);
+        console.log("specialty elemento:", document.getElementById("fumigatorSpecialty")?.value);
         
         // =====================================================
         // CONSTRUIR EL PAYLOAD PARA AuthMS
@@ -131,22 +127,22 @@ document.addEventListener("DOMContentLoaded", () => {
             email,
             dni,
             password,
-            role: selectedRole,
+            role: apiRole,
         };
 
-        if (selectedRole === "Patient") {
-            payload.dateOfBirth = patientExtras.birthDate || null;
-            payload.adress = patientExtras.address || null;
-            payload.healthPlan = patientExtras.healthPlan || null;
-            payload.membershipNumber = patientExtras.membershipNumber || null;
-            payload.phone = patientExtras.phone || null;
+        if (selectedRole === "Client") {
+            payload.dateOfBirth = clientExtras.birthDate || null;
+            payload.address = clientExtras.address || null;
+            payload.healthPlan = clientExtras.healthPlan || null;
+            payload.membershipNumber = clientExtras.membershipNumber || null;
+            payload.phone = clientExtras.phone || null;
         }
 
-        if (selectedRole === "Doctor") {
-            payload.licenseNumber = doctorExtras.licenseNumber || null;
-            payload.specialty = doctorExtras.specialty || null;
-            payload.biography = doctorExtras.biography || null;
-            payload.phone = doctorExtras.phone || null;
+        if (selectedRole === "Fumigator") {
+            payload.licenseNumber = fumigatorExtras.licenseNumber || null;
+            payload.specialty = fumigatorExtras.specialty || null;
+            payload.biography = fumigatorExtras.biography || null;
+            payload.phone = fumigatorExtras.phone || null;
         }
 
         button.disabled = true;
@@ -155,7 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             // Log para debugging
             console.log("=== DATOS DEL REGISTRO ===");
-            console.log("Fecha de nacimiento:", patientExtras.birthDate);
+            console.log("Fecha de nacimiento:", clientExtras.birthDate);
             console.log("Role:", selectedRole);
         // =====================================================
         // ENVIAR DATOS A AuthMS

@@ -3,15 +3,15 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
-    color: #333;
-    background-color: #f8fafc;
+    color: var(--text-body);
+    background-color: var(--surface-page);
 }
 .confirm-container {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #000000 0%, #1e40af 100%);
+    background: linear-gradient(135deg, var(--brand-ink) 0%, var(--brand-strong) 100%);
     padding: 20px;
     position: relative;
 }
@@ -26,17 +26,17 @@ body {
     gap: 0.5rem;
 
     padding: 0.6rem 1rem;
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--overlay-glass);
     backdrop-filter: blur(6px);
 
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid var(--overlay-border);
     border-radius: 10px;
 
-    color: white;
+    color: var(--surface-card);
     font-weight: 600;
     text-decoration: none;
 
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 6px 15px var(--shadow-lg);
 
     transition: 
         background 0.3s ease,
@@ -47,15 +47,15 @@ body {
 
 .back-to-home:hover {
     opacity: 1;
-    background: rgba(255, 255, 255, 0.25);
+    background: var(--overlay-glass-strong);
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 10px 20px var(--shadow-xl);
 }
 
 .confirm-card {
-    background: white;
+    background: var(--surface-card);
     border-radius: 20px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 60px var(--shadow-xl);
     padding: 40px;
     width: 100%;
     max-width: 450px;
@@ -85,9 +85,9 @@ body {
     gap: 10px;
     font-size: 24px;
     font-weight: bold;
-    color: #2563eb;
+    color: var(--brand);
     margin-bottom: 20px;
-    background: linear-gradient(135deg, #1e40af 0%, black 100%);
+    background: linear-gradient(135deg, var(--brand-strong) 0%, var(--brand-ink) 100%);
     border-radius: 33px;
 }
 
@@ -97,13 +97,13 @@ body {
 
 .confirm-title {
     font-size: 28px;
-    color: #333;
+    color: var(--text-body);
     margin: 0 0 10px 0;
     font-weight: 600;
 }
 
 .confirm-subtitle {
-    color: #666;
+    color: var(--text-help);
     font-size: 14px;
     margin: 0;
 }
@@ -117,21 +117,21 @@ body {
 }
 
 .confirm-feedback.success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    background-color: var(--success-bg);
+    color: var(--success-strong);
+    border: 1px solid var(--success-border);
 }
 
 .confirm-feedback.error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+    background-color: var(--danger-bg);
+    color: var(--danger-strong);
+    border: 1px solid var(--danger-border);
 }
 
 .confirm-feedback.info {
-    background-color: #d1ecf1;
-    color: #0c5460;
-    border: 1px solid #bee5eb;
+    background-color: var(--info-bg);
+    color: var(--info-text);
+    border: 1px solid var(--info-border);
 }
 
 .confirm-form {
@@ -145,7 +145,7 @@ body {
 .form-group label {
     display: block;
     margin-bottom: 8px;
-    color: #333;
+    color: var(--text-body);
     font-weight: 500;
     font-size: 14px;
 }
@@ -159,28 +159,28 @@ body {
 .input-icon i {
     position: absolute;
     left: 15px;
-    color: #999;
+    color: var(--text-placeholder);
     z-index: 1;
 }
 
 .input-icon input {
     width: 100%;
     padding: 12px 15px 12px 45px;
-    border: 2px solid #e0e0e0;
+    border: 2px solid var(--border-subtle);
     border-radius: 10px;
     font-size: 16px;
     transition: all 0.3s;
-    background-color: #fff;
+    background-color: var(--surface-card);
 }
 
 .input-icon input:focus {
     outline: none;
-    border-color: #1e40af;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    border-color: var(--brand-strong);
+    box-shadow: 0 0 0 3px var(--success-soft);
 }
 
 .input-icon input:read-only {
-    background-color: #f5f5f5;
+    background-color: var(--surface-page);
     cursor: not-allowed;
 }
 
@@ -188,14 +188,14 @@ body {
     display: block;
     margin-top: 5px;
     font-size: 12px;
-    color: #666;
+    color: var(--text-help);
 }
 
 .confirm-button {
     width: 100%;
     padding: 14px;
-    background: linear-gradient(135deg, #000000 0%, #1e40af 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--brand-ink) 0%, var(--brand-strong) 100%);
+    color: var(--surface-card);
     border: none;
     border-radius: 10px;
     font-size: 16px;
@@ -211,7 +211,7 @@ body {
 
 .confirm-button:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(33, 16, 185, 0.3);
+    box-shadow: 0 10px 20px var(--brand-glow-md);
 }
 
 .confirm-button:active:not(:disabled) {
@@ -226,20 +226,20 @@ body {
 .resend-section {
     text-align: center;
     padding: 20px 0;
-    border-top: 1px solid #e0e0e0;
+    border-top: 1px solid var(--border-subtle);
     margin-top: 20px;
 }
 
 .resend-section p {
-    color: #666;
+    color: var(--text-help);
     font-size: 14px;
     margin-bottom: 10px;
 }
 
 .resend-button {
     background: transparent;
-    border: 2px solid #1e40af;
-    color: #1e40af;
+    border: 2px solid var(--brand-strong);
+    color: var(--brand-strong);
     padding: 10px 20px;
     border-radius: 8px;
     font-size: 14px;
@@ -252,8 +252,8 @@ body {
 }
 
 .resend-button:hover:not(:disabled) {
-    background: #1e40af;
-    color: white;
+    background: var(--brand-strong);
+    color: var(--surface-card);
 }
 
 .resend-button:disabled {
@@ -265,17 +265,17 @@ body {
     text-align: center;
     margin-top: 20px;
     padding-top: 20px;
-    border-top: 1px solid #e0e0e0;
+    border-top: 1px solid var(--border-subtle);
 }
 
 .login-link p {
-    color: #666;
+    color: var(--text-help);
     font-size: 14px;
     margin: 0;
 }
 
 .login-link a {
-    color: #1e40af;
+    color: var(--brand-strong);
     text-decoration: none;
     font-weight: 500;
 }
@@ -300,4 +300,3 @@ body {
         font-size: 12px;
     }
 }
-

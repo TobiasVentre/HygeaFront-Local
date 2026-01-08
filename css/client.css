@@ -745,7 +745,7 @@ body {
     margin-bottom: 1.25rem;
 }
 
-.encounter-doctor {
+.encounter-fumigator {
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -755,12 +755,12 @@ body {
     border-radius: 8px;
 }
 
-.encounter-doctor i {
+.encounter-fumigator i {
     color: var(--brand);
     font-size: 1.1rem;
 }
 
-.encounter-doctor span {
+.encounter-fumigator span {
     font-weight: 600;
     color: var(--text-primary);
     font-size: 1rem;
@@ -1646,7 +1646,7 @@ body {
     gap: 6px;
 }
 
-/* Fecha y doctor en una línea */
+/* Fecha y fumigator en una línea */
 .encounter-mini-top {
     display: flex;
     align-items: center;
@@ -1660,8 +1660,8 @@ body {
     color: var(--text-primary);
 }
 
-/* Doctor destacado */
-.encounter-mini-top .doctor-text {
+/* Fumigator destacado */
+.encounter-mini-top .fumigator-text {
     font-weight: 600;
     color: var(--brand); /* Azul suave */
 }
@@ -1779,7 +1779,7 @@ body {
     line-height: 1.4;
 }
 
-.doctor-name, .encounter-reason, .encounter-summary, .full-summary {
+.fumigator-name, .encounter-reason, .encounter-summary, .full-summary {
     margin-bottom: 0.3rem;
 }
 
@@ -1869,7 +1869,7 @@ body {
     flex-wrap: wrap;
 }
 
-.appointment-clean-doctor {
+.appointment-clean-fumigator {
     font-size: 1.3rem;
     font-weight: 700;
     color: var(--text-primary);
@@ -2058,7 +2058,7 @@ body {
     min-width: 0;
 }
 
-.appointment-home-doctor {
+.appointment-home-fumigator {
     font-size: 1rem;
     font-weight: 700;
     color: var(--text-primary);
@@ -2165,7 +2165,7 @@ body {
     min-width: 0;
 }
 
-.history-compact-doctor {
+.history-compact-fumigator {
     font-size: 0.938rem;
     font-weight: 600;
     color: var(--text-primary);
@@ -2265,7 +2265,7 @@ body {
     font-size: 0.875rem;
 }
 
-.history-doctor-separator {
+.history-fumigator-separator {
     color: var(--border-strong);
     font-weight: 400;
 }
@@ -2277,8 +2277,8 @@ body {
     padding-left: 1.5rem;
 }
 
-/* Doctor con fondo */
-.history-compact-doctor {
+/* Fumigator con fondo */
+.history-compact-fumigator {
     display: none; /* Ya no se usa, todo está en la línea de fecha */
 }
 
@@ -2348,7 +2348,7 @@ body {
         width: 100%;
     }
     
-    .history-compact-doctor {
+    .history-compact-fumigator {
         align-self: flex-start;
     }
     
@@ -2371,7 +2371,7 @@ body {
         font-size: 0.813rem;
     }
     
-    .history-compact-doctor {
+    .history-compact-fumigator {
         font-size: 0.875rem;
         padding: 0.375rem 0.75rem;
     }
@@ -2461,7 +2461,7 @@ body {
     font-size: 0.938rem;
 }
 
-.history-full-doctor {
+.history-full-fumigator {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -2471,7 +2471,7 @@ body {
     flex-wrap: wrap;
 }
 
-.history-full-doctor i {
+.history-full-fumigator i {
     color: var(--success-bright);
     font-size: 0.875rem;
 }
@@ -2586,7 +2586,7 @@ body {
         font-size: 0.938rem;
     }
     
-    .history-full-doctor {
+    .history-full-fumigator {
         font-size: 0.875rem;
     }
     
@@ -3153,7 +3153,7 @@ body {
 
 /* Encabezados de fecha, médico y motivo */
 #encounter-modal #encounterDate,
-#encounter-modal #encounterDoctor,
+#encounter-modal #encounterFumigator,
 #encounter-modal #encounterReason {
     margin-bottom: 12px;
     font-weight: 600;

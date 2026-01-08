@@ -39,14 +39,14 @@ body {
     border-radius: 20px;
     box-shadow: 0 25px 60px var(--shadow-md);
     width: 100%;
-    max-width: 900px;
+    max-width: 450px;
     position: relative;
     z-index: 2;
     box-sizing: border-box;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
     gap: 3rem;
     align-items: center;
+    justify-content: center;
 }
 
 .login-card::after {

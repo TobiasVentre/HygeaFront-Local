@@ -54,7 +54,7 @@
                     Historia de Servicios
                 </a>
                 <a href="#" class="nav-item" data-section="recetas">
-                    <i class="fas fa-file-medical"></i>
+                    <i class="fas fa-file"></i>
                     Servicios Activos
                 </a>
                 <a href="#" class="nav-item" data-section="perfil">
@@ -83,7 +83,7 @@
                         <i class="fas fa-users"></i>
                     </div>
                     <div class="card-content">
-                        <div class="card-number" id="patients-today">0</div>
+                        <div class="card-number" id="clients-today">0</div>
                         <div class="card-label">Consultas programadas</div>
                     </div>
                 </div>
@@ -107,7 +107,7 @@
                 </div>
                 <div class="summary-card">
                     <div class="card-icon">
-                        <i class="fas fa-file-medical"></i>
+                        <i class="fas fa-file"></i>
                     </div>
                     <div class="card-content">
                         <div class="card-number" id="prescriptions-today">0</div>
@@ -150,12 +150,12 @@
                 <h3>Acciones Rápidas</h3>
                 <div class="actions-grid">
                     <div class="action-btn" id="emitPrescription">
-                        <i class="fas fa-file-medical"></i>
+                        <i class="fas fa-file"></i>
                         <span>Emitir Receta</span>
                     </div>
-                    <div class="action-btn" id="viewPatients">
+                    <div class="action-btn" id="viewClients">
                         <i class="fas fa-users"></i>
-                        <span>Ver Pacientes</span>
+                        <span>Ver Clientes</span>
                     </div>
                     <div class="action-btn" id="manageSchedule">
                         <i class="fas fa-calendar-alt"></i>
@@ -167,15 +167,15 @@
             </div>
 
             <!-- Perfil del Profesional -->
-            <div class="dashboard-section profile-section hidden" id="doctorProfileSection">
+            <div class="dashboard-section profile-section hidden" id="fumigatorProfileSection">
                 <!-- Page Header (Sticky) -->
                 <header class="profile-page-header" id="profilePageHeader">
                     <div class="profile-header-content">
                         <div>
                             <h2 class="profile-page-title">Perfil Profesional</h2>
-                            <p class="profile-page-subtitle">Datos visibles para tus pacientes</p>
+                            <p class="profile-page-subtitle">Datos visibles para tus clientes</p>
                         </div>
-                        <button class="btn btn-primary" id="editDoctorProfile" aria-label="Editar perfil">
+                        <button class="btn btn-primary" id="editFumigatorProfile" aria-label="Editar perfil">
                             <i class="fas fa-edit"></i>
                             Editar Perfil
                         </button>
@@ -185,7 +185,7 @@
                 <!-- Profile Content -->
                 <main class="profile-content-wrapper">
                     <section class="profile-content">
-                        <form id="doctorProfileForm" class="profile-form" novalidate>
+                        <form id="fumigatorProfileForm" class="profile-form" novalidate>
                             <!-- Información de contacto -->
                             <div class="profile-card profile-card--content">
                                 <header class="profile-card-header">
@@ -328,55 +328,7 @@
         </div>
     </div>
 
-    <div id="prescription-modal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Crear Receta Médica</h3>
-                <button class="close-modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="prescription-form">
-                    <div class="form-group">
-                        <label for="prescription-client-name">Paciente</label>
-                        <div style="position: relative;">
-                            <input type="text" id="prescription-client-name" name="client-name" placeholder="Buscar paciente por nombre..." required autocomplete="off">
-                            <div id="client-suggestions" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #d1d5db; border-radius: 0.375rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-height: 300px; overflow-y: auto; z-index: 1000; margin-top: 0.25rem;"></div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="prescription-diagnosis">Diagnóstico</label>
-                        <input type="text" id="prescription-diagnosis" name="diagnosis" placeholder="Ingrese el diagnóstico" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="prescription-medication">Medicamento</label>
-                        <input type="text" id="prescription-medication" name="medication" placeholder="Nombre del medicamento" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="prescription-dosage">Dosis</label>
-                        <input type="text" id="prescription-dosage" name="dosage" placeholder="Ej: 1 comprimido" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="prescription-frequency">Frecuencia</label>
-                        <input type="text" id="prescription-frequency" name="frequency" placeholder="Ej: cada 8 horas" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="prescription-duration">Duración del tratamiento</label>
-                        <input type="text" id="prescription-duration" name="duration" placeholder="Ej: 7 días" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="prescription-additional-instructions">Instrucciones adicionales</label>
-                        <input type="text" id="prescription-additional-instructions" name="additional-instructions" placeholder="Indicaciones especiales para el paciente">
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" id="cancel-prescription">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">Generar Receta</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Reprogramar turno (DOCTOR) -->
+    <!-- Modal Reprogramar turno (fumigator) -->
     <div id="reschedule-modal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
@@ -386,7 +338,7 @@
 
             <div class="modal-body">
                 <div class="form-group">
-                    <label>Paciente</label>
+                    <label>Cliente</label>
                     <input id="rescheduleClient" disabled>
                 </div>
                 <div class="form-group">
@@ -394,7 +346,7 @@
                     <input id="rescheduleFumigator" disabled>
                 </div>
 
-                <!-- 🔹 Igual que el paciente: date oculto + calendario custom -->
+                <!-- 🔹 Igual que el cliente: date oculto + calendario custom -->
                 <div class="form-group">
                     <label>Nuevo día</label>
                     <div class="custom-date-picker-wrapper">
@@ -486,14 +438,14 @@
 
 
     <script type="module">
-    import { initializeDoctorPanel } from './js/doctor-js/doctor-main.js';
+    import { initializeFumigatorPanel } from './js/fumigator-js/fumigator-main.js';
     
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', async () => {
-            await initializeDoctorPanel();
+            await initializeFumigatorPanel();
         });
     } else {
-        initializeDoctorPanel();
+        initializeFumigatorPanel();
     }
 </script>
     <script>
@@ -530,7 +482,7 @@
 
             // Header sticky con sombra al hacer scroll
             const profilePageHeader = document.getElementById('profilePageHeader');
-            const profileSection = document.getElementById('doctorProfileSection');
+            const profileSection = document.getElementById('fumigatorProfileSection');
             
             if (profilePageHeader && profileSection) {
                 const observer = new IntersectionObserver(function(entries) {

@@ -46,7 +46,7 @@ function initializeLandingButtons() {
             showNotification('Redirigiendo al login...', 'info');
             // Aquí se redirigiría a la página de login
             setTimeout(() => {
-                window.location.href = 'client.html'; // Demo: redirigir a vista del paciente
+                window.location.href = 'client.html'; // Demo: redirigir a vista del cliente
             }, 1000);
         });
     }
@@ -56,7 +56,7 @@ function initializeLandingButtons() {
             showNotification('Redirigiendo al registro...', 'info');
             // Aquí se redirigiría a la página de registro
             setTimeout(() => {
-                window.location.href = 'client.html'; // Demo: redirigir a vista del paciente
+                window.location.href = 'client.html'; // Demo: redirigir a vista del cliente
             }, 1000);
         });
     }
@@ -66,7 +66,7 @@ function initializeLandingButtons() {
             showNotification('Redirigiendo para agendar consulta...', 'info');
             // Aquí se redirigiría a la página de agendar consulta
             setTimeout(() => {
-                window.location.href = 'client.html'; // Demo: redirigir a vista del paciente
+                window.location.href = 'client.html'; // Demo: redirigir a vista del cliente
             }, 1000);
         });
     }

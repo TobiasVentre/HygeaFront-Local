@@ -1,4 +1,4 @@
-import { DoctorView } from "./view/doctor.js";
+import { FumigatorView } from "./view/fumigator.js";
 import { clientView } from "./view/client.js";
 import { clearElement } from "./utils/domUtils.js";
 
@@ -31,8 +31,8 @@ function initDemoNavigation() {
       const view = btn.dataset.view;
 
       switch (view) {
-        case "doctor":
-          await DoctorView();
+        case "fumigator":
+          await FumigatorView();
           break;
         case "client":
           await clientView();
@@ -56,5 +56,5 @@ document.addEventListener("DOMContentLoaded", () => {
   initDemoNavigation();
 
   // Cargar vista inicial
-  DoctorView();
+  FumigatorView();
 });

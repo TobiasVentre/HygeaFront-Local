@@ -2,9 +2,9 @@ import { Api } from "../api.js";
 import { clearElement, createElement, showMessage } from "../utils/domUtils.js";
 
 /**
- * Renderiza la vista del doctor dentro del contenedor principal.
+ * Renderiza la vista del fumigator dentro del contenedor principal.
  */
-export async function DoctorView() {
+export async function FumigatorView() {
   const container = document.querySelector(".dashboard-content");
   if (!container) {
     console.error("No se encontró el contenedor .dashboard-content");
@@ -13,17 +13,17 @@ export async function DoctorView() {
 
   clearElement(container);
 
-  const doctorId = 1;
-  const endpoint = `v1/Doctor/${doctorId}`;
+  const fumigatorId = 1;
+  const endpoint = `v1/Fumigator/${fumigatorId}`;
 
   try {
-    const doctor = await Api.get(endpoint);
-    if (!doctor || !doctor.firstName || !doctor.lastName) {
-      showMessage("No se pudieron obtener los datos del doctor.", "error");
+    const fumigator = await Api.get(endpoint);
+    if (!fumigator || !fumigator.firstName || !fumigator.lastName) {
+      showMessage("No se pudieron obtener los datos del fumigator.", "error");
       return;
     }
 
-    const fullName = `${doctor.firstName} ${doctor.lastName}`;
+    const fullName = `${fumigator.firstName} ${fumigator.lastName}`;
 
     // ---------- 1. Título principal ----------
     const title = createElement("h1", {
@@ -84,7 +84,7 @@ export async function DoctorView() {
       createElement("h3", { textContent: "Acciones Rápidas" }),
       createElement("div", { className: "actions-grid" }, [
         createQuickAction("issue-prescription-btn", "fas fa-file-medical", "Emitir Receta"),
-        createQuickAction("view-patients-btn", "fas fa-users", "Ver Pacientes"),
+        createQuickAction("view-clients-btn", "fas fa-users", "Ver Clientes"),
         createQuickAction("manage-schedule-btn", "fas fa-calendar", "Gestionar Agenda"),
       ]),
     ]);
@@ -100,8 +100,8 @@ export async function DoctorView() {
 
     showMessage(`Datos cargados para Dr. ${fullName}`, "success");
   } catch (error) {
-    console.error("Error al obtener datos del doctor:", error);
-    showMessage("Error al cargar los datos del doctor.", "error");
+    console.error("Error al obtener datos del fumigator:", error);
+    showMessage("Error al cargar los datos del fumigator.", "error");
   }
 }
 
@@ -133,7 +133,7 @@ function createConsultation(name, type, time, status) {
       createElement("span", { className: `status ${status}`, textContent: getStatusText(status) }),
       createElement("button", {
         className: "btn btn-primary attend-btn",
-        "data-patient": name,
+        "data-client": name,
         innerHTML: `<i class="fas fa-play"></i> Atender`,
       }),
     ]),
@@ -171,5 +171,5 @@ function createQuickAction(id, iconClass, label) {
 
 // Autoejecución
 document.addEventListener("DOMContentLoaded", () => {
-  DoctorView();
+  FumigatorView();
 });

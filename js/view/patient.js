@@ -2,9 +2,9 @@ import { Api } from "../api.js";
 import { clearElement, createElement, showMessage } from "../utils/domUtils.js";
 
 /**
- * Renderiza la vista del paciente dentro del contenedor principal.
+ * Renderiza la vista del cliente dentro del contenedor principal.
  */
-export async function PatientView() {
+export async function ClientView() {
   const container = document.querySelector(".dashboard-content");
   if (!container) {
     console.error("No se encontró el contenedor .dashboard-content");
@@ -13,27 +13,27 @@ export async function PatientView() {
 
   clearElement(container);
 
-  const patientId = 1;
-  const endpoint = `v1/Patient/${patientId}`;
+  const clientId = 1;
+  const endpoint = `v1/Client/${clientId}`;
 
   try {
-    const patient = await Api.get(endpoint);
-    if (!patient || !patient.name) {
-      showMessage("No se pudieron obtener los datos del paciente.", "error");
+    const client = await Api.get(endpoint);
+    if (!client || !client.name) {
+      showMessage("No se pudieron obtener los datos del cliente.", "error");
       return;
     }
 
-    const fullName = `${patient.name} ${patient.lastName}`;
+    const fullName = `${client.name} ${client.lastName}`;
 
     // ---------- 1. Título principal ----------
     const title = createElement("h1", {
       className: "dashboard-title",
-      textContent: "Vista del Paciente",
+      textContent: "Vista del Cliente",
     });
 
     // ---------- 2. Sección de bienvenida ----------
     const welcomeSection = createElement("div", { className: "welcome-section" }, [
-      createElement("h2", { textContent: `Bienvenido, ${patient.name}` }),
+      createElement("h2", { textContent: `Bienvenido, ${client.name}` }),
       createElement("p", { textContent: "Aquí está el resumen de tu atención médica" }),
     ]);
 
@@ -96,8 +96,8 @@ export async function PatientView() {
 
     showMessage(`Datos cargados para ${fullName}`, "success");
   } catch (error) {
-    console.error("Error al obtener datos del paciente:", error);
-    showMessage("Error al cargar los datos del paciente.", "error");
+    console.error("Error al obtener datos del cliente:", error);
+    showMessage("Error al cargar los datos del cliente.", "error");
   }
 }
 
@@ -115,13 +115,13 @@ function createSummaryCard(iconClass, number, label) {
   ]);
 }
 
-function createAppointmentCard(doctor, specialty, dateTime, status) {
+function createAppointmentCard(fumigator, specialty, dateTime, status) {
   return createElement("div", { className: "appointment-card" }, [
     createElement("div", { className: "appointment-icon" }, [
       createElement("i", { className: "fas fa-calendar" }),
     ]),
     createElement("div", { className: "appointment-info" }, [
-      createElement("h4", { textContent: doctor }),
+      createElement("h4", { textContent: fumigator }),
       createElement("p", { textContent: specialty }),
       createElement("span", { textContent: dateTime }),
     ]),
@@ -132,7 +132,7 @@ function createAppointmentCard(doctor, specialty, dateTime, status) {
       }),
       createElement("button", {
         className: "btn btn-secondary video-call-btn",
-        "data-doctor": doctor,
+        "data-fumigator": fumigator,
         innerHTML: `<i class="fas fa-video"></i> Videollamada`,
       }),
     ]),
@@ -150,10 +150,10 @@ function getAppointmentStatusText(status) {
   }
 }
 
-function createHistoryItem(date, doctor, description) {
+function createHistoryItem(date, fumigator, description) {
   return createElement("div", { className: "history-item" }, [
     createElement("div", { className: "history-info" }, [
-      createElement("h4", { textContent: `${date} ${doctor}` }),
+      createElement("h4", { textContent: `${date} ${fumigator}` }),
       createElement("p", { textContent: description }),
     ]),
     createElement("button", {
@@ -166,5 +166,5 @@ function createHistoryItem(date, doctor, description) {
 
 // Autoejecución
 document.addEventListener("DOMContentLoaded", () => {
-  PatientView();
+  ClientView();
 });

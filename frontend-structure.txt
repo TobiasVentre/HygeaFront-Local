@@ -1,118 +1,118 @@
 Listado de rutas de carpetas
-El número de serie del volumen es 20EF-55FF
+El nï¿½mero de serie del volumen es 20EF-55FF
 C:.
-¦   blanqueo.html
-¦   confirmacion.html
-¦   doctor.html
-¦   frontend-structure.txt
-¦   index.html
-¦   login.html
-¦   patient.html
-¦   README.md
-¦   registro.html
-¦   start-server.bat
-¦   start-server.ps1
-¦   
+ï¿½   blanqueo.html
+ï¿½   confirmacion.html
+ï¿½   fumigator.html
+ï¿½   frontend-structure.txt
+ï¿½   index.html
+ï¿½   login.html
+ï¿½   client.html
+ï¿½   README.md
+ï¿½   registro.html
+ï¿½   start-server.bat
+ï¿½   start-server.ps1
+ï¿½   
 +---.vs
-¦   ¦   slnx.sqlite
-¦   ¦   VSWorkspaceState.json
-¦   ¦   
-¦   +---Frontend
-¦   ¦   +---v17
-¦   ¦           .wsuo
-¦   ¦           DocumentLayout.backup.json
-¦   ¦           DocumentLayout.json
-¦   ¦           
-¦   +---Frontend.slnx
-¦       +---config
-¦       ¦       applicationhost.config
-¦       ¦       
-¦       +---FileContentIndex
-¦       ¦       2c064944-d097-4eaf-af69-c34bf36ea056.vsidx
-¦       ¦       8be9a788-0e74-47fb-8d16-75b6e0fc600d.vsidx
-¦       ¦       
-¦       +---v18
-¦               DocumentLayout.json
-¦               
+ï¿½   ï¿½   slnx.sqlite
+ï¿½   ï¿½   VSWorkspaceState.json
+ï¿½   ï¿½   
+ï¿½   +---Frontend
+ï¿½   ï¿½   +---v17
+ï¿½   ï¿½           .wsuo
+ï¿½   ï¿½           DocumentLayout.backup.json
+ï¿½   ï¿½           DocumentLayout.json
+ï¿½   ï¿½           
+ï¿½   +---Frontend.slnx
+ï¿½       +---config
+ï¿½       ï¿½       applicationhost.config
+ï¿½       ï¿½       
+ï¿½       +---FileContentIndex
+ï¿½       ï¿½       2c064944-d097-4eaf-af69-c34bf36ea056.vsidx
+ï¿½       ï¿½       8be9a788-0e74-47fb-8d16-75b6e0fc600d.vsidx
+ï¿½       ï¿½       
+ï¿½       +---v18
+ï¿½               DocumentLayout.json
+ï¿½               
 +---.vscode
-¦       launch.json
-¦       settings.json
-¦       
+ï¿½       launch.json
+ï¿½       settings.json
+ï¿½       
 +---css
-¦       blanqueo.css
-¦       confirmacion.css
-¦       doctor.css
-¦       login.css
-¦       patient.css
-¦       registro.css
-¦       reseteo.css
-¦       styles.css
-¦       
+ï¿½       blanqueo.css
+ï¿½       confirmacion.css
+ï¿½       fumigator.css
+ï¿½       login.css
+ï¿½       client.css
+ï¿½       registro.css
+ï¿½       reseteo.css
+ï¿½       styles.css
+ï¿½       
 +---img
-¦       login-illustration.svg
-¦       Logo-Blanco.png
-¦       
+ï¿½       login-illustration.svg
+ï¿½       Logo-Blanco.png
+ï¿½       
 +---js
-    ¦   api.js
-    ¦   blanqueo.js
-    ¦   main.js
-    ¦   reseteo.js
-    ¦   script.js
-    ¦   state.js
-    ¦   
+    ï¿½   api.js
+    ï¿½   blanqueo.js
+    ï¿½   main.js
+    ï¿½   reseteo.js
+    ï¿½   script.js
+    ï¿½   state.js
+    ï¿½   
     +---apis
-    ¦       authms.js
-    ¦       directoryms.js
-    ¦       
+    ï¿½       authms.js
+    ï¿½       directoryms.js
+    ï¿½       
     +---auth
-    ¦       confirmacion.js
-    ¦       login.js
-    ¦       register.js
-    ¦       
+    ï¿½       confirmacion.js
+    ï¿½       login.js
+    ï¿½       register.js
+    ï¿½       
     +---chat
-    ¦       chat-component.js
-    ¦       chat-integration.js
-    ¦       chat-service.js
-    ¦       
-    +---doctor-js
-    ¦       appointment-state-machine.js
-    ¦       doctor-appointments.js
-    ¦       doctor-calendar.js
-    ¦       doctor-clinical.js
-    ¦       doctor-core.js
-    ¦       doctor-encounters.js
-    ¦       doctor-main.js
-    ¦       doctor-navigation.js
-    ¦       doctor-prescriptions.js
-    ¦       doctor-profile.js
-    ¦       doctor-schedule.js
-    ¦       doctor-ui.js
-    ¦       
-    +---patients-js
-    ¦       patient-appointment-form.js
-    ¦       patient-appointments.js
-    ¦       patient-calendar.js
-    ¦       patient-dashboard.js
-    ¦       patient-data.js
-    ¦       patient-filters.js
-    ¦       patient-history-recent.js
-    ¦       patient-history.js
-    ¦       patient-main.js
-    ¦       patient-navigation.js
-    ¦       patient-notifications.js
-    ¦       patient-prescriptions-list.js
-    ¦       patient-prescriptions.js
-    ¦       patient-profile-form.js
-    ¦       patient-profile.js
-    ¦       patient-state.js
-    ¦       patient-ui.js
-    ¦       patient-utils.js
-    ¦       patient-video-call.js
-    ¦       
+    ï¿½       chat-component.js
+    ï¿½       chat-integration.js
+    ï¿½       chat-service.js
+    ï¿½       
+    +---fumigator-js
+    ï¿½       appointment-state-machine.js
+    ï¿½       fumigator-appointments.js
+    ï¿½       fumigator-calendar.js
+    ï¿½       fumigator-clinical.js
+    ï¿½       fumigator-core.js
+    ï¿½       fumigator-encounters.js
+    ï¿½       fumigator-main.js
+    ï¿½       fumigator-navigation.js
+    ï¿½       fumigator-prescriptions.js
+    ï¿½       fumigator-profile.js
+    ï¿½       fumigator-schedule.js
+    ï¿½       fumigator-ui.js
+    ï¿½       
+    +---clients-js
+    ï¿½       client-appointment-form.js
+    ï¿½       client-appointments.js
+    ï¿½       client-calendar.js
+    ï¿½       client-dashboard.js
+    ï¿½       client-data.js
+    ï¿½       client-filters.js
+    ï¿½       client-history-recent.js
+    ï¿½       client-history.js
+    ï¿½       client-main.js
+    ï¿½       client-navigation.js
+    ï¿½       client-notifications.js
+    ï¿½       client-prescriptions-list.js
+    ï¿½       client-prescriptions.js
+    ï¿½       client-profile-form.js
+    ï¿½       client-profile.js
+    ï¿½       client-state.js
+    ï¿½       client-ui.js
+    ï¿½       client-utils.js
+    ï¿½       client-video-call.js
+    ï¿½       
     +---utils
-    ¦       domUtils.js
-    ¦       
+    ï¿½       domUtils.js
+    ï¿½       
     +---view
-            doctor.js
-            patient.js
+            fumigator.js
+            client.js
             

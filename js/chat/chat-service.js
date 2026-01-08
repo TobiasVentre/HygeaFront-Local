@@ -32,10 +32,10 @@ async function tryFetch(endpoint, options) {
 }
 
 /**
- * Crea una sala de chat entre doctor y paciente
+ * Crea una sala de chat entre fumigator y cliente
  */
-export async function createChatRoom(doctorId, patientId, appointmentId, doctorInfo, patientInfo) {
-    console.log('📨 Creando sala de chat:', { doctorId, patientId, appointmentId });
+export async function createChatRoom(fumigatorId, clientId, appointmentId, fumigatorInfo, clientInfo) {
+    console.log('📨 Creando sala de chat:', { fumigatorId, clientId, appointmentId });
     
     const response = await tryFetch('/Chat/create/room', {
         method: 'POST',
@@ -43,20 +43,20 @@ export async function createChatRoom(doctorId, patientId, appointmentId, doctorI
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            DoctorId: doctorId,
-            PatientId: patientId,
+            FumigatorId: fumigatorId,
+            ClientId: clientId,
             AppointmentId: appointmentId,
-            DoctorInfo: doctorInfo || {
-                Id: doctorId,
-                Name: "Doctor",
+            FumigatorInfo: fumigatorInfo || {
+                Id: fumigatorId,
+                Name: "Fumigator",
                 Email: "",
-                Role: "Doctor"
+                Role: "Fumigator"
             },
-            PatientInfo: patientInfo  || {
-                Id: patientId,
-                Name: "Paciente",
+            ClientInfo: clientInfo  || {
+                Id: clientId,
+                Name: "Cliente",
                 Email: "",
-                Role: "Patient"
+                Role: "Client"
             }
         })
     });

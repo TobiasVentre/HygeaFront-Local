@@ -17,7 +17,7 @@ export async function handleAppointmentChatCreation(appointment) {
             return null;
         }
 
-        const doctorId = appointment.doctorId || appointment.DoctorId;
+        const fumigatorId = appointment.fumigatorId || appointment.FumigatorId;
         const clientId = appointment.clientId || appointment.clientId;
         const appointmentId = appointment.appointmentId || appointment.AppointmentId;
         const userId = appointment.currentUserId;
@@ -44,29 +44,29 @@ export async function handleAppointmentChatCreation(appointment) {
         // Crear nueva sala
         const { Api } = await import('../api.js')
 
-        let doctorInfo = null
+        let fumigatorInfo = null
         let clientInfo = null
 
-        // Obtenemos la informacion del doctor
+        // Obtenemos la informacion del fumigator
         try {
-            const doctor = await Api.get(`v1/Doctor/${doctorId}`)
-            const firstName = doctor.firstName || doctor.FirstName || ""
-            const lastName = doctor.lastName || doctor.LastName || ""
-            const fullName = `${firstName} ${lastName}`.trim() || "Doctor"
+            const fumigator = await Api.get(`v1/Fumigator/${fumigatorId}`)
+            const firstName = fumigator.firstName || fumigator.FirstName || ""
+            const lastName = fumigator.lastName || fumigator.LastName || ""
+            const fullName = `${firstName} ${lastName}`.trim() || "Fumigator"
 
-            doctorInfo = {
-                Id: doctor.userId || doctor.UserId || doctorId,
+            fumigatorInfo = {
+                Id: fumigator.userId || fumigator.UserId || fumigatorId,
                 Name: fullName,
-                Email: doctor.email || doctor.Email || "",
-                Role: "Doctor" 
+                Email: fumigator.email || fumigator.Email || "",
+                Role: "Fumigator" 
             }
         } catch (error) {
-            console.warn('⚠️ No se pudo obtener info del doctor:', error.message);
-            doctorInfo = {
-                Id: doctorId,
-                Name: "Doctor",
+            console.warn('⚠️ No se pudo obtener info del fumigator:', error.message);
+            fumigatorInfo = {
+                Id: fumigatorId,
+                Name: "Fumigator",
                 Email: "",
-                Role: "Doctor"
+                Role: "Fumigator"
             };
         }
 
@@ -94,8 +94,8 @@ export async function handleAppointmentChatCreation(appointment) {
         }
 
         console.log('➕ Creando nueva sala de chat...');
-        console.log('📤 Enviando al backend:', { doctorInfo, clientInfo });
-        const newRoom = await createChatRoom(doctorId, clientId, appointmentId, doctorInfo, clientInfo);
+        console.log('📤 Enviando al backend:', { fumigatorInfo, clientInfo });
+        const newRoom = await createChatRoom(fumigatorId, clientId, appointmentId, fumigatorInfo, clientInfo);
         console.log('✅ Sala de chat creada:', newRoom);
 
         return newRoom;

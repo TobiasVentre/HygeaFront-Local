@@ -2,7 +2,7 @@
 # Uso: .\start-server.ps1
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  Iniciando servidor local de CuidarMed+" -ForegroundColor Cyan
+Write-Host "  Iniciando servidor local de Hygea" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 

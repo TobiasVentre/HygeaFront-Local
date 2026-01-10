@@ -99,7 +99,7 @@ function renderHistoryCards(encounters, container, fumigatorsMap) {
         doc.setFont("helvetica", "bold");
         doc.setFontSize(22);
         doc.setTextColor(37, 99, 235); // azul institucional
-        doc.text("CuidarMed+", margin, y);
+        doc.text("Hygea", margin, y);
 
         y += 14;
 
@@ -204,7 +204,7 @@ function renderHistoryCards(encounters, container, fumigatorsMap) {
         doc.setFontSize(9);
         doc.setTextColor(120, 120, 120);
 
-        const footerText = "CuidarMed+ — Sistema de Gestión Clínica";
+        const footerText = "Hygea — Sistema de Gestión Clínica";
         const footerWidth = doc.getTextWidth(footerText);
         doc.text(footerText, (pageWidth - footerWidth) / 2, pageHeight - 10);
 

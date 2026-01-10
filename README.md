@@ -1,4 +1,4 @@
-# CuidarMed+ Frontend
+# Hygea Frontend
 
 ## Ejecutar el Frontend Localmente
 
@@ -37,12 +37,12 @@ Luego abre tu navegador en: **http://localhost:8000**
 ### Opción 4: Usando Live Server (VS Code)
 
 1. Instala la extensión "Live Server" en VS Code
-2. Haz clic derecho en `index.html`
+2. Haz clic derecho en `https://hygeagroup.com.ar/`
 3. Selecciona "Open with Live Server"
 
 ## Estructura del Proyecto
 
-- `index.html` - Página principal
+- `https://hygeagroup.com.ar/` - Página principal
 - `login.html` - Página de inicio de sesión
 - `registro.html` - Página de registro
 - `client.html` - Panel del cliente
@@ -51,7 +51,7 @@ Luego abre tu navegador en: **http://localhost:8000**
 - `js/` - Scripts JavaScript
 - `assets/` - Imágenes y recursos
 
-## Notas
+## Notas (MODIFICAR)
 
 - El frontend se conecta a los microservicios backend en los puertos:
   - DirectoryMS: 8081 (Docker) o 5112 (IIS Express)

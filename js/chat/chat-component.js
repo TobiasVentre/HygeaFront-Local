@@ -1,4 +1,4 @@
-// COMPONENTE DE CHAT - CuidarMed+
+// COMPONENTE DE CHAT - Hygea
 import { getChatMessages, markMessagesAsRead,CHAT_HUB_URL } from "./chat-service.js";
 
 

@@ -1,5 +1,5 @@
 // ============================================
-// SERVICIO DE CHAT - CuidarMed+
+// SERVICIO DE CHAT - Hygea
 // ============================================
 
 const CHATMS_BASE_URLS = [

@@ -97,7 +97,7 @@ export async function viewPrescription(encounterId) {
                 <div class="prescription-header">
                     <div class="prescription-logo">
                         <i class="fas fa-heart"></i>
-                        <span>CuidarMed+</span>
+                        <span>Hygea</span>
                     </div>
                     <div class="prescription-info">
                         <h4>${fumigatorName}</h4>
@@ -234,12 +234,12 @@ export function downloadPrescriptionPDF() {
         const pageHeight = doc.internal.pageSize.getHeight();
 
         // ================================
-        //   HEADER CUIDARMED+
+        //   HEADER Hygea
         // ================================
         doc.setFont(undefined, 'bold');
         doc.setFontSize(24);
         doc.setTextColor(37, 99, 235);
-        doc.text('CuidarMed+', margin, y);
+        doc.text('Hygea', margin, y);
 
         y += 8;
 
@@ -381,7 +381,7 @@ export function downloadPrescriptionPDF() {
         doc.setTextColor(156, 163, 175);
 
         const footerText =
-            'CuidarMed+ - Sistema de Gestión Médica | Documento generado el ' +
+            'Hygea - Sistema de Gestión Médica | Documento generado el ' +
             new Date().toLocaleDateString('es-AR');
 
         const footerWidth = doc.getTextWidth(footerText);

@@ -131,12 +131,12 @@ async function downloadPrescriptionPDF(prescription) {
     const pageWidth = doc.internal.pageSize.getWidth();
 
     // ==============================
-    // ENCABEZADO CUIDARMED+
+    // ENCABEZADO Hygea
     // ==============================
     doc.setTextColor(37, 99, 235); // Azul profesional
     doc.setFontSize(22);
     doc.setFont(undefined, 'bold');
-    doc.text("CuidarMed+", margin, y);
+    doc.text("Hygea", margin, y);
 
     y += 10;
 
@@ -253,7 +253,7 @@ async function downloadPrescriptionPDF(prescription) {
     doc.setFontSize(7);
     doc.setTextColor(156, 163, 175);
     doc.text(
-        `CuidarMed+ - Sistema de Gestión Médica | Documento generado el ${new Date().toLocaleDateString("es-AR")}`,
+        `Hygea - Sistema de Gestión Médica | Documento generado el ${new Date().toLocaleDateString("es-AR")}`,
         margin,
         footerY
     );

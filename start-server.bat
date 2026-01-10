@@ -3,7 +3,7 @@ REM Script para iniciar servidor HTTP local del frontend
 REM Uso: start-server.bat
 
 echo ========================================
-echo   Iniciando servidor local de CuidarMed+
+echo   Iniciando servidor local de Hygea
 echo ========================================
 echo.
 

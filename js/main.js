@@ -31,7 +31,7 @@ function initDemoNavigation() {
       const view = btn.dataset.view;
 
       switch (view) {
-        case "fumigator":
+        case "technician":
           await FumigatorView();
           break;
         case "client":

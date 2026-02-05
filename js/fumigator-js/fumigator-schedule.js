@@ -101,7 +101,7 @@ export async function renderAgendaContent(agendaSection) {
         threeMonths.setMonth(threeMonths.getMonth() + 3);
         
         const appointments = await ApiScheduling.get(
-            `Appointments?fumigatorId=${fumigatorId}&startTime=${today.toISOString()}&endTime=${threeMonths.toISOString()}`
+            `Appointments?technicianId=${fumigatorId}&startTime=${today.toISOString()}&endTime=${threeMonths.toISOString()}`
         );
         
         if (!appointments?.length) {
@@ -520,16 +520,16 @@ export async function openScheduleManager() {
     `, '1000px');
     
     modal.querySelector('#add-availability-btn').addEventListener('click', () => openAvailabilityForm(modal, fumigatorId));
-    await loadFumigatorAvailability(modal, fumigatorId);
+    await loadTechnicianAvailability(modal, fumigatorId);
 }
 
 /**
  * Carga disponibilidad del fumigator
  */
-async function loadFumigatorAvailability(modal, fumigatorId) {
+async function loadTechnicianAvailability(modal, fumigatorId) {
     try {
         const { ApiScheduling } = await import('../api.js');
-        const availability = await ApiScheduling.get(`FumigatorAvailability/search?fumigatorId=${fumigatorId}`);
+        const availability = await ApiScheduling.get(`TechnicianAvailability/search?technicianId=${fumigatorId}`);
         const list = modal.querySelector('#availability-list');
         
         if (!availability?.length) {
@@ -667,7 +667,7 @@ async function openAvailabilityForm(parentModal, fumigatorId, availabilityId = n
 
     if (availabilityId) {
         const { ApiScheduling } = await import('../api.js');
-        availability = await ApiScheduling.get(`FumigatorAvailability/${availabilityId}`);
+        availability = await ApiScheduling.get(`TechnicianAvailability/${availabilityId}`);
         console.log("🟦 Disponibilidad cargada para editar:", availability);
     }
 
@@ -818,17 +818,17 @@ async function saveAvailability(formModal, parentModal, fumigatorId, availabilit
 
         let response;
         if (availabilityId) {
-            response = await ApiScheduling.patch(`FumigatorAvailability/${availabilityId}`, data);
+            response = await ApiScheduling.patch(`TechnicianAvailability/${availabilityId}`, data);
             showNotification('Horario actualizado', 'success');
         } else {
-            response = await ApiScheduling.post(`FumigatorAvailability/${fumigatorId}`, data);
+            response = await ApiScheduling.post(`TechnicianAvailability/${fumigatorId}`, data);
             showNotification('Horario agregado', 'success');
         }
 
         console.log("📥 Respuesta servidor:", response);
 
         formModal.remove();
-        await loadFumigatorAvailability(parentModal, fumigatorId);
+        await loadTechnicianAvailability(parentModal, fumigatorId);
 
     } catch (error) {
         console.error('❌ Error al guardar disponibilidad:', error);
@@ -847,9 +847,9 @@ async function deleteAvailability(modal, fumigatorId, availabilityId) {
     if (!confirm('¿Eliminar este horario?')) return;
     try {
         const { ApiScheduling } = await import('../api.js');
-        await ApiScheduling.delete(`FumigatorAvailability/${availabilityId}`);
+        await ApiScheduling.delete(`TechnicianAvailability/${availabilityId}`);
         showNotification('Horario eliminado', 'success');
-        await loadFumigatorAvailability(modal, fumigatorId);
+        await loadTechnicianAvailability(modal, fumigatorId);
     } catch (error) {
         showNotification('Error al eliminar', 'error');
     }

@@ -100,7 +100,7 @@ async function handleProfileSubmit(e) {
         const { Api } = await import('../api.js');
         
         // Guardar en el backend
-        await Api.patch(`v1/Fumigator/${fumigatorId}`, payload);
+        await Api.patch(`v1/technician/${fumigatorId}`, payload);
         console.log('✅ Perfil actualizado en DirectoryMS');
         
         // Actualizar los datos locales del usuario

@@ -295,7 +295,7 @@ async function handleClientChatOpen(appointmentId, fumigatorId, fumigatorName){
         openChatModal(chatRoom, {
             currentUserId: chatRoom.clientId || chatRoom.ClientId,
             currentUserName: clientclientName,
-            otherUserName: fumigatorName || 'Fumigator',
+            otherUserName: fumigatorName || 'Técnico',
             userType: 'client',
             clientId: chatRoom.clientId || chatRoom.ClientId,  
             fumigatorId: chatRoom.fumigatorId || chatRoom.FumigatorId      
@@ -441,7 +441,7 @@ export async function loadClientAppointments() {
 
         for (const id of fumigatorIds) {
             try {
-                const d = await Api.get(`v1/Fumigator/${id}`);
+                const d = await Api.get(`v1/technician/${id}`);
                 fumigatorsMap.set(id, {
                     name: `Dr. ${d.firstName || d.FirstName || ''} ${d.lastName || d.LastName || ''}`.trim(),
                     specialty: d.specialty || d.Specialty || "Especialidad no disponible"
@@ -522,7 +522,7 @@ export async function cancelAppointment(appointmentId) {
         // =====================================================
         let fumigator = null;
         try {
-            fumigator = await Api.get(`v1/Fumigator/${fumigatorId}`);
+            fumigator = await Api.get(`v1/technician/${fumigatorId}`);
         } catch (err) {
             console.error("❌ Error obteniendo fumigator:", err);
         }
@@ -581,15 +581,15 @@ export async function cancelAppointment(appointmentId) {
 
 
         // =====================================================
-        // 6) Notificación → FUMIGATOR
+        // 6) Notificación → TÉCNICO
         // =====================================================
         const notifyFumigatorRequest = {
             userId: fumigatorUserId,
-            eventType: "AppointmentCancelledByClientFumigator",
+            eventType: "AppointmentCancelledByClientTechnician",
             payload: basePayload
         };
 
-        console.log("📨 Notificación -> FUMIGATOR:", notifyFumigatorRequest);
+        console.log("📨 Notificación -> TÉCNICO:", notifyFumigatorRequest);
 
         await ApiAuth.post("notifications/events", notifyFumigatorRequest);
 
@@ -661,7 +661,7 @@ async function getUnreadMessagesCount(chatRoomId, clientId) {
         
         if (!messages || !Array.isArray(messages)) return 0;
         
-        // Filtrar mensajes no leídos que fueron enviados por el FUMIGATOR
+        // Filtrar mensajes no leídos que fueron enviados por el TÉCNICO
         const unreadCount = messages.filter(msg => {
             const isRead = msg.isRead || msg.IsRead;
             const senderRole = msg.senderRole || msg.SenderRole;

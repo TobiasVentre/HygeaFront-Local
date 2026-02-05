@@ -2,7 +2,7 @@ import { Api } from "../api.js";
 import { clearElement, createElement, showMessage } from "../utils/domUtils.js";
 
 /**
- * Renderiza la vista del fumigator dentro del contenedor principal.
+ * Renderiza la vista del técnico dentro del contenedor principal.
  */
 export async function FumigatorView() {
   const container = document.querySelector(".dashboard-content");
@@ -14,12 +14,12 @@ export async function FumigatorView() {
   clearElement(container);
 
   const fumigatorId = 1;
-  const endpoint = `v1/Fumigator/${fumigatorId}`;
+  const endpoint = `v1/technician/${fumigatorId}`;
 
   try {
     const fumigator = await Api.get(endpoint);
     if (!fumigator || !fumigator.firstName || !fumigator.lastName) {
-      showMessage("No se pudieron obtener los datos del fumigator.", "error");
+      showMessage("No se pudieron obtener los datos del técnico.", "error");
       return;
     }
 
@@ -100,8 +100,8 @@ export async function FumigatorView() {
 
     showMessage(`Datos cargados para Dr. ${fullName}`, "success");
   } catch (error) {
-    console.error("Error al obtener datos del fumigator:", error);
-    showMessage("Error al cargar los datos del fumigator.", "error");
+    console.error("Error al obtener datos del técnico:", error);
+    showMessage("Error al cargar los datos del técnico.", "error");
   }
 }
 

@@ -11,7 +11,7 @@ export class ChatComponent {
     this.currentUserName = config.currentUserName;
     this.otherUserName = config.otherUserName;
     this.token = config.token;
-    this.theme = config.theme || "fumigator"; // 'fumigator' o 'client'
+    this.theme = config.theme || "technician"; // 'technician' o 'client'
     this.container = config.container;
     this.config = config;
 
@@ -57,7 +57,7 @@ export class ChatComponent {
   //Renderiza la UI del chat
   render() {
     const themeColors =
-      this.theme === "fumigator"
+      this.theme === "technician" || this.theme === "fumigator"
         ? { primary: "#10b981", secondary: "#f0fdf4", accent: "#059669" }
         : { primary: "#3b82f6", secondary: "#eff6ff", accent: "#2563eb" };
 
@@ -400,10 +400,10 @@ async loadMessages() {
             let userIdForRead;
             let userRole;
             
-            if (this.config.userType === 'fumigator') {
-                // Para fumigator: usar el fumigatorId del chatRoom o de config
+            if (this.config.userType === 'technician' || this.config.userType === 'fumigator') {
+                // Para técnico: usar el technicianId del chatRoom o de config
                 userIdForRead = this.config.fumigatorId || this.currentUserId;
-                userRole = 'Fumigator';
+                userRole = 'Technician';
             } else {
                 // Para cliente: usar el clientId del chatRoom o de config
                 userIdForRead = this.config.clientId || this.currentUserId;
@@ -521,12 +521,12 @@ addMessage(message, append = true) {
     const senderRole = message.senderRole || message.SenderRole;
     
     // ✅ Comparar por ROLE en vez de por ID
-    const myRole = this.theme === "fumigator" ? "Fumigator" : "Client";
+    const myRole = (this.theme === "technician" || this.theme === "fumigator") ? "Technician" : "Client";
     const isOwn = senderRole === myRole;
     
     console.log("🎨 [UI] Mensaje:", { senderRole, myRole, isOwn, message: message.message });
 
-    const themeColor = this.theme === "fumigator" ? "#10b981" : "#3b82f6";
+    const themeColor = (this.theme === "technician" || this.theme === "fumigator") ? "#10b981" : "#3b82f6";
     const bgColor = isOwn ? themeColor : "#f3f4f6";
     const textColor = isOwn ? "white" : "#1f2937";
     const alignment = isOwn ? "flex-end" : "flex-start";
@@ -592,7 +592,7 @@ attachEventListeners() {
 
         // Focus styles para input
         input.addEventListener("focus", (e) => {
-            const themeColor = this.theme === "fumigator" ? "#10b981" : "#3b82f6";
+            const themeColor = (this.theme === "technician" || this.theme === "fumigator") ? "#10b981" : "#3b82f6";
             e.target.style.borderColor = themeColor;
         });
 
@@ -612,13 +612,13 @@ attachEventListeners() {
     // Enviar con botón
     if (sendBtn) {
         sendBtn.addEventListener("mouseenter", () => {
-            const accentColor = this.theme === "fumigator" ? "#059669" : "#2563eb";
+            const accentColor = (this.theme === "technician" || this.theme === "fumigator") ? "#059669" : "#2563eb";
             sendBtn.style.transform = "scale(1.05)";
             sendBtn.style.background = accentColor;
         });
 
         sendBtn.addEventListener("mouseleave", () => {
-            const primaryColor = this.theme === "fumigator" ? "#10b981" : "#3b82f6";
+            const primaryColor = (this.theme === "technician" || this.theme === "fumigator") ? "#10b981" : "#3b82f6";
             sendBtn.style.transform = "scale(1)";
             sendBtn.style.background = primaryColor;
         });
@@ -807,7 +807,7 @@ async sendMessage() {
             SenderInfo: {
                 Id: this.currentUserId,
                 Name: this.currentUserName,
-                Role: this.theme === "fumigator" ? "Fumigator" : "Client"  // ✅ Esto ya lo tenías
+                Role: (this.theme === "technician" || this.theme === "fumigator") ? "Technician" : "Client"  // ✅ Esto ya lo tenías
             }
         };
 

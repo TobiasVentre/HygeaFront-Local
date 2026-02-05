@@ -1,5 +1,5 @@
 /* ========================================
-   fumigador PANEL - Hygea
+   técnico PANEL - Hygea
    ========================================
    Índice:
    1. BASE - Reset y configuración
@@ -3252,7 +3252,7 @@ body {
     color: var(--brand-strong);
 }
 
-/* FILA DE fumigador */
+/* FILA DE técnico */
 .encounter-fumigator-row {
     display: flex;
     align-items: center;
@@ -3471,7 +3471,7 @@ body {
     font-size: 0.875rem;
     color: var(--text-muted); /* gris suave */
 }
-/* Error block for fumigador ID */
+/* Error block for técnico ID */
 .fumigator-id-error {
     text-align: center;
     padding: 2rem;

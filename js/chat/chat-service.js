@@ -48,9 +48,9 @@ export async function createChatRoom(fumigatorId, clientId, appointmentId, fumig
             AppointmentId: appointmentId,
             FumigatorInfo: fumigatorInfo || {
                 Id: fumigatorId,
-                Name: "Fumigator",
+                Name: "Técnico",
                 Email: "",
-                Role: "Fumigator"
+                Role: "Technician"
             },
             ClientInfo: clientInfo  || {
                 Id: clientId,

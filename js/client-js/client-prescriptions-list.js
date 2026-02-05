@@ -43,7 +43,7 @@ export async function loadClientPrescriptions() {
 
         for (const fumigatorId of fumigatorIds) {
             try {
-                const fumigator = await Api.get(`v1/Fumigator/${fumigatorId}`);
+                const fumigator = await Api.get(`v1/technician/${fumigatorId}`);
 
                 fumigatorsMap.set(fumigatorId, {
                     name: `Dr. ${fumigator.firstName} ${fumigator.lastName}`,

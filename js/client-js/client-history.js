@@ -25,7 +25,7 @@ export async function loadClientHistoryFull() {
         const fumigatorsMap = new Map(await Promise.all(
             fumigatorIds.map(async id => {
                 try {
-                    const d = await Api.get(`v1/Fumigator/${id}`);
+                    const d = await Api.get(`v1/technician/${id}`);
                     const fullName = d ? `Dr. ${d.firstName || d.FirstName || ''} ${d.lastName || d.LastName || ''}`.trim() : `Dr. ${id}`;
                     return [id, { fullName, specialty: d?.specialty || d?.Specialty || '' }];
                 } catch { return [id, { fullName: `Dr. ${id}`, specialty: '' }]; }

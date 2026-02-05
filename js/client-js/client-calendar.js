@@ -19,7 +19,7 @@ export async function loadAvailableDatesAndTimes(fumigatorId) {
         
         const { ApiScheduling } = await import('../api.js');
         
-        const availabilitiesResponse = await ApiScheduling.get(`FumigatorAvailability/search?fumigatorId=${fumigatorId}`);
+        const availabilitiesResponse = await ApiScheduling.get(`TechnicianAvailability/search?technicianId=${fumigatorId}`);
         const availabilities = Array.isArray(availabilitiesResponse) 
             ? availabilitiesResponse 
             : (availabilitiesResponse?.value || availabilitiesResponse || []);
@@ -46,7 +46,7 @@ export async function loadAvailableDatesAndTimes(fumigatorId) {
         });
         
         const appointmentsResponse = await ApiScheduling.get(
-            `Appointments?fumigatorId=${fumigatorId}&startTime=${now.toISOString()}&endTime=${fourWeeksLater.toISOString()}`
+            `Appointments?technicianId=${fumigatorId}&startTime=${now.toISOString()}&endTime=${fourWeeksLater.toISOString()}`
         );
         const appointments = Array.isArray(appointmentsResponse) 
             ? appointmentsResponse 
@@ -99,7 +99,7 @@ export async function loadAvailableTimes(fumigatorId, selectedDate) {
 
         timeSelect.innerHTML = '<option value="">Cargando horarios...</option>';
 
-        const availabilitiesResponse = await ApiScheduling.get(`FumigatorAvailability/search?fumigatorId=${fumigatorId}`);
+        const availabilitiesResponse = await ApiScheduling.get(`TechnicianAvailability/search?technicianId=${fumigatorId}`);
         const availabilities = Array.isArray(availabilitiesResponse) 
             ? availabilitiesResponse 
             : (availabilitiesResponse?.value || availabilitiesResponse || []);
@@ -160,7 +160,7 @@ export async function loadAvailableTimes(fumigatorId, selectedDate) {
         const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
         
         const appointmentsResponse = await ApiScheduling.get(
-            `Appointments?fumigatorId=${fumigatorId}&startTime=${startOfDay.toISOString()}&endTime=${endOfDay.toISOString()}`
+            `Appointments?technicianId=${fumigatorId}&startTime=${startOfDay.toISOString()}&endTime=${endOfDay.toISOString()}`
         );
         const appointments = Array.isArray(appointmentsResponse) 
             ? appointmentsResponse 

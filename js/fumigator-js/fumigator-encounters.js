@@ -551,7 +551,7 @@ async function saveEncounter(modal, appointmentId, clientId) {
             if (appointment.fumigatorId || appointment.FumigatorId) {
                 const fumigatorId = appointment.fumigatorId || appointment.FumigatorId;
                 try {
-                    const fumigator = await Api.get(`v1/Fumigator/${fumigatorId}`);
+                    const fumigator = await Api.get(`v1/technician/${fumigatorId}`);
                     fumigatorUserId = fumigator?.userId || fumigator?.UserId;
                 } catch (err) {
                     console.warn('⚠️ No se pudo obtener fumigatorUserId, usando currentUserId:', err);
@@ -781,7 +781,7 @@ export async function viewEncounterDetailsFromFumigator(encounterId) {
                 clientName = `${getEncounterField(client, 'name', 'Name')} ${getEncounterField(client, 'lastName', 'LastName')}`.trim() || 'Cliente sin nombre';
             }
             if (fumigatorId) {
-                const fumigator = await Api.get(`v1/Fumigator/${fumigatorId}`);
+                const fumigator = await Api.get(`v1/technician/${fumigatorId}`);
                 fumigatorName = `${getEncounterField(fumigator, 'firstName', 'FirstName')} ${getEncounterField(fumigator, 'lastName', 'LastName')}`.trim() || `Dr. ID ${fumigatorId}`;
             }
         } catch (err) {
@@ -887,7 +887,7 @@ async function initializeVideoCall(modal, appointmentId, clientId, clientName) {
             
             // Crear/obtener sala (obtener URL primero)
             console.log('📹 Solicitando sala de videollamada...', { appointmentId, fumigatorId, clientId });
-            const roomResponse = await ApiScheduling.post(`Video/room/${appointmentId}?fumigatorId=${fumigatorId}&clientId=${clientId}`, {});
+            const roomResponse = await ApiScheduling.post(`Video/room/${appointmentId}?technicianId=${fumigatorId}&clientId=${clientId}`, {});
             console.log('✅ Respuesta del servidor de videollamada:', roomResponse);
             
             // Obtener URL de la sala
@@ -906,7 +906,7 @@ async function initializeVideoCall(modal, appointmentId, clientId, clientName) {
             console.log('📹 Obteniendo token para el fumigator...', { appointmentId, fumigatorId });
             let token = null;
             try {
-                const tokenResponse = await ApiScheduling.get(`Video/token/${appointmentId}?userId=fumigator-${fumigatorId}&isOwner=true`);
+                const tokenResponse = await ApiScheduling.get(`Video/token/${appointmentId}?userId=technician-${fumigatorId}&isOwner=true`);
                     token = tokenResponse.token || tokenResponse.Token;
                     console.log('✅ Token obtenido para el fumigator (con owner):', token ? `Presente (${token.length} caracteres)` : 'Faltante');
             } catch (tokenError) {
@@ -1626,7 +1626,7 @@ async function startVideoCall(videoContainer, roomUrl, token, modal, appointment
                 try {
                     // Pasar userName explícitamente para asegurar que Daily.co lo use
                     const fumigatorId = getId(fumigatorState.currentFumigatorData, 'fumigatorId');
-                    const userName = `fumigator-${fumigatorId}`;
+                    const userName = `technician-${fumigatorId}`;
                     console.log('📹 Uniéndose a la videollamada con:', { url: validUrl, userName, tokenLength: token.length });
                     joinPromise = callFrame.join({ url: validUrl, token, userName });
                     console.log('✅ callFrame.join() llamado exitosamente con userName:', userName);

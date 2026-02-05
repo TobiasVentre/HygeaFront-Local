@@ -164,7 +164,7 @@ form?.addEventListener("submit", async (event) => {
     let target = "login.html"; // fallback seguro
 
     switch (role?.toLowerCase()) {
-      case "fumigator":
+      case "technician":
         target = "fumigator.html";
         break;
       case "client":

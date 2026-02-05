@@ -1,5 +1,5 @@
 // ===================================
-// FUMIGATOR APPOINTMENTS - Consultas y Turnos
+// TÉCNICO APPOINTMENTS - Consultas y Turnos
 // ===================================
 
 import { fumigatorState, getId,getFumigatorDisplayName, formatTime } from './fumigator-core.js';
@@ -139,7 +139,8 @@ async function getUnreadMessagesCount(chatRoomId, fumigatorId) {
         const unreadCount = messages.filter(msg => {
             const isRead = msg.isRead || msg.IsRead;
             const senderRole = msg.senderRole || msg.SenderRole;
-            return !isRead && senderRole !== 'Fumigator';
+            const normalizedRole = typeof senderRole === 'string' ? senderRole.toLowerCase() : '';
+            return !isRead && normalizedRole !== 'technician';
         }).length;
         
         console.log('🔍 Mensajes no leídos:', unreadCount);
@@ -293,7 +294,7 @@ const loadAppointments = async (fumigatorId, selectedDate = null) => {
     console.log('Buscando consultas para fumigatorId:', fumigatorId);
     
     const appointments = await ApiScheduling.get(
-        `Appointments?fumigatorId=${fumigatorId}&startTime=${filterDate.toISOString()}&endTime=${nextDay.toISOString()}`
+        `Appointments?technicianId=${fumigatorId}&startTime=${filterDate.toISOString()}&endTime=${nextDay.toISOString()}`
     );
     
     const allAppointments = Array.isArray(appointments) ? appointments : [];
@@ -498,7 +499,7 @@ export async function loadTodayFullHistory() {
 
 export async function updateAppointmentStatus(appointmentId, newStatus, reason = null, silent = false) {
     try {
-        console.log("🔵 [FUMIGATOR ACTION] Cambiando estado del turno");
+        console.log("🔵 [TÉCNICO ACTION] Cambiando estado del turno");
         console.log("   ➤ appointmentId:", appointmentId);
         console.log("   ➤ newStatus:", newStatus);
         console.log("   ➤ reason:", reason);
@@ -543,7 +544,7 @@ export async function updateAppointmentStatus(appointmentId, newStatus, reason =
         const clientId = updatedAppointment.clientId;
 
         // Obtener fumigator
-        const fumigator = await Api.get(`v1/Fumigator/${fumigatorId}`).catch(e => {
+        const fumigator = await Api.get(`v1/technician/${fumigatorId}`).catch(e => {
             console.error("❌ Error obteniendo Fumigator:", e);
             return null;
         });
@@ -591,10 +592,10 @@ export async function updateAppointmentStatus(appointmentId, newStatus, reason =
         };
 
         // ============================================================================
-        // 4) NOTIFICACIONES POR CONFIRMACIÓN DEL FUMIGATOR
+        // 4) NOTIFICACIONES POR CONFIRMACIÓN DEL TÉCNICO
         // ============================================================================
         if (newStatus === "CONFIRMED") {
-            console.log("📨 Iniciando notificaciones por CONFIRMACIÓN del FUMIGATOR…");
+            console.log("📨 Iniciando notificaciones por CONFIRMACIÓN del TÉCNICO…");
 
             if (clientUserId) {
                 const notifyClient = {
@@ -610,26 +611,26 @@ export async function updateAppointmentStatus(appointmentId, newStatus, reason =
             if (fumigatorUserId) {
                 const notifyFumigator = {
                     userId: fumigatorUserId,
-                    eventType: "AppointmentConfirmedFumigator",
+                    eventType: "AppointmentConfirmedTechnician",
                     payload: basePayload
                 };
 
-                console.log("📨 Enviando notificación al FUMIGATOR por confirmación:", notifyFumigator);
+                console.log("📨 Enviando notificación al TÉCNICO por confirmación:", notifyFumigator);
                 await ApiAuth.post("notifications/events", notifyFumigator);
             }
         }
 
         // ============================================================================
-        // 5) NOTIFICACIONES POR CANCELACIÓN DEL FUMIGATOR
+        // 5) NOTIFICACIONES POR CANCELACIÓN DEL TÉCNICO
         // ============================================================================
         if (newStatus === "CANCELLED") {
-            console.log("📨 Iniciando notificaciones por CANCELACIÓN del FUMIGATOR…");
+            console.log("📨 Iniciando notificaciones por CANCELACIÓN del TÉCNICO…");
 
             // ------------------------------ CLIENTE
             if (clientUserId) {
                 const notifyClient = {
                     userId: clientUserId,
-                    eventType: "AppointmentCancelledByFumigator",
+                    eventType: "AppointmentCancelledByTechnician",
                     payload: basePayload
                 };
 
@@ -637,15 +638,15 @@ export async function updateAppointmentStatus(appointmentId, newStatus, reason =
                 await ApiAuth.post("notifications/events", notifyClient);
             }
 
-            // ------------------------------ FUMIGATOR
+            // ------------------------------ TÉCNICO
             if (fumigatorUserId) {
                 const notifyFumigator = {
                     userId: fumigatorUserId,
-                    eventType: "AppointmentCancelledByFumigatorFumigator",
+                    eventType: "AppointmentCancelledByTechnicianTechnician",
                     payload: basePayload
                 };
 
-                console.log("📨 Enviando notificación al FUMIGATOR:", notifyFumigator);
+                console.log("📨 Enviando notificación al TÉCNICO:", notifyFumigator);
                 await ApiAuth.post("notifications/events", notifyFumigator);
             }
         }
@@ -705,7 +706,7 @@ async function reloadAppointmentViews() {
 }
 
 // =======================================================
-// REPROGRAMAR TURNO (FUMIGATOR) - MODAL + PATCH RESCHEDULE
+// REPROGRAMAR TURNO (TÉCNICO) - MODAL + PATCH RESCHEDULE
 // =======================================================
 export async function openFumigatorRescheduleModal(appointment) {
     console.log("📅 Reprogramando turno (abrir modal):", appointment);
@@ -741,15 +742,15 @@ export async function openFumigatorRescheduleModal(appointment) {
         clientInput.value = "Cliente";
     }
 
-    // ========== 2) Datos Fumigator ==========
+    // ========== 2) Datos Técnico ==========
     try {
-        const d = await Api.get(`v1/Fumigator/${appointment.fumigatorId}`);
+        const d = await Api.get(`v1/technician/${appointment.fumigatorId}`);
         const df = d.firstName || d.FirstName || "";
         const dl = d.lastName || d.LastName || "";
         fumigatorInput.value = `Dr. ${df} ${dl}`.trim();
     } catch (e) {
-        console.warn("⚠ No se pudo cargar fumigator:", e);
-        fumigatorInput.value = "Fumigator";
+        console.warn("⚠ No se pudo cargar técnico:", e);
+        fumigatorInput.value = "Técnico";
     }
 
     // Reset fecha y horario
@@ -855,7 +856,7 @@ export function initializeFumigatorRescheduleModal() {
             // 3) Duración del turno
             // ==============================
             const availabilities = await ApiScheduling.get(
-                `FumigatorAvailability/search?fumigatorId=${fumigatorId}`
+                `TechnicianAvailability/search?technicianId=${fumigatorId}`
             );
             const durationMinutes =
                 availabilities?.[0]?.durationMinutes ||
@@ -900,7 +901,7 @@ export function initializeFumigatorRescheduleModal() {
             try {
                 const { Api, ApiAuth } = await import("../api.js");
 
-                const fumigator = await Api.get(`v1/Fumigator/${fumigatorId}`).catch(() => null);
+                const fumigator = await Api.get(`v1/technician/${fumigatorId}`).catch(() => null);
                 const client = await Api.get(`v1/Client/${currentRescheduleContext.clientId}`).catch(() => null);
 
                 const fumigatorUserId = fumigator?.userId;
@@ -951,11 +952,11 @@ export function initializeFumigatorRescheduleModal() {
                     });
                 }
 
-                // Notificación para FUMIGATOR
+                // Notificación para TÉCNICO
                 if (fumigatorUserId) {
                     await ApiAuth.post("notifications/events", {
                         userId: fumigatorUserId,
-                        eventType: "AppointmentRescheduledFumigator",
+                        eventType: "AppointmentRescheduledTechnician",
                         payload
                     });
                 }
@@ -1084,7 +1085,7 @@ export async function handleFumigatorChatOpen(appointmentId, clientId, clientNam
             currentUserId: fumigatorIdforChat,
             currentUserName: getFumigatorDisplayName(),
             otherUserName: clientName || 'Cliente',
-            userType: 'fumigator',
+            userType: 'technician',
             fumigatorId: fumigatorIdforChat,  
             clientId: clientId         
         };
@@ -1097,14 +1098,14 @@ export async function handleFumigatorChatOpen(appointmentId, clientId, clientNam
             currentUserId: fumigatorState.currentFumigatorData.fumigatorId,
             currentUserName: fumigatorName,
             otherUserName: clientName || 'Cliente',
-            userType: 'fumigator'
+            userType: 'technician'
         })
         try {
             const { markMessagesAsRead } = await import('../chat/chat-service.js');
             const chatRoomId = chatRoom.id || chatRoom.Id;
             const visitorFumigatorId = fumigatorState.currentFumigatorData.fumigatorId;
             
-            await markMessagesAsRead(chatRoomId, visitorFumigatorId, 'Fumigator');
+            await markMessagesAsRead(chatRoomId, visitorFumigatorId, 'Technician');
             console.log('✅ Mensajes marcados como leídos');
             
             // Actualizar el badge del botón a 0

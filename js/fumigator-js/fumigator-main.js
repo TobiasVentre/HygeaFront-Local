@@ -116,7 +116,7 @@ export async function loadFumigatorStats() {
         nextWeek.setDate(nextWeek.getDate() + 7);
         
         const todayAppointmentsResponse = await ApiScheduling.get(
-            `Appointments?fumigatorId=${fumigatorId}&startTime=${today.toISOString()}&endTime=${tomorrow.toISOString()}`
+            `Appointments?technicianId=${fumigatorId}&startTime=${today.toISOString()}&endTime=${tomorrow.toISOString()}`
         );
         
         const todayAppointments = todayAppointmentsResponse?.filter(a => {
@@ -125,7 +125,7 @@ export async function loadFumigatorStats() {
         }) || [];
         
         const weekAppointments = await ApiScheduling.get(
-            `Appointments?fumigatorId=${fumigatorId}&startTime=${today.toISOString()}&endTime=${nextWeek.toISOString()}`
+            `Appointments?technicianId=${fumigatorId}&startTime=${today.toISOString()}&endTime=${nextWeek.toISOString()}`
         );
         
         // Actualizar tarjetas de resumen
@@ -193,7 +193,7 @@ async function loadTodayConsultationsForDashboard() {
         console.log('📅 Cargando consultas del día para dashboard');
         
         const appointments = await ApiScheduling.get(
-            `Appointments?fumigatorId=${fumigatorId}&startTime=${today.toISOString()}&endTime=${tomorrow.toISOString()}`
+            `Appointments?technicianId=${fumigatorId}&startTime=${today.toISOString()}&endTime=${tomorrow.toISOString()}`
         );
         
         // Filtrar consultas completadas, canceladas y no show
@@ -290,7 +290,7 @@ async function loadWeeklySchedule() {
         nextWeek.setDate(nextWeek.getDate() + 7);
         
         const appointments = await ApiScheduling.get(
-            `Appointments?fumigatorId=${fumigatorId}&startTime=${today.toISOString()}&endTime=${nextWeek.toISOString()}`
+            `Appointments?technicianId=${fumigatorId}&startTime=${today.toISOString()}&endTime=${nextWeek.toISOString()}`
         );
         
         weeklySchedule.innerHTML = '';
@@ -435,7 +435,7 @@ export async function loadConsultationsForDate(dateStr) {
         console.log('📅 Buscando consultas entre:', selectedDate.toISOString(), 'y', nextDay.toISOString());
         
         const appointments = await ApiScheduling.get(
-            `Appointments?fumigatorId=${fumigatorId}&startTime=${selectedDate.toISOString()}&endTime=${nextDay.toISOString()}`
+            `Appointments?technicianId=${fumigatorId}&startTime=${selectedDate.toISOString()}&endTime=${nextDay.toISOString()}`
         );
         
         // Filtrar consultas completadas, canceladas y no show

@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     const clientFieldsSection = document.getElementById("clientFields");
-    const fumigatorFieldsSection = document.getElementById("fumigatorFields");
+    const technicianFieldsSection = document.getElementById("technicianFields");
 
     const clientFieldInputs = [
         document.getElementById("clientBirthDate"),
@@ -19,9 +19,9 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("phone")
     ];
 
-    const fumigatorRequiredInputs = [
-        document.getElementById("fumigatorLicense"),
-        document.getElementById("fumigatorSpecialty"),
+    const technicianRequiredInputs = [
+        document.getElementById("technicianLicense"),
+        document.getElementById("technicianSpecialty"),
         document.getElementById("phone")
     ];
 
@@ -36,18 +36,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updateRoleSections(selectedRole) {
-        const isFumigator = selectedRole === "Fumigator";
+        const isTechnician = selectedRole === "Technician";
 
         if (clientFieldsSection) {
-            clientFieldsSection.classList.toggle("hidden", isFumigator);
+            clientFieldsSection.classList.toggle("hidden", isTechnician);
         }
 
-        if (fumigatorFieldsSection) {
-            fumigatorFieldsSection.classList.toggle("hidden", !isFumigator);
+        if (technicianFieldsSection) {
+            technicianFieldsSection.classList.toggle("hidden", !isTechnician);
         }
 
-        setRequired(clientFieldInputs, !isFumigator);
-        setRequired(fumigatorRequiredInputs, isFumigator);
+        if (!isTechnician) {
+            const specialtyInput = document.getElementById("technicianSpecialty");
+            if (specialtyInput) specialtyInput.value = "";
+        }
+
+        setRequired(clientFieldInputs, !isTechnician);
+        setRequired(technicianRequiredInputs, isTechnician);
     }
 
     function updateRoleCards(selectedRole) {
@@ -59,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function setRole(newRole) {
-        const normalizedRole = newRole === "Fumigator" ? "Fumigator" : "Client";
+        const normalizedRole = newRole === "Technician" ? "Technician" : "Client";
         roleInput.value = normalizedRole;
         updateRoleCards(normalizedRole);
         updateRoleSections(normalizedRole);
@@ -77,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
         event.preventDefault();
 
         const selectedRole = roleInput.value || "Client";
-        const apiRole = selectedRole === "Fumigator" ? "fumigator" : "client";
+        const apiRole = selectedRole === "Technician" ? "technician" : "client";
 
         const password = document.getElementById("password").value;
         const confirmPassword = document.getElementById("confirmPassword").value;
@@ -104,19 +109,19 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("membershipNumber capturado:", clientExtras.membershipNumber);
         console.log("healthPlan capturado:", clientExtras.healthPlan);
 
-        const fumigatorExtras = {
-            licenseNumber: document.getElementById("fumigatorLicense")?.value.trim() || "",
-            specialty: document.getElementById("fumigatorSpecialty")?.value.trim() || "",
-            biography: document.getElementById("fumigatorBiography")?.value.trim() || "",
+        const technicianExtras = {
+            licenseNumber: document.getElementById("technicianLicense")?.value.trim() || "",
+            specialty: document.getElementById("technicianSpecialty")?.value.trim() || "",
+            biography: document.getElementById("technicianBiography")?.value.trim() || "",
             phone: document.getElementById("phone")?.value.trim() || "",
         };
 
      
         // Log para debugging de especialidad
-        console.log("=== FUMIGADOR EXTRAS ===");
-        console.log("fumigatorExtras completo:", JSON.stringify(fumigatorExtras, null, 2));
-        console.log("specialty capturado:", fumigatorExtras.specialty);
-        console.log("specialty elemento:", document.getElementById("fumigatorSpecialty")?.value);
+        console.log("=== TÉCNICO EXTRAS ===");
+        console.log("technicianExtras completo:", JSON.stringify(technicianExtras, null, 2));
+        console.log("specialty capturado:", technicianExtras.specialty);
+        console.log("specialty elemento:", document.getElementById("technicianSpecialty")?.value);
         
         // =====================================================
         // CONSTRUIR EL PAYLOAD PARA AuthMS
@@ -138,11 +143,11 @@ document.addEventListener("DOMContentLoaded", () => {
             payload.phone = clientExtras.phone || null;
         }
 
-        if (selectedRole === "Fumigator") {
-            payload.licenseNumber = fumigatorExtras.licenseNumber || null;
-            payload.specialty = fumigatorExtras.specialty || null;
-            payload.biography = fumigatorExtras.biography || null;
-            payload.phone = fumigatorExtras.phone || null;
+        if (selectedRole === "Technician") {
+            payload.licenseNumber = technicianExtras.licenseNumber || null;
+            payload.specialty = technicianExtras.specialty || null;
+            payload.biography = technicianExtras.biography || null;
+            payload.phone = technicianExtras.phone || null;
         }
 
         button.disabled = true;

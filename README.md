@@ -46,7 +46,7 @@ Luego abre tu navegador en: **http://localhost:8000**
 - `login.html` - Página de inicio de sesión
 - `registro.html` - Página de registro
 - `client.html` - Panel del cliente
-- `fumigator.html` - Panel del fumigador
+- `fumigator.html` - Panel del técnico
 - `css/` - Estilos CSS
 - `js/` - Scripts JavaScript
 - `assets/` - Imágenes y recursos
@@ -60,4 +60,3 @@ Luego abre tu navegador en: **http://localhost:8000**
   - ClinicalMS: 8084 (Docker) o 27124/5073 (IIS Express/Development)
 
 - Asegúrate de que los servicios backend estén ejecutándose para que el frontend funcione completamente.
-

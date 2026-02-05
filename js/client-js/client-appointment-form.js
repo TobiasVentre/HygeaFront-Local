@@ -127,7 +127,7 @@ export async function loadFumigatorsForAppointment(selectedSpecialty = null) {
     try {
         // RUTA CORREGIDA: api.js está en js/
         const { Api } = await import('../api.js');
-        const response = await Api.get('v1/Fumigator');
+        const response = await Api.get('v1/technician');
         
         const fumigators = Array.isArray(response) ? response : (response?.value || response || []);
         
@@ -244,7 +244,7 @@ async function handleAppointmentSubmit(e) {
         
         // RUTA CORREGIDA: api.js está en js/
         const { ApiScheduling } = await import('../api.js');
-        const availabilitiesResponse = await ApiScheduling.get(`FumigatorAvailability/search?fumigatorId=${fumigatorId}`);
+        const availabilitiesResponse = await ApiScheduling.get(`TechnicianAvailability/search?technicianId=${fumigatorId}`);
         const availabilities = Array.isArray(availabilitiesResponse) ? availabilitiesResponse : (availabilitiesResponse?.value || availabilitiesResponse || []);
         const durationMinutes = availabilities && availabilities.length > 0 
             ? (availabilities[0].durationMinutes || availabilities[0].DurationMinutes || 30)
@@ -356,7 +356,7 @@ async function handleAppointmentSubmit(e) {
 
             const fumigatorNotification = {
                 userId: fumigatorUserId, // usamos fumigatorId como userId
-                eventType: 'AppointmentCreatedFumigator',
+                eventType: 'AppointmentCreatedTechnician',
                 payload: notificationPayloadBase
             };
 

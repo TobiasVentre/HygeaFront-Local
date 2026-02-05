@@ -113,7 +113,7 @@ export async function loadRecentClientHistory() {
 
         for (const id of fumigatorIds) {
             try {
-                const d = await Api.get(`v1/Fumigator/${id}`);
+                const d = await Api.get(`v1/technician/${id}`);
                 const fullName = `Dr. ${d.firstName || d.FirstName || ''} ${d.lastName || d.LastName || ''}`.trim();
                 fumigatorsMap.set(id, fullName || `Dr. ${id}`);
             } catch (err) {

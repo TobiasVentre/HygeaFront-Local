@@ -49,24 +49,24 @@ export async function handleAppointmentChatCreation(appointment) {
 
         // Obtenemos la informacion del fumigator
         try {
-            const fumigator = await Api.get(`v1/Fumigator/${fumigatorId}`)
+            const fumigator = await Api.get(`v1/technician/${fumigatorId}`)
             const firstName = fumigator.firstName || fumigator.FirstName || ""
             const lastName = fumigator.lastName || fumigator.LastName || ""
-            const fullName = `${firstName} ${lastName}`.trim() || "Fumigator"
+            const fullName = `${firstName} ${lastName}`.trim() || "Técnico"
 
             fumigatorInfo = {
                 Id: fumigator.userId || fumigator.UserId || fumigatorId,
                 Name: fullName,
                 Email: fumigator.email || fumigator.Email || "",
-                Role: "Fumigator" 
+                Role: "Technician" 
             }
         } catch (error) {
             console.warn('⚠️ No se pudo obtener info del fumigator:', error.message);
             fumigatorInfo = {
                 Id: fumigatorId,
-                Name: "Fumigator",
+                Name: "Técnico",
                 Email: "",
-                Role: "Fumigator"
+                Role: "Technician"
             };
         }
 

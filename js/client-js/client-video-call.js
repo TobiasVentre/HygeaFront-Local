@@ -271,7 +271,7 @@ async function initializeClientVideoCall(modal, appointmentId, fumigatorId) {
         let retries = 3;
         while (retries > 0 && !roomUrl) {
             try {
-                const roomResponse = await ApiScheduling.post(`Video/room/${appointmentId}?fumigatorId=${fumigatorId}&clientId=${clientId}`, {});
+                const roomResponse = await ApiScheduling.post(`Video/room/${appointmentId}?technicianId=${fumigatorId}&clientId=${clientId}`, {});
                 roomUrl = roomResponse.roomUrl || roomResponse.RoomUrl;
                 if (roomUrl) {
                     console.log('✅ URL de sala obtenida:', roomUrl);
@@ -402,15 +402,15 @@ async function startClientVideoCall(videoContainer, roomUrl, token, modal, appoi
                 const hasFumigator = Object.keys(participants).some(participantId => {
                     const participant = participants[participantId];
                     const userId = participant?.user_name || participant?.userName || '';
-                    // El fumigator tiene userId que empieza con "fumigator-"
-                    return userId.startsWith('fumigator-') && !userId.includes(`client-${clientId}`);
+                    // El técnico tiene userId que empieza con "technician-"
+                    return userId.startsWith('technician-') && !userId.includes(`client-${clientId}`);
                 });
                 
                 if (hasFumigator) {
-                    console.log('✅ Fumigator detectado en la videollamada!');
+                    console.log('✅ Técnico detectado en la videollamada!');
                     const headerSubtitle = modal.querySelector('.video-call-header p');
                     if (headerSubtitle) {
-                        headerSubtitle.textContent = 'Fumigator conectado';
+                        headerSubtitle.textContent = 'Técnico conectado';
                     }
                 }
             } catch (err) {
@@ -607,7 +607,7 @@ async function checkFumigatorInVideoCall(appointmentId, fumigatorId) {
                             });
                             
                             if (!hasFumigator) {
-                                console.warn(`⚠️ Fumigator no detectado. Posibles causas:`);
+                                console.warn(`⚠️ Técnico no detectado. Posibles causas:`);
                                 console.warn(`⚠️   1. El fumigator aún no se ha unido a la sala appointment-${appointmentId}`);
                                 console.warn(`⚠️   2. El fumigator se unió a una sala diferente`);
                                 console.warn(`⚠️   3. El endpoint /presence de Daily.co tiene un delay`);
@@ -707,16 +707,16 @@ export function startVideoCallMonitoring() {
                 // ⬇️ NUEVO: primero verifico si el fumigator está en la videollamada
                 const fumigatorInCall = await checkFumigatorInVideoCall(appointmentId, fumigatorId);
                 if (!fumigatorInCall) {
-                    console.log(`👨‍⚕️ Fumigator todavía NO está en videollamada para appointment ${appointmentId}. No se abre modal.`);
+                    console.log(`👨‍⚕️ Técnico todavía NO está en videollamada para appointment ${appointmentId}. No se abre modal.`);
                     continue;
                 }
 
-                console.log(`✅ Fumigator en videollamada y turno en progreso (${appointmentId}). Abriendo modal...`);
+                console.log(`✅ Técnico en videollamada y turno en progreso (${appointmentId}). Abriendo modal...`);
 
                 // Nombre del fumigator
-                let fumigatorName = 'Fumigator';
+                let fumigatorName = 'Técnico';
                 try {
-                    const fumigator = await Api.get(`v1/Fumigator/${fumigatorId}`);
+                    const fumigator = await Api.get(`v1/technician/${fumigatorId}`);
                     fumigatorName = `Dr. ${fumigator.firstName || fumigator.FirstName || ''} ${fumigator.lastName || fumigator.LastName || ''}`.trim();
                 } catch (err) {
                     console.warn('⚠️ No se pudo obtener nombre del fumigator:', err);

@@ -71,7 +71,7 @@ export async function viewPrescription(encounterId) {
         if (prescriptionData.fumigatorId) {
             try {
                 console.log('👨‍⚕️ Cargando información del fumigator:', prescriptionData.fumigatorId);
-                const fumigator = await Api.get(`v1/Fumigator/${prescriptionData.fumigatorId}`);
+                const fumigator = await Api.get(`v1/technician/${prescriptionData.fumigatorId}`);
                 const firstName = fumigator.FirstName || fumigator.firstName || '';
                 const lastName = fumigator.LastName || fumigator.lastName || '';
                 fumigatorName = `Dr. ${firstName} ${lastName}`.trim();

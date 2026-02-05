@@ -102,7 +102,7 @@ async function loadAllClients() {
             return;
         }
 
-        let clientsData = await ApiScheduling.get(`Appointments/fumigator/${fumigatorId}/clients`);
+        let clientsData = await ApiScheduling.get(`Appointments/technician/${fumigatorId}/clients`);
         clientsData = Array.isArray(clientsData) ? clientsData : [clientsData];
 
         if (!clientsData?.length) {
@@ -355,7 +355,7 @@ async function loadFumigatorsMap(encounters, Api) {
         const fumigatorId = enc.fumigatorId || enc.FumigatorId;
         if (fumigatorId && !fumigatorsMap.has(fumigatorId)) {
             try {
-                const fumigator = await Api.get(`v1/Fumigator/${fumigatorId}`);
+                const fumigator = await Api.get(`v1/technician/${fumigatorId}`);
                 const name = `${fumigator.firstName || fumigator.FirstName || ''} ${fumigator.lastName || fumigator.LastName || ''}`.trim();
                 fumigatorsMap.set(fumigatorId, name || `Dr. ID ${fumigatorId}`);
             } catch {
@@ -377,7 +377,7 @@ export async function viewEncounterDetails(encounterId) {
 
         const [clientName, fumigatorName] = await Promise.all([
             loadPersonName(Api, enc.clientId || enc.ClientId, 'Client', 'Cliente'),
-            loadPersonName(Api, enc.fumigatorId || enc.FumigatorId, 'Fumigator', 'Dr.')
+            loadPersonName(Api, enc.fumigatorId || enc.FumigatorId, 'Technician', 'Dr.')
         ]);
 
         const date = new Date(enc.date || enc.Date);

@@ -285,11 +285,11 @@ export function getFumigatorDisplayName(fumigatorInfo) {
 }
 
 /**
- * Carga los datos del fumigator desde el backend
+ * Carga los datos del técnico desde el backend
  */
 export async function loadFumigatorData() {
     try {
-        console.log('📋 Cargando datos del fumigator...');
+        console.log('📋 Cargando datos del técnico...');
         
         const { Api } = await import('../api.js');
         
@@ -301,20 +301,20 @@ export async function loadFumigatorData() {
         
         let fumigator = null;
         
-        // Intentar obtener fumigator por UserId
+        // Intentar obtener técnico por UserId
         try {
-            console.log('🔍 Buscando fumigator por UserId:', userId);
-            fumigator = await Api.get(`v1/Fumigator/User/${userId}`);
-            console.log('✅ Fumigator encontrado por UserId');
+            console.log('🔍 Buscando técnico por UserId:', userId);
+            fumigator = await Api.get(`v1/technician/User/${userId}`);
+            console.log('✅ Técnico encontrado por UserId');
         } catch (err) {
-            console.warn('⚠️ No se encontró fumigator por UserId, buscando en lista completa...');
+            console.warn('⚠️ No se encontró técnico por UserId, buscando en lista completa...');
             
             try {
-                const fumigators = await Api.get('v1/Fumigator');
+                const fumigators = await Api.get('v1/technician');
                 if (Array.isArray(fumigators)) {
                     fumigator = fumigators.find(d => (d.userId ?? d.UserId) === userId);
                     if (fumigator) {
-                        console.log('✅ Fumigator encontrado en lista completa');
+                        console.log('✅ Técnico encontrado en lista completa');
                     }
                 }
             } catch (fallbackErr) {
@@ -322,9 +322,9 @@ export async function loadFumigatorData() {
             }
         }
         
-        // Si no se encuentra, crear el fumigator
+        // Si no se encuentra, crear el técnico
         if (!fumigator) {
-            console.log('🆕 Fumigator no encontrado, creando nuevo perfil...');
+            console.log('🆕 Técnico no encontrado, creando nuevo perfil...');
             
             try {
                 const createFumigatorRequest = {
@@ -337,15 +337,15 @@ export async function loadFumigatorData() {
                 };
                 
                 console.log('📤 Enviando solicitud de creación:', createFumigatorRequest);
-                fumigator = await Api.post('v1/Fumigator', createFumigatorRequest);
-                console.log('✅ Fumigator creado exitosamente');
+                fumigator = await Api.post('v1/technician', createFumigatorRequest);
+                console.log('✅ Técnico creado exitosamente');
             } catch (createErr) {
-                console.error('❌ Error al crear fumigator:', createErr.message);
+                console.error('❌ Error al crear técnico:', createErr.message);
                 
                 // Mostrar notificación al usuario
                 try {
                     const { showNotification } = await import('./fumigator-ui.js');
-                    showNotification('No se pudo crear el perfil de fumigator. Algunas funcionalidades pueden estar limitadas.', 'warning');
+                    showNotification('No se pudo crear el perfil de técnico. Algunas funcionalidades pueden estar limitadas.', 'warning');
                 } catch (notifErr) {
                     console.warn('⚠️ No se pudo mostrar notificación');
                 }

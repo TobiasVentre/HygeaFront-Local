@@ -1,62 +1,53 @@
-# Hygea Frontend
+﻿# Hygea Frontend
 
-## Ejecutar el Frontend Localmente
+## Ejecutar localmente
 
-El frontend utiliza módulos ES6, por lo que necesita ejecutarse a través de un servidor HTTP local.
+El frontend usa modulos ES6, por lo que debe ejecutarse con un servidor HTTP local.
 
-### Opción 1: Usando los Scripts Incluidos (Recomendado)
+### Opcion 1 (recomendada)
 
-**Windows PowerShell:**
+PowerShell:
+
 ```powershell
 .\start-server.ps1
 ```
 
-**Windows CMD:**
+CMD:
+
 ```cmd
 start-server.bat
 ```
 
-### Opción 2: Usando Python
+Luego abrir: `http://localhost:8000`
+
+### Opcion 2
 
 ```bash
 cd Frontend
 python -m http.server 8000
 ```
 
-Luego abre tu navegador en: **http://localhost:8000**
+## Microservicios (local)
 
-### Opción 3: Usando Node.js
+- AuthMS: `http://localhost:5101/api/v1`
+- DirectoryMS: `http://localhost:5102/api`
+- CatalogMS: `http://localhost:5103/api`
+- SchedulingMS: `http://localhost:8083/api/v1` (temporal/historico)
 
-```bash
-cd Frontend
-npx http-server -p 8000
-```
+La configuracion central de endpoints esta en:
 
-Luego abre tu navegador en: **http://localhost:8000**
+- `js/config/services.config.js`
 
-### Opción 4: Usando Live Server (VS Code)
+La capa de acceso HTTP esta en:
 
-1. Instala la extensión "Live Server" en VS Code
-2. Haz clic derecho en `https://hygeagroup.com.ar/`
-3. Selecciona "Open with Live Server"
+- `js/api.js`
+- `js/apis/authms.js`
+- `js/apis/directoryms.js`
+- `js/apis/catalogms.js`
 
-## Estructura del Proyecto
+## Estado de integracion
 
-- `https://hygeagroup.com.ar/` - Página principal
-- `login.html` - Página de inicio de sesión
-- `registro.html` - Página de registro
-- `client.html` - Panel del cliente
-- `fumigator.html` - Panel del técnico
-- `css/` - Estilos CSS
-- `js/` - Scripts JavaScript
-- `assets/` - Imágenes y recursos
-
-## Notas (MODIFICAR)
-
-- El frontend se conecta a los microservicios backend en los puertos:
-  - DirectoryMS: 8081 (Docker) o 5112 (IIS Express)
-  - AuthMS: 8082 (Docker) o 5093 (IIS Express)
-  - SchedulingMS: 8083 (Docker) o 34372/5140 (IIS Express/Development)
-  - ClinicalMS: 8084 (Docker) o 27124/5073 (IIS Express/Development)
-
-- Asegúrate de que los servicios backend estén ejecutándose para que el frontend funcione completamente.
+- AuthMS: integrado.
+- DirectoryMS: requiere migracion de rutas legacy a `client-profiles` / `technician-profiles`.
+- CatalogMS: cliente API agregado, falta consumirlo en UI.
+- SchedulingMS: hay llamadas existentes, pendiente alineacion final con contrato nuevo.

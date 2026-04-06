@@ -1,0 +1,6 @@
+.vs/
+.vscode/
+*.log
+*.tmp
+*.cache
+*.env

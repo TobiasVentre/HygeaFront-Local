@@ -17,6 +17,8 @@
 
 import { login as loginApi } from "../apis/authms.js";
 import { setUser } from "../state.js";
+import { ensureValidToken } from "../api.js";
+import { getRoleLandingPage, getSessionContext } from "../utils/session-guard.js";
 
 const form = document.getElementById("loginForm");
 const button = document.getElementById("loginButton");
@@ -72,6 +74,22 @@ const getClaimValue = (payload, keys) => {
     if (typeof value === "string" && value.trim() !== "") return value;
   }
   return null;
+};
+
+const redirectIfSessionIsActive = async () => {
+  try {
+    await ensureValidToken();
+    const session = getSessionContext();
+
+    if (!session.token || !session.normalizedRole) return;
+
+    const target = getRoleLandingPage(session.normalizedRole, "login.html");
+    if (target !== "login.html") {
+      window.location.replace(target);
+    }
+  } catch (error) {
+    console.warn("No se pudo reutilizar la sesion existente en login.", error);
+  }
 };
 
 // Restaurar color del icono en los campos
@@ -140,7 +158,7 @@ form?.addEventListener("submit", async (event) => {
     // Crear usuario con datos del JWT (SIN llamar al backend adicional)
     const userInfo = {
       email: resolvedEmail,
-      userId: parseInt(userId),
+      userId: userId || null,
       role,
       firstName,
       lastName,
@@ -161,20 +179,9 @@ form?.addEventListener("submit", async (event) => {
     }
 
     // Redirigir según rol
-    let target = "login.html"; // fallback seguro
-
-    switch (role?.toLowerCase()) {
-      case "technician":
-        target = "fumigator.html";
-        break;
-      case "client":
-        target = "client.html";
-        break;
-      case "admin":
-        target = "admin.html"; // o futura admin.html
-        break;
-      default:
-        console.warn("Rol desconocido, redirigiendo a login:", role);
+    const target = getRoleLandingPage(role, "login.html");
+    if (target === "login.html") {
+      console.warn("Rol desconocido, redirigiendo a login:", role);
     }
     window.location.href = target;
 
@@ -189,3 +196,5 @@ form?.addEventListener("submit", async (event) => {
 goRegisterBtn?.addEventListener("click", () => {
   window.location.href = "registro.html";
 });
+
+redirectIfSessionIsActive();

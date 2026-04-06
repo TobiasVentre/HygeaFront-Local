@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hygea - Panel Técnico</title>
+    <title>Hygea - Panel TÃ©cnico</title>
     <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/dashboard-shell.css">
     <link rel="stylesheet" href="css/fumigator.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -15,13 +16,13 @@
         </div>
         <div class="actions">
             <div class="user-menu" id="userMenu">
-                <button class="user-btn" id="userBtn">
-                    <i class="fas fa-user-circle" style="font-size: 1.5rem;"></i>
+                <button class="user-btn" id="userBtn" type="button" aria-label="Abrir menu de cuenta" aria-controls="userDropdown">
+                    <i class="fas fa-user-circle user-btn__icon" aria-hidden="true"></i>
                     <span id="userMenuName">Mi cuenta</span>
-                    <i class="fas fa-chevron-down" style="font-size:0.8rem;"></i>
+                    <i class="fas fa-chevron-down user-btn__chevron" aria-hidden="true"></i>
                 </button>
-                <div class="user-dropdown" id="userDropdown">
-                    <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+                <div class="user-dropdown" id="userDropdown" role="menu" aria-label="Opciones de cuenta">
+                    <a href="#" id="logoutBtn" role="menuitem"><i class="fas fa-sign-out-alt" aria-hidden="true"></i> Cerrar sesiÃ³n</a>
                 </div>
             </div>
         </div>
@@ -33,137 +34,355 @@
                 <div class="logo">
                     <img src="img\Logo-Blanco.png" alt="logo-Hygea">
                 </div>
-                <p class="panel-title">Panel Técnico</p>
+                <p class="panel-title">Panel TÃ©cnico</p>
             </div>
-            <nav class="sidebar-nav">
-                <a href="#" class="nav-item active" data-section="inicio">
+            <nav class="sidebar-nav" aria-label="Navegacion principal del tecnico">
+                <a href="#inicio" class="nav-item active" data-section="inicio">
                     <i class="fas fa-home"></i>
                     Inicio
                 </a>
-                <a href="#" class="nav-item" data-section="agenda">
+                <a href="#agenda" class="nav-item" data-section="agenda">
                     <i class="fas fa-calendar"></i>
                     Agenda
                 </a>
-                <a href="#" class="nav-item" data-section="consultas">
+                <a href="#ordenes" class="nav-item" data-section="ordenes">
                     <i class="fas fa-list"></i>
-                    Historial de Consultas
-                    
+                    Ordenes asignadas
                 </a>
-                <a href="#" class="nav-item" data-section="historia">
+                <a href="#ejecucion" class="nav-item" data-section="ejecucion">
                     <i class="fas fa-chart-line"></i>
-                    Historia de Servicios
+                    Seguimiento operativo
                 </a>
-                <a href="#" class="nav-item" data-section="recetas">
-                    <i class="fas fa-file"></i>
-                    Servicios Activos
+                <a href="#disponibilidad" class="nav-item" data-section="disponibilidad">
+                    <i class="fas fa-clock"></i>
+                    Disponibilidad
                 </a>
-                <a href="#" class="nav-item" data-section="perfil">
+                <a href="#perfil" class="nav-item" data-section="perfil">
                     <i class="fas fa-user"></i>
                     Perfil
                 </a>
             </nav>
         </div>
 
-        <div class="dashboard-content">
+        <main class="dashboard-content" id="technicianDashboardContent">
             <div id="mainDashboardSection">
-            <!-- Welcome Section -->
-            <div class="welcome-section">
-                <div class="welcome-header">
-                    <div class="welcome-copy">
-                        <h2 id="welcome-name">Bienvenido</h2>
-                        <p id="welcome-message">Panel de gestión</p>
+                <div class="overview-shell">
+                    <section class="overview-hero">
+                        <div class="overview-hero__copy">
+                            <span class="overview-hero__eyebrow">Tecnico</span>
+                            <h2 id="welcome-name" class="overview-hero__title">Jornada operativa</h2>
+                            <p id="welcome-message" class="overview-hero__description">Agenda, bandeja y seguimiento para ejecutar cada orden, registrar evidencia y cerrar el servicio con trazabilidad.</p>
+                            <div class="overview-hero__actions">
+                                <a href="#ordenes" class="btn btn-primary">
+                                    <i class="fas fa-list"></i>
+                                    Abrir bandeja
+                                </a>
+                                <a href="#agenda" class="btn btn-secondary">
+                                    <i class="fas fa-calendar"></i>
+                                    Ver agenda
+                                </a>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="overview-metrics">
+                        <article class="overview-metric">
+                            <div class="overview-metric__icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div>
+                                <span class="overview-metric__value" id="clients-today">0</span>
+                                <span class="overview-metric__label">Ordenes del dia</span>
+                                <span class="overview-metric__hint">Carga inmediata para la jornada en curso.</span>
+                            </div>
+                        </article>
+                        <article class="overview-metric">
+                            <div class="overview-metric__icon">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div>
+                                <span class="overview-metric__value" id="weekly-appointments">0</span>
+                                <span class="overview-metric__label">Ordenes activas</span>
+                                <span class="overview-metric__hint">Trabajo ya asignado que requiere seguimiento.</span>
+                            </div>
+                        </article>
+                        <article class="overview-metric">
+                            <div class="overview-metric__icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div>
+                                <span class="overview-metric__value" id="active-consultation">0</span>
+                                <span class="overview-metric__label">En ejecucion</span>
+                                <span class="overview-metric__hint">Servicios que necesitan evidencia y cierre correcto.</span>
+                            </div>
+                        </article>
+                        <article class="overview-metric">
+                            <div class="overview-metric__icon is-success">
+                                <i class="fas fa-file"></i>
+                            </div>
+                            <div>
+                                <span class="overview-metric__value" id="prescriptions-today">0</span>
+                                <span class="overview-metric__label">Proximo servicio</span>
+                                <span class="overview-metric__hint">Siguiente compromiso operativo en agenda.</span>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="overview-grid">
+                        <section class="overview-panel">
+                            <article class="overview-card">
+                                <div class="overview-panel__head">
+                                    <div>
+                                        <span class="overview-panel__eyebrow">Bandeja</span>
+                                        <h3 class="overview-panel__title">Ordenes asignadas</h3>
+                                        <p class="overview-panel__copy">Vista breve de lo proximo para entrar al detalle solo cuando haga falta intervenir.</p>
+                                    </div>
+                                </div>
+                                <div class="consultations-list" id="consultations-list"></div>
+                            </article>
+                        </section>
+
+                        <aside class="overview-panel">
+                            <article class="overview-card">
+                                <div class="overview-panel__head">
+                                    <div>
+                                        <span class="overview-panel__eyebrow">Agenda</span>
+                                        <h3 class="overview-panel__title">Cobertura semanal</h3>
+                                        <p class="overview-panel__copy">Lectura rapida de compromisos y carga para anticipar la semana operativa.</p>
+                                    </div>
+                                </div>
+                                <div class="weekly-schedule" id="weekly-schedule"></div>
+                            </article>
+
+                            <article class="overview-card">
+                                <div class="overview-panel__head">
+                                    <div>
+                                        <span class="overview-panel__eyebrow">Accesos</span>
+                                        <h3 class="overview-panel__title">Tareas frecuentes</h3>
+                                        <p class="overview-panel__copy">Entradas directas a la bandeja, la agenda y el registro de evidencia.</p>
+                                    </div>
+                                </div>
+                                <div class="overview-action-grid">
+                                    <button type="button" class="btn overview-action-card" id="emitPrescription">
+                                        <i class="fas fa-file" aria-hidden="true"></i>
+                                        <span>
+                                            <strong>Registrar evidencia</strong>
+                                            <span>Ingresa al detalle de una orden y completa el cierre operativo.</span>
+                                        </span>
+                                    </button>
+                                    <button type="button" class="btn overview-action-card" id="viewClients">
+                                        <i class="fas fa-users" aria-hidden="true"></i>
+                                        <span>
+                                            <strong>Ver ordenes</strong>
+                                            <span>Abre la bandeja completa y trabaja sobre tus asignaciones.</span>
+                                        </span>
+                                    </button>
+                                    <button type="button" class="btn overview-action-card" id="manageSchedule">
+                                        <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+                                        <span>
+                                            <strong>Gestionar agenda</strong>
+                                            <span>Actualiza disponibilidad, ausencias y cobertura semanal.</span>
+                                        </span>
+                                    </button>
+                                </div>
+                            </article>
+                        </aside>
                     </div>
                 </div>
             </div>
 
-            <!-- Summary Cards -->
-            <div class="summary-cards">
-                <div class="summary-card">
-                    <div class="card-icon">
-                        <i class="fas fa-users"></i>
+            <div class="dashboard-section hidden" id="technicianAgendaSection">
+                <header class="section-header">
+                    <div>
+                        <h3>Agenda tecnica</h3>
+                        <p>Vista operativa de las ordenes que ya estan en tu agenda.</p>
                     </div>
-                    <div class="card-content">
-                        <div class="card-number" id="clients-today">0</div>
-                        <div class="card-label">Consultas programadas</div>
-                    </div>
-                </div>
-                <div class="summary-card">
-                    <div class="card-icon">
-                        <i class="fas fa-calendar-check"></i>
-                    </div>
-                    <div class="card-content">
-                        <div class="card-number" id="weekly-appointments">0</div>
-                        <div class="card-label">Turnos asignados</div>
-                    </div>
-                </div>
-                <div class="summary-card">
-                    <div class="card-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="card-content">
-                        <div class="card-number" id="active-consultation">0</div>
-                        <div class="card-label">Consulta activa</div>
-                    </div>
-                </div>
-                <div class="summary-card">
-                    <div class="card-icon">
-                        <i class="fas fa-file"></i>
-                    </div>
-                    <div class="card-content">
-                        <div class="card-number" id="prescriptions-today">0</div>
-                        <div class="card-label">Emitidas hoy</div>
-                    </div>
-                </div>
+                </header>
+                <div id="technicianAgendaList" class="technician-agenda-list"></div>
             </div>
 
-            <!-- Dashboard Grid -->
-            <div class="dashboard-grid">
-                <!-- Historial de Consultas Section -->
-                <div class="dashboard-section">
-                    <div class="section-header">
-                        <div>
-                            <h3>Historial de Consultas</h3>
-                            <p>Filtra las consultas por fecha</p>
+            <div class="dashboard-section hidden" id="technicianExecutionSection">
+                <header class="section-header">
+                    <div>
+                        <h3>Seguimiento operativo</h3>
+                        <p>Ordenes en ejecucion o listas para cierre, enfocadas en evidencia y trazabilidad.</p>
+                    </div>
+                </header>
+                <div id="technicianExecutionList" class="consultations-list"></div>
+            </div>
+
+            <div class="dashboard-section hidden" id="technicianOrdersSection">
+                <header class="section-header">
+                    <div>
+                        <h3>Ordenes asignadas</h3>
+                        <p>Seguimiento detallado de las ordenes que tenes a cargo.</p>
+                    </div>
+                </header>
+
+                <div class="technician-orders-shell">
+                    <div class="technician-orders-panel" id="technicianOrdersOverview">
+                        <div class="section-header">
+                            <div>
+                                <h3>Bandeja operativa</h3>
+                                <p>Ordenadas por fecha y estado para resolver rapido el trabajo del dia.</p>
+                            </div>
+                        </div>
+                        <div id="technicianOrdersList" class="consultations-list"></div>
+                    </div>
+
+                    <div class="hidden technician-order-detail-view" id="technicianOrderDetailView">
+                        <div class="section-header">
+                            <div>
+                                <h3>Detalle de orden</h3>
+                                <p>Selecciona una orden para revisar items, horario y trazabilidad.</p>
+                            </div>
+                            <div class="section-header-actions">
+                                <button type="button" class="btn btn-secondary" id="technicianBackToOrders">
+                                    <i class="fas fa-arrow-left"></i>
+                                    Volver a bandeja
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="technicianOrderDetail" class="technician-order-detail">
+                            <div class="technician-order-empty">
+                                <i class="fas fa-clipboard-list"></i>
+                                <p>Selecciona una orden para ver el detalle.</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="consultations-list" id="consultations-list">
-                        <!-- Las consultas se cargarán dinámicamente desde el backend -->
+                </div>
+            </div>
+
+            <div class="dashboard-section hidden" id="technicianAvailabilitySection">
+                <header class="section-header">
+                    <div>
+                        <h3>Disponibilidad tecnica</h3>
+                        <p>Administra las franjas horarias que SchedulingMS va a usar para asignarte ordenes.</p>
                     </div>
+                </header>
+
+                <div class="section-subnav availability-subnav" id="availabilitySubnav">
+                    <button type="button" class="section-subnav__item is-active" data-availability-view="availability">Disponibilidad</button>
+                    <button type="button" class="section-subnav__item" data-availability-view="absences">Ausencias</button>
+                    <button type="button" class="section-subnav__item" data-availability-view="agenda-day">Agenda por dia</button>
+                    <button type="button" class="section-subnav__item" data-availability-view="agenda-week">Agenda por semana</button>
                 </div>
 
-                <!-- Agenda Semanal Section -->
-                <div class="dashboard-section">
-                    <div class="section-header">
-                        <div>
-                            <h3>Agenda Semanal</h3>
-                            <p>Vista general de la semana</p>
+                <div class="availability-pane" id="availabilityViewAvailability">
+                    <div class="availability-day-card">
+                        <form id="availabilityForm" class="availability-form" novalidate>
+                            <div class="profile-fields-row">
+                                <div class="profile-field">
+                                    <label class="availability-label" for="availabilityDate">Dia</label>
+                                    <input type="date" id="availabilityDate" class="availability-input" required>
+                                </div>
+                                <div class="profile-field">
+                                    <label class="availability-label" for="availabilityStartTime">Desde</label>
+                                    <input type="time" id="availabilityStartTime" class="availability-input" required>
+                                </div>
+                                <div class="profile-field">
+                                    <label class="availability-label" for="availabilityEndTime">Hasta</label>
+                                    <input type="time" id="availabilityEndTime" class="availability-input" required>
+                                </div>
+                            </div>
+
+                            <div class="availability-form-actions">
+                                <button type="submit" class="btn btn-primary" id="availabilitySubmitBtn">Guardar disponibilidad</button>
+                                <button type="button" class="btn btn-secondary hidden" id="availabilityCancelEditBtn">Cancelar edicion</button>
+                            </div>
+
+                            <div id="availabilityFeedback" class="agenda-loading hidden"></div>
+                        </form>
+                    </div>
+
+                    <div class="dashboard-section availability-list-section">
+                        <div class="section-header">
+                            <div>
+                                <h3>Proximos bloques</h3>
+                                <p>Ventana de trabajo cargada para los proximos 21 dias.</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="weekly-schedule" id="weekly-schedule">
-                        <!-- La agenda semanal se cargará dinámicamente desde el backend -->
+                        <div id="availabilityList" class="consultations-list"></div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Acciones Rápidas Section -->
-            <div class="quick-actions">
-                <h3>Acciones Rápidas</h3>
-                <div class="actions-grid">
-                    <div class="action-btn" id="emitPrescription">
-                        <i class="fas fa-file"></i>
-                        <span>Emitir Receta</span>
+                <div class="availability-pane hidden" id="availabilityViewAbsences">
+                    <div class="dashboard-section availability-list-section">
+                        <div class="section-header">
+                            <div>
+                                <h3>Ausencias programadas</h3>
+                                <p>Bloquea periodos en los que no deberias recibir ordenes.</p>
+                            </div>
+                        </div>
+
+                        <form id="absenceForm" class="availability-form" novalidate>
+                            <div class="profile-fields-row">
+                                <div class="profile-field">
+                                    <label class="availability-label" for="absenceDate">Dia</label>
+                                    <input type="date" id="absenceDate" class="availability-input" required>
+                                </div>
+                                <div class="profile-field">
+                                    <label class="availability-label" for="absenceStartTime">Desde</label>
+                                    <input type="time" id="absenceStartTime" class="availability-input" required>
+                                </div>
+                                <div class="profile-field">
+                                    <label class="availability-label" for="absenceEndTime">Hasta</label>
+                                    <input type="time" id="absenceEndTime" class="availability-input" required>
+                                </div>
+                            </div>
+
+                            <div class="profile-field">
+                                <label class="availability-label" for="absenceReason">Motivo</label>
+                                <input type="text" id="absenceReason" class="availability-input" placeholder="Ej. licencia, clima, formacion interna" required>
+                            </div>
+
+                            <div class="availability-form-actions">
+                                <button type="submit" class="btn btn-primary" id="absenceSubmitBtn">Guardar ausencia</button>
+                                <button type="button" class="btn btn-secondary hidden" id="absenceCancelEditBtn">Cancelar edicion</button>
+                            </div>
+
+                            <div id="absenceFeedback" class="agenda-loading hidden"></div>
+                        </form>
                     </div>
-                    <div class="action-btn" id="viewClients">
-                        <i class="fas fa-users"></i>
-                        <span>Ver Clientes</span>
-                    </div>
-                    <div class="action-btn" id="manageSchedule">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span>Gestionar Agenda</span>
+
+                    <div class="dashboard-section availability-list-section">
+                        <div class="section-header">
+                            <div>
+                                <h3>Bloqueos cargados</h3>
+                                <p>Listado de ausencias activas para los proximos 21 dias.</p>
+                            </div>
+                        </div>
+                        <div id="absenceList" class="consultations-list"></div>
                     </div>
                 </div>
-            </div>
 
+                <div class="availability-pane hidden" id="availabilityViewAgendaDay">
+                    <div class="dashboard-section availability-visual-section">
+                        <div class="section-header">
+                            <div>
+                                <h3>Agenda por dia</h3>
+                                <p>Visualiza disponibilidad y bloqueos del dia que selecciones.</p>
+                            </div>
+                            <div class="section-header-actions">
+                                <input type="date" id="availabilityAgendaDate" class="availability-input availability-agenda-date">
+                            </div>
+                        </div>
+                        <div id="availabilityDaySummary" class="availability-day-summary"></div>
+                    </div>
+                </div>
+
+                <div class="availability-pane hidden" id="availabilityViewAgendaWeek">
+                    <div class="dashboard-section availability-visual-section">
+                        <div class="section-header">
+                            <div>
+                                <h3>Agenda por semana</h3>
+                                <p>Resumen semanal para validar cobertura operativa y bloqueos.</p>
+                            </div>
+                        </div>
+                        <div id="availabilityWeeklySummary" class="weekly-schedule"></div>
+                    </div>
+                </div>
             </div>
 
             <!-- Perfil del Profesional -->
@@ -183,15 +402,15 @@
                 </header>
 
                 <!-- Profile Content -->
-                <main class="profile-content-wrapper">
+                <div class="profile-content-wrapper">
                     <section class="profile-content">
                         <form id="fumigatorProfileForm" class="profile-form" novalidate>
-                            <!-- Información de contacto -->
+                            <!-- InformaciÃ³n de contacto -->
                             <div class="profile-card profile-card--content">
                                 <header class="profile-card-header">
                                     <h3 class="profile-card-title">
                                         <i class="fas fa-user-circle" aria-hidden="true"></i>
-                                        Información de contacto
+                                        InformaciÃ³n de contacto
                                     </h3>
                                 </header>
                                 <div class="profile-card-body">
@@ -231,12 +450,12 @@
                                 </div>
                             </div>
 
-                            <!-- Información profesional -->
+                            <!-- InformaciÃ³n profesional -->
                             <div class="profile-card profile-card--content">
                                 <header class="profile-card-header">
                                     <h3 class="profile-card-title">
                                         <i class="fas fa-stethoscope" aria-hidden="true"></i>
-                                        Información profesional
+                                        InformaciÃ³n profesional
                                     </h3>
                                 </header>
                                 <div class="profile-card-body">
@@ -261,10 +480,10 @@
                                             <span class="profile-specialty-chip" id="specialtyChip" aria-hidden="true"></span>
                                         </div>
                                     </div>
-                                    <div class="profile-professional-extras" aria-label="Información profesional adicional">
+                                    <div class="profile-professional-extras" aria-label="InformaciÃ³n profesional adicional">
                                         <div class="profile-chips-container" id="professionalChips" role="list">
                                         </div>
-                                        <div class="profile-location" role="group" aria-label="Ubicación del consultorio">
+                                        <div class="profile-location" role="group" aria-label="UbicaciÃ³n del consultorio">
                                             <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
                                             <span>Consultorio Onsari</span>
                                         </div>
@@ -272,17 +491,17 @@
                                 </div>
                             </div>
 
-                            <!-- Biografía -->
+                            <!-- BiografÃ­a -->
                             <div class="profile-card profile-card--content">
                                 <header class="profile-card-header">
                                     <h3 class="profile-card-title">
                                         <i class="fas fa-file-alt" aria-hidden="true"></i>
-                                        Biografía
+                                        BiografÃ­a
                                     </h3>
                                 </header>
                                 <div class="profile-card-body">
                                     <div class="profile-field">
-                                        <label class="profile-label" for="profileBioInput">Descripción profesional</label>
+                                        <label class="profile-label" for="profileBioInput">DescripciÃ³n profesional</label>
                                         <div class="profile-biography-wrapper">
                                             <textarea id="profileBioInput" 
                                                       name="biography" 
@@ -290,13 +509,13 @@
                                                       rows="6" 
                                                       placeholder="Comparte tu experiencia y enfoque profesional." 
                                                       disabled
-                                                      aria-label="Biografía profesional"></textarea>
+                                                      aria-label="BiografÃ­a profesional"></textarea>
                                             <button type="button" 
                                                     class="profile-biography-toggle hidden" 
                                                     id="bioToggle"
                                                     aria-expanded="false"
                                                     aria-controls="profileBioInput">
-                                                <span class="bio-toggle-text">Ver más</span>
+                                                <span class="bio-toggle-text">Ver mÃ¡s</span>
                                                 <i class="fas fa-chevron-down" aria-hidden="true"></i>
                                             </button>
                                         </div>
@@ -305,11 +524,51 @@
                             </div>
 
                             <!-- Acciones del formulario -->
+                            <div class="profile-card profile-card--content">
+                                <header class="profile-card-header">
+                                    <h3 class="profile-card-title">
+                                        <i class="fas fa-building" aria-hidden="true"></i>
+                                        Cambio de entidad
+                                    </h3>
+                                </header>
+                                <div class="profile-card-body">
+                                    <div class="profile-field">
+                                        <label class="profile-label">Entidad actual</label>
+                                        <div class="profile-static-value" id="technicianCurrentProviderName">Cargando entidad...</div>
+                                    </div>
+                                    <div id="technicianProviderChangeForm" class="profile-inline-form">
+                                        <div class="profile-field">
+                                            <label class="profile-label" for="technicianProviderTargetSelect">Solicitar cambio a</label>
+                                            <select id="technicianProviderTargetSelect" class="profile-input" required>
+                                                <option value="">Seleccionar entidad</option>
+                                            </select>
+                                        </div>
+                                        <div class="profile-field">
+                                            <label class="profile-label" for="technicianProviderChangeNote">Motivo</label>
+                                            <textarea id="technicianProviderChangeNote"
+                                                      class="profile-textarea"
+                                                      rows="3"
+                                                      placeholder="Aclaracion breve para la entidad destino."></textarea>
+                                        </div>
+                                        <div class="profile-inline-actions">
+                                            <button type="button" class="btn btn-secondary" id="technicianProviderChangeSubmit">Enviar solicitud</button>
+                                        </div>
+                                        <div id="technicianProviderChangeFeedback" class="profile-inline-feedback hidden" aria-live="polite"></div>
+                                    </div>
+                                    <div class="profile-inline-history">
+                                        <h4 class="profile-inline-history-title">Solicitudes registradas</h4>
+                                        <div id="technicianProviderChangeRequests" class="provider-technician-list">
+                                            <p class="request-empty-text">Todavia no registraste solicitudes de cambio de entidad.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="profile-actions hidden" id="profileActions">
                                 <button type="button" 
                                         class="btn btn-secondary" 
                                         id="cancelProfileEdit"
-                                        aria-label="Cancelar edición">
+                                        aria-label="Cancelar ediciÃ³n">
                                     <i class="fas fa-times" aria-hidden="true"></i>
                                     Cancelar
                                 </button>
@@ -323,17 +582,20 @@
                             </div>
                         </form>
                     </section>
-                </main>
+                </div>
             </div>
-        </div>
+        </main>
     </div>
 
-    <!-- Modal Reprogramar turno (fumigator) -->
-    <div id="reschedule-modal" class="modal hidden">
+    <!-- Modal reprogramar orden -->
+    <div id="reschedule-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="rescheduleModalTitle" aria-describedby="rescheduleModalDescription" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Reprogramar turno</h3>
-                <button class="close-modal">&times;</button>
+                <div>
+                    <h3 id="rescheduleModalTitle">Reprogramar orden</h3>
+                    <p id="rescheduleModalDescription" class="modal-subtitle">Actualiza la fecha, el horario y el motivo antes de guardar la reprogramacion.</p>
+                </div>
+                <button type="button" class="close-modal" aria-label="Cerrar reprogramacion">&times;</button>
             </div>
 
             <div class="modal-body">
@@ -342,20 +604,22 @@
                     <input id="rescheduleClient" disabled>
                 </div>
                 <div class="form-group">
-                    <label>Médico</label>
+                    <label>MÃ©dico</label>
                     <input id="rescheduleFumigator" disabled>
                 </div>
 
-                <!-- 🔹 Igual que el cliente: date oculto + calendario custom -->
+                <!-- ðŸ”¹ Igual que el cliente: date oculto + calendario custom -->
                 <div class="form-group">
-                    <label>Nuevo día</label>
+                    <label>Nuevo dÃ­a</label>
                     <div class="custom-date-picker-wrapper">
                         <input 
                             type="date" 
                             id="date" 
                             name="date" 
                             required 
-                            style="display: none;"
+                            class="modal-visually-hidden-control"
+                            tabindex="-1"
+                            aria-hidden="true"
                         >
                         <div id="custom-calendar" class="custom-calendar"></div>
                     </div>
@@ -380,11 +644,11 @@
             </div>
         </div>
     </div>
-<!-- TEMPLATE: Tarjeta de turno -->
+<!-- TEMPLATE: Tarjeta de orden -->
 <template id="template-appointment-card">
     <div class="appointment-card">
 
-        <!-- HEADER dinámico según estado -->
+        <!-- HEADER dinÃ¡mico segÃºn estado -->
         <div class="appointment-header status-bg">
             <div class="appointment-header-left">
                 <h4 class="appointment-client"></h4>
@@ -448,7 +712,7 @@
         initializeFumigatorPanel();
     }
 </script>
-    <script>
+    <script type="application/json" data-deprecated-inline="true">
         (function(){
             const btn = document.getElementById('userBtn');
             const dropdown = document.getElementById('userDropdown');
@@ -472,7 +736,7 @@
                 logoutBtn.addEventListener('click', function(e){
                     e.preventDefault();
                     try { localStorage.clear(); } catch(_) {}
-                    window.location.href = 'https://hygeagroup.com.ar/';
+                    window.location.href = 'login.html';
                 });
             }
         })();
@@ -507,7 +771,7 @@
                 observer.observe(headerTrigger);
             }
 
-            // Toggle de biografía expandible
+            // Toggle de biografÃ­a expandible
             const bioTextarea = document.getElementById('profileBioInput');
             const bioToggle = document.getElementById('bioToggle');
             
@@ -522,7 +786,7 @@
                     bioToggle.classList.remove('hidden');
                     bioTextarea.setAttribute('data-expanded', 'false');
                     bioToggle.setAttribute('aria-expanded', 'false');
-                    bioToggle.querySelector('.bio-toggle-text').textContent = 'Ver más';
+                    bioToggle.querySelector('.bio-toggle-text').textContent = 'Ver mÃ¡s';
                 } else {
                     bioToggle.classList.add('hidden');
                 }
@@ -538,7 +802,7 @@
                     if (isExpanded) {
                         bioTextarea.setAttribute('data-expanded', 'false');
                         bioToggle.setAttribute('aria-expanded', 'false');
-                        bioToggle.querySelector('.bio-toggle-text').textContent = 'Ver más';
+                        bioToggle.querySelector('.bio-toggle-text').textContent = 'Ver mÃ¡s';
                     } else {
                         bioTextarea.setAttribute('data-expanded', 'true');
                         bioToggle.setAttribute('aria-expanded', 'true');
@@ -569,7 +833,7 @@
                 setTimeout(updateSpecialtyChip, 500);
             }
 
-            // Navegación del breadcrumb
+            // NavegaciÃ³n del breadcrumb
             const breadcrumbLink = document.querySelector('.breadcrumb-link');
             if (breadcrumbLink) {
                 breadcrumbLink.addEventListener('click', function(e) {

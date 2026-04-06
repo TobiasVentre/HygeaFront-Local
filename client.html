@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hygea - Panel Cliente</title>
     <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/dashboard-shell.css">
     <link rel="stylesheet" href="css/client.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
     <header class="topbar">
@@ -16,19 +16,18 @@
         </div>
         <div class="actions">
             <div class="user-menu" id="userMenu">
-                <button class="user-btn" id="userBtn">
-                    <i class="fas fa-user-circle" style="font-size: 1.5rem;"></i>
+                <button class="user-btn" id="userBtn" type="button" aria-label="Abrir menu de cuenta" aria-controls="userDropdown">
+                    <i class="fas fa-user-circle user-btn__icon" aria-hidden="true"></i>
                     <span id="userMenuName">Mi cuenta</span>
-                    <i class="fas fa-chevron-down" style="font-size:0.8rem;"></i>
+                    <i class="fas fa-chevron-down user-btn__chevron" aria-hidden="true"></i>
                 </button>
-                <div class="user-dropdown" id="userDropdown">
-                    <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+                <div class="user-dropdown" id="userDropdown" role="menu" aria-label="Opciones de cuenta">
+                    <a href="#" id="logoutBtn" role="menuitem"><i class="fas fa-sign-out-alt" aria-hidden="true"></i> Cerrar sesion</a>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Vista del Cliente -->
     <div class="dashboard">
         <div class="dashboard-sidebar">
             <div class="sidebar-header">
@@ -37,162 +36,464 @@
                 </div>
                 <p class="panel-title">Panel cliente</p>
             </div>
-            
-            <nav class="sidebar-nav">
-                <a href="#" class="nav-item active" data-section="inicio">
+
+            <nav class="sidebar-nav" aria-label="Navegacion principal del cliente">
+                <a href="#inicio" class="nav-item active" data-section="inicio">
                     <i class="fas fa-home"></i>
                     Inicio
                 </a>
-                <a href="#" class="nav-item" data-section="turnos">
-                    <i class="fas fa-calendar"></i>
-                    Mis Turnos
+                <a href="#ordenes" class="nav-item" data-section="ordenes">
+                    <i class="fas fa-clipboard-list"></i>
+                    Mis ordenes
                 </a>
-                <a href="#" class="nav-item" data-section="recetas">
-                    <i class="fas fa-prescription-bottle-medical"></i>
-                    Mis servicios
+                <a href="#nuevo-servicio" class="nav-item" data-section="nuevo-servicio">
+                    <i class="fas fa-plus-circle"></i>
+                    Solicitar servicio
                 </a>
-                <a href="#" class="nav-item" data-section="historial">
-                    <i class="fas fa-file-medical"></i>
-                    Historial de facturación
+                <a href="#historial" class="nav-item" data-section="historial">
+                    <i class="fas fa-clock-rotate-left"></i>
+                    Historial
                 </a>
-                <a href="#" class="nav-item" data-section="perfil">
+                <a href="#perfil" class="nav-item" data-section="perfil">
                     <i class="fas fa-user"></i>
                     Perfil
                 </a>
             </nav>
         </div>
-        
-        <div class="dashboard-content">
-            <!-- Welcome Section -->
-            <div class="welcome-section">
-                <div class="welcome-header">
-                    <div class="welcome-copy">
-                        <h2 id="welcome-name">Bienvenido</h2>
-                        <p id="welcome-message">Aquí está el resumen de tu servicio</p>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Summary Cards -->
-            <div class="summary-cards">
-                <div class="summary-card">
-                    <div class="card-icon">
-                        <i class="fas fa-calendar-alt"></i>
-                    </div>
-                    <div class="card-content">
-                        <div class="card-number" id="confirmed-appointments">0</div>
-                        <div class="card-label">Turnos confirmados</div>
-                    </div>
-                </div>
-                <div class="summary-card">
-                    <div class="card-icon green">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="card-content">
-                        <div class="card-number" id="consultations-year">0</div>
-                        <div class="card-label">Este año</div>
-                    </div>
-                </div>
-                <div class="summary-card">
-                    <div class="card-icon">
-                        <i class="fas fa-file-medical"></i>
-                    </div>
-                    <div class="card-content">
-                        <div class="card-number" id="active-prescriptions">0</div>
-                        <div class="card-label">Disponibles</div>
-                    </div>
-                </div>
-            </div>
+        <main class="dashboard-content" id="clientDashboardContent">
+            <section id="mainDashboardSection" class="client-route-section">
+                <div class="overview-shell">
+                    <section class="overview-hero">
+                        <div class="overview-hero__copy">
+                            <span class="overview-hero__eyebrow">Cliente</span>
+                            <h2 id="welcome-name" class="overview-hero__title">Tus servicios, en un solo flujo</h2>
+                            <p id="welcome-message" class="overview-hero__description">Consulta el estado de cada orden, solicita un nuevo servicio y revisa evidencia cuando el trabajo queda cerrado.</p>
+                            <div class="overview-hero__actions">
+                                <button class="btn btn-primary" id="newAppointment">
+                                    <i class="fas fa-plus"></i>
+                                    Solicitar servicio
+                                </button>
+                                <a href="#ordenes" class="btn btn-secondary">
+                                    <i class="fas fa-clipboard-list"></i>
+                                    Ver mis ordenes
+                                </a>
+                            </div>
+                        </div>
+                    </section>
 
-            <!-- Próximos Turnos Section -->
-            <div class="dashboard-section">
+                    <div class="overview-metrics">
+                        <article class="overview-metric">
+                            <div class="overview-metric__icon">
+                                <i class="fas fa-clipboard-check"></i>
+                            </div>
+                            <div>
+                                <span class="overview-metric__value" id="active-orders">0</span>
+                                <span class="overview-metric__label">Ordenes activas</span>
+                                <span class="overview-metric__hint">Servicios en curso o pendientes de resolucion.</span>
+                            </div>
+                        </article>
+                        <article class="overview-metric">
+                            <div class="overview-metric__icon is-success">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div>
+                                <span class="overview-metric__value" id="completed-orders">0</span>
+                                <span class="overview-metric__label">Finalizadas o cerradas</span>
+                                <span class="overview-metric__hint">Ordenes ya completadas dentro de tu historial.</span>
+                            </div>
+                        </article>
+                        <article class="overview-metric">
+                            <div class="overview-metric__icon">
+                                <i class="fas fa-layer-group"></i>
+                            </div>
+                            <div>
+                                <span class="overview-metric__value" id="available-services">0</span>
+                                <span class="overview-metric__label">Servicios disponibles</span>
+                                <span class="overview-metric__hint">Catalogo actual para nuevas solicitudes.</span>
+                            </div>
+                        </article>
+                        <article class="overview-metric">
+                            <div class="overview-metric__icon is-success">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <div>
+                                <span class="overview-metric__value" id="available-credits">-</span>
+                                <span class="overview-metric__label">Creditos disponibles</span>
+                                <span class="overview-metric__hint">Saldo actual si operas con membresia.</span>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="overview-grid">
+                        <section class="overview-panel">
+                            <article class="overview-card">
+                                <div class="overview-panel__head">
+                                    <div>
+                                        <span class="overview-panel__eyebrow">Actividad</span>
+                                        <h3 class="overview-panel__title">Ordenes recientes</h3>
+                                        <p class="overview-panel__copy">Enfocate en lo que sigue activo y en lo ultimo que ya cerraste.</p>
+                                    </div>
+                                    <div class="section-header-actions">
+                                        <select id="status-filter">
+                                            <option value="">-- Filtrar por estado --</option>
+                                            <option value="1">Creada</option>
+                                            <option value="7">Aprobada</option>
+                                            <option value="2">Confirmada</option>
+                                            <option value="3">En ejecucion</option>
+                                            <option value="4">Finalizada</option>
+                                            <option value="5">Excepcion</option>
+                                            <option value="6">Cerrada</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="appointments-list" id="appointments-list">
+                                    <div class="loading-spinner">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                        <p>Cargando ordenes...</p>
+                                    </div>
+                                </div>
+                            </article>
+                        </section>
+
+                        <aside class="overview-panel">
+                            <article class="overview-card">
+                                <div class="overview-panel__head">
+                                    <div>
+                                        <span class="overview-panel__eyebrow">Accesos</span>
+                                        <h3 class="overview-panel__title">Tareas frecuentes</h3>
+                                        <p class="overview-panel__copy">Entradas directas para pedir, seguir o revisar servicios ya cerrados.</p>
+                                    </div>
+                                </div>
+                                <div class="overview-link-list">
+                                    <a class="overview-link-card" href="#nuevo-servicio">
+                                        <strong>Solicitar un servicio</strong>
+                                        <span>Entra directo al armado de la orden y agenda sugerida.</span>
+                                    </a>
+                                    <a class="overview-link-card" href="#ordenes">
+                                        <strong>Seguir mis ordenes</strong>
+                                        <span>Revisa fechas, estados e historial operativo.</span>
+                                    </a>
+                                    <a class="overview-link-card" href="#historial">
+                                        <strong>Ver historial completo</strong>
+                                        <span>Consulta servicios finalizados, cerrados o con incidencias.</span>
+                                    </a>
+                                </div>
+                            </article>
+
+                            <article class="overview-card">
+                                <div class="overview-panel__head">
+                                    <div>
+                                        <span class="overview-panel__eyebrow">Historial</span>
+                                        <h3 class="overview-panel__title">Ultimos cierres</h3>
+                                        <p class="overview-panel__copy">Servicios recientes para validar continuidad, evidencia y resultado final.</p>
+                                    </div>
+                                    <button class="btn btn-secondary" id="refreshRecentHistory">
+                                        <i class="fas fa-sync-alt"></i>
+                                        Actualizar
+                                    </button>
+                                </div>
+                                <div class="history-list" id="history-list-inicio">
+                                    <div class="loading-spinner">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                        <p>Cargando historial...</p>
+                                    </div>
+                                </div>
+                            </article>
+                        </aside>
+                    </div>
+                </div>
+            </section>
+
+            <section id="clientOrdersSection" class="dashboard-section route-section hidden">
                 <div class="section-header">
                     <div>
-                        <h3>Próximos Turnos</h3>
-                        <p>Tus consultas programadas</p>
+                        <h3>Mis ordenes</h3>
+                        <p>Seguimiento de ordenes activas y proximas visitas.</p>
                     </div>
                     <div class="section-header-actions">
-                        <!-- Botón para Agendar Turno -->
-                        <button class="btn btn-primary" id="newAppointment">
-                            <i class="fas fa-calendar-plus"></i>
-                            Agendar Turno
+                        <button class="btn btn-primary" id="newAppointmentFromOrders">
+                            <i class="fas fa-plus"></i>
+                            Solicitar servicio
                         </button>
-                        <!-- Menú Desplegable -->
-                        <select id="status-filter">
-                            <option value="">-- Filtrar por Estado --</option>
-                            <option value="SCHEDULED">Programado</option>
-                            <option value="CONFIRMED">Confirmado</option>
-                            <option value="CANCELLED">Cancelado</option>
-                            <option value="COMPLETED">Completado</option>
-                            <option value="IN_PROGRESS">En curso</option>
-                            <option value="NO_SHOW">Ausente</option>
-                            <option value="RESCHEDULED">Reprogramado</option>
-                        </select>
-
+                        <button class="btn btn-secondary" id="refreshOrdersSection">
+                            <i class="fas fa-rotate"></i>
+                            Actualizar
+                        </button>
                     </div>
                 </div>
-                <div class="appointments-list" id="appointments-list">
+                <div class="appointments-list route-list-surface" id="clientOrdersList">
                     <div class="loading-spinner">
                         <i class="fas fa-spinner fa-spin"></i>
-                        <p>Cargando turnos...</p>
+                        <p>Cargando ordenes...</p>
                     </div>
                 </div>
-            </div>
+            </section>
 
-
-            <!-- Historial Reciente -->
-            <div class="dashboard-section">
+            <section id="clientHistorySection" class="dashboard-section route-section hidden">
                 <div class="section-header">
                     <div>
-                        <h3>Historial Reciente</h3>
-                        <p>Últimas consultas realizadas</p>
+                        <h3>Historial</h3>
+                        <p>Servicios ya realizados, cerrados o con incidencias.</p>
                     </div>
-                    <!-- ✅ NUEVO: Botón de actualizar -->
-                <div class="section-header-actions">
-                    <button class="btn btn-secondary" id="refreshRecentHistory" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
-                        <i class="fas fa-sync-alt"></i> Actualizar
-                    </button>
+                    <div class="section-header-actions">
+                        <button class="btn btn-secondary" id="refreshHistorySection">
+                            <i class="fas fa-rotate"></i>
+                            Actualizar
+                        </button>
+                    </div>
                 </div>
-                </div>
-                <div class="history-list" id="history-list-inicio">
+                <div class="history-list route-list-surface" id="clientHistoryList">
                     <div class="loading-spinner">
                         <i class="fas fa-spinner fa-spin"></i>
                         <p>Cargando historial...</p>
                     </div>
                 </div>
-            </div>
-        </div>
+            </section>
+
+            <section id="clientProfileSection" class="dashboard-section route-section hidden">
+                <div class="section-header">
+                    <div>
+                        <h3>Perfil</h3>
+                        <p>Informacion operativa de tu cuenta y de la entidad que gestiona tus servicios.</p>
+                    </div>
+                </div>
+                <div class="client-profile-grid">
+                    <article class="request-panel-card client-profile-card">
+                        <div class="request-panel-head">
+                            <div>
+                                <h4>Mi cuenta</h4>
+                                <p>Datos con los que estas operando en el panel.</p>
+                            </div>
+                        </div>
+                        <div id="clientProfileCard" class="client-profile-list">
+                            <p class="request-empty-text">Cargando perfil...</p>
+                        </div>
+                    </article>
+                    <article class="request-panel-card client-profile-card">
+                        <div class="request-panel-head">
+                            <div>
+                                <h4>Entidad asignada</h4>
+                                <p>Proveedor que se usa para sugerir agenda y gestionar tus ordenes.</p>
+                            </div>
+                        </div>
+                        <div id="clientProviderCard" class="client-profile-list">
+                            <p class="request-empty-text">Cargando entidad...</p>
+                        </div>
+                    </article>
+                    <article class="request-panel-card client-profile-card">
+                        <div class="request-panel-head">
+                            <div>
+                                <h4>Mi membresia</h4>
+                                <p>Plan activo, vigencia y saldo de creditos disponible.</p>
+                            </div>
+                        </div>
+                        <div id="clientMembershipCard" class="client-profile-list">
+                            <p class="request-empty-text">Cargando membresia...</p>
+                        </div>
+                    </article>
+                    <article class="request-panel-card client-profile-card">
+                        <div class="request-panel-head">
+                            <div>
+                                <h4>Movimientos de creditos</h4>
+                                <p>Consumos y variaciones asociadas a tu membresia.</p>
+                            </div>
+                        </div>
+                        <div id="clientCreditMovementsList" class="client-profile-list">
+                            <p class="request-empty-text">Cargando movimientos...</p>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <section id="clientRequestSection" class="dashboard-section route-section request-screen hidden">
+                <div class="section-header">
+                    <div>
+                        <h3>Solicitar orden de servicio</h3>
+                        <p>Primero arma la orden. La duracion se calcula desde el catalogo de servicios. Despues elegi un horario disponible.</p>
+                    </div>
+                    <div class="section-header-actions">
+                        <button type="button" id="backToDashboard" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i>
+                            Volver
+                        </button>
+                    </div>
+                </div>
+
+                <form id="appointment-form" class="request-screen-layout">
+                    <div class="request-builder-panel">
+                        <article class="request-panel-card">
+                            <div class="request-panel-head">
+                                <div>
+                                    <h4>1. Arma tu orden</h4>
+                                    <p>Agrega uno o mas servicios antes de elegir horario.</p>
+                                </div>
+                            </div>
+
+                            <div class="request-form-grid">
+                                <label>Servicio
+                                    <select id="service-offering">
+                                        <option value="">Seleccionar servicio</option>
+                                    </select>
+                                </label>
+                                <label>Cantidad
+                                    <input id="service-quantity" type="number" min="1" value="1">
+                                </label>
+                            </div>
+
+                            <div class="request-form-actions">
+                                <button type="button" id="add-service-item" class="btn btn-secondary">
+                                    <i class="fas fa-plus"></i>
+                                    Agregar item
+                                </button>
+                            </div>
+
+                            <div id="requestDurationSummary" class="request-info-box">
+                                Duracion estimada total: agrega items para calcularla segun el catalogo.
+                            </div>
+
+                            <div class="request-info-box">
+                                El sistema te muestra solo franjas con al menos un tecnico activo y disponible para tu entidad proveedora.
+                            </div>
+                        </article>
+
+                        <article class="request-panel-card">
+                            <div class="request-panel-head">
+                                <div>
+                                    <h4>2. Revisa los items</h4>
+                                    <p>La agenda sugerida se recalcula automaticamente cuando cambias los items de la orden.</p>
+                                </div>
+                            </div>
+                            <div id="order-items-list" class="request-items-list">
+                                <p class="request-empty-text">Todavia no agregaste items.</p>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="request-availability-panel">
+                        <article class="request-panel-card">
+                            <div class="request-panel-head">
+                                <div>
+                                    <h4>3. Elige un horario disponible</h4>
+                                    <p>Primero elegi la fecha. Despues te mostramos horarios que cubren la duracion real de los servicios elegidos.</p>
+                                </div>
+                                <button type="button" id="refreshSuggestedSlots" class="btn btn-secondary">
+                                    <i class="fas fa-rotate"></i>
+                                    Actualizar agenda
+                                </button>
+                            </div>
+
+                            <div class="request-form-grid request-date-grid">
+                                <label>Fecha deseada
+                                    <input type="date" id="request-date" required>
+                                </label>
+                            </div>
+
+                            <div id="requestAvailabilityFeedback" class="request-feedback hidden" role="status" aria-live="polite"></div>
+                            <div id="requestSelectedSlotSummary" class="request-selection-summary">
+                                Aun no seleccionaste un horario.
+                            </div>
+                            <div id="suggested-slots-list" class="suggested-slots-list">
+                                <div class="loading-spinner">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <p>Agrega items para ver dias y horarios disponibles.</p>
+                                </div>
+                            </div>
+                        </article>
+
+                        <div class="request-submit-actions">
+                            <button type="button" id="cancel-request-section" class="btn btn-secondary">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Crear orden</button>
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <section id="clientOrderDetailSection" class="dashboard-section route-section request-screen hidden">
+                <div class="section-header">
+                    <div>
+                        <h3>Detalle de orden de servicio</h3>
+                        <p>Consulta la informacion completa de la orden, sus items y el horario reservado.</p>
+                    </div>
+                    <div class="section-header-actions">
+                        <button type="button" id="backFromOrderDetail" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i>
+                            Volver
+                        </button>
+                    </div>
+                </div>
+
+                <div class="order-detail-layout">
+                    <article class="request-panel-card order-detail-hero" id="orderDetailHero">
+                        <div class="loading-spinner">
+                            <i class="fas fa-clipboard-list"></i>
+                            <p>Selecciona una orden para ver el detalle.</p>
+                        </div>
+                    </article>
+
+                    <article class="request-panel-card">
+                        <div class="request-panel-head">
+                            <div>
+                                <h4>Servicios solicitados</h4>
+                                <p>Items y monto total de la orden.</p>
+                            </div>
+                        </div>
+                        <div id="orderDetailItems" class="order-detail-items">
+                            <p class="request-empty-text">Todavia no hay items para mostrar.</p>
+                        </div>
+                    </article>
+
+                    <article class="request-panel-card">
+                        <div class="request-panel-head">
+                            <div>
+                                <h4>Historial de estados</h4>
+                                <p>Seguimiento de cambios y eventos de la orden.</p>
+                            </div>
+                        </div>
+                        <div id="orderDetailHistory" class="order-detail-history">
+                            <p class="request-empty-text">Todavia no hay historial para mostrar.</p>
+                        </div>
+                    </article>
+
+                    <article class="request-panel-card">
+                        <div class="request-panel-head">
+                            <div>
+                                <h4>Evidencia registrada</h4>
+                                <p>Respaldo operativo cargado al completar el servicio.</p>
+                            </div>
+                        </div>
+                        <div id="orderDetailEvidence" class="order-evidence-list">
+                            <p class="request-empty-text">Todavia no hay evidencia para mostrar.</p>
+                        </div>
+                    </article>
+                </div>
+            </section>
+        </main>
+
+        <nav class="mobile-bottom-nav" aria-label="Navegacion inferior del cliente">
+            <a href="#inicio" class="nav-item active" data-section="inicio">
+                <i class="fas fa-home" aria-hidden="true"></i>
+                <span>Inicio</span>
+            </a>
+            <a href="#ordenes" class="nav-item" data-section="ordenes">
+                <i class="fas fa-clipboard-list" aria-hidden="true"></i>
+                <span>Ordenes</span>
+            </a>
+            <a href="#nuevo-servicio" class="nav-item" data-section="nuevo-servicio">
+                <i class="fas fa-plus-circle" aria-hidden="true"></i>
+                <span>Nuevo</span>
+            </a>
+            <a href="#historial" class="nav-item" data-section="historial">
+                <i class="fas fa-clock-rotate-left" aria-hidden="true"></i>
+                <span>Historial</span>
+            </a>
+            <a href="#perfil" class="nav-item" data-section="perfil">
+                <i class="fas fa-user" aria-hidden="true"></i>
+                <span>Perfil</span>
+            </a>
+        </nav>
     </div>
 
-    <!-- IMPORTANTE: Cargar como módulo ES6 -->
-    <script type="module" src="js/client-js/client-main.js"></script>
-    <!--<script type="module" src="js/client.js"></script>-->
-    <!--<script src="js/client.js"></script>-->
-    
-    <!-- Script para dropdown del menú de usuario -->
-    <script>
-        (function(){
-            const btn = document.getElementById('userBtn');
-            const dropdown = document.getElementById('userDropdown');
-            const menu = document.getElementById('userMenu');
-            
-            if (btn && dropdown) {
-                btn.addEventListener('click', function(e){
-                    e.stopPropagation();
-                    const isOpen = dropdown.style.display === 'block';
-                    dropdown.style.display = isOpen ? 'none' : 'block';
-                    menu.classList.toggle('active', !isOpen);
-                });
-                
-                document.addEventListener('click', function(e){
-                    if (!menu.contains(e.target)) {
-                        dropdown.style.display = 'none';
-                        menu.classList.remove('active');
-                    }
-                });
-            }
-        })();
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+    <script type="module" src="js/client-js/client-main.js?v=20260316-2"></script>
 </body>
 </html>

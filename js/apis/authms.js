@@ -75,8 +75,8 @@ function getUserFromToken() {
         if (Array.isArray(userId)) userId = userId[0];
         
         return {
-            userId: parseInt(userId),
-            UserId: parseInt(userId),
+            userId: userId || null,
+            UserId: userId || null,
             email: payload.UserEmail || payload.email || payload.Email,
             Email: payload.UserEmail || payload.email || payload.Email,
             firstName: payload.FirstName || payload.firstName || "",
@@ -107,7 +107,7 @@ export async function getUserById(userId, token = null) {
     
     // PRIMERO: Intentar obtener del token JWT (más rápido y no falla con 401)
     const userFromToken = getUserFromToken();
-    if (userFromToken && userFromToken.userId === parseInt(userId)) {
+    if (userFromToken && String(userFromToken.userId) === String(userId)) {
         console.log('✅ Usuario obtenido desde JWT (sin llamada al backend)');
         return userFromToken;
     }

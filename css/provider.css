@@ -1,0 +1,198 @@
+.provider-layout {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.provider-orders-shell {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.provider-order-detail-view {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.provider-orders-overview,
+.provider-order-detail-view {
+  min-width: 0;
+}
+
+.appointment-item,
+.history-entry {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface-card) 92%, var(--surface-soft) 8%);
+  box-shadow: 0 18px 35px -28px var(--shadow-lg);
+}
+
+.appointment-item + .appointment-item,
+.history-entry + .history-entry {
+  margin-top: 0.9rem;
+}
+
+.appointment-item__header,
+.history-entry__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.provider-technician-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.provider-staff-card {
+  margin-bottom: 1rem;
+}
+
+.provider-technician-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.provider-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.9rem;
+}
+
+.provider-form-grid__full {
+  grid-column: 1 / -1;
+}
+
+.provider-form-actions,
+.provider-technician-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.provider-technician-card,
+.provider-profile-card {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.provider-meta-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.provider-meta-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface-card) 88%, var(--surface-soft) 12%);
+}
+
+.provider-meta-item strong {
+  color: var(--text-primary);
+}
+
+.provider-meta-item span {
+  color: var(--text-secondary);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.provider-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.appointment-item__header h4 {
+  margin: 0 0 0.2rem;
+  color: var(--text-primary);
+  font-size: 1.08rem;
+  letter-spacing: -0.01em;
+}
+
+.appointment-item__header p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.provider-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--info-bg) 64%, var(--surface-card) 36%);
+  color: var(--info-strong);
+}
+
+.provider-order-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-subtle);
+  align-items: center;
+}
+
+.provider-technician-select {
+  min-width: 260px;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface-card);
+  color: var(--text-primary);
+}
+
+.provider-inline-note {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+  flex: 1 1 100%;
+}
+
+.provider-inline-note.is-success {
+  color: var(--success-strong);
+}
+
+.provider-inline-note.is-error {
+  color: var(--danger-strong);
+}
+
+.provider-status-badge.is-active {
+  background: color-mix(in srgb, var(--success-bg) 72%, var(--surface-card) 28%);
+  color: var(--success-strong);
+}
+
+.provider-status-badge.is-restricted {
+  background: color-mix(in srgb, var(--warning-bg) 78%, var(--surface-card) 22%);
+  color: var(--warning-text);
+}
+
+.provider-status-badge.is-inactive {
+  background: color-mix(in srgb, var(--surface-soft) 70%, var(--surface-card) 30%);
+  color: var(--text-secondary);
+}
+
+@media (max-width: 960px) {
+  .provider-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .provider-form-grid {
+    grid-template-columns: 1fr;
+  }
+}

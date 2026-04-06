@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hygea - Panel Administrador Global</title>
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/dashboard-shell.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <img src="img\Logo-Blanco.png" alt="logo-Hygea">
+        </div>
+        <div class="actions">
+            <div class="user-menu" id="userMenu">
+                <button class="user-btn" id="userBtn" type="button" aria-label="Abrir menu de cuenta" aria-controls="userDropdown">
+                    <i class="fas fa-user-shield user-btn__icon" aria-hidden="true"></i>
+                    <span id="userMenuName">Mi cuenta</span>
+                    <i class="fas fa-chevron-down user-btn__chevron" aria-hidden="true"></i>
+                </button>
+                <div class="user-dropdown" id="userDropdown" role="menu" aria-label="Opciones de cuenta">
+                    <a href="#" id="logoutBtn" role="menuitem"><i class="fas fa-sign-out-alt" aria-hidden="true"></i> Cerrar sesion</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard">
+        <div class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <img src="img\Logo-Blanco.png" alt="logo-Hygea">
+                </div>
+                <p class="panel-title">Administrador global</p>
+            </div>
+
+            <nav class="sidebar-nav" aria-label="Navegacion principal del administrador global">
+                <a href="#inicio" class="nav-item active" data-section="inicio">
+                    <i class="fas fa-home"></i>
+                    Inicio
+                </a>
+                <a href="#solicitudes" class="nav-item" data-section="solicitudes">
+                    <i class="fas fa-people-arrows"></i>
+                    Solicitudes
+                </a>
+                <a href="#membresias" class="nav-item" data-section="membresias">
+                    <i class="fas fa-id-card"></i>
+                    Membresias
+                </a>
+                <a href="#operaciones" class="nav-item" data-section="operaciones">
+                    <i class="fas fa-clipboard-list"></i>
+                    Operaciones
+                </a>
+                <a href="#proveedores" class="nav-item" data-section="proveedores">
+                    <i class="fas fa-building"></i>
+                    Proveedores
+                </a>
+                <a href="#usuarios" class="nav-item" data-section="usuarios">
+                    <i class="fas fa-user-group"></i>
+                    Usuarios
+                </a>
+            </nav>
+        </div>
+
+        <main class="dashboard-content" id="adminDashboardContent">
+            <div id="adminDashboardSection">
+                <div class="overview-shell">
+                    <section class="overview-hero">
+                        <div class="overview-hero__copy">
+                            <span class="overview-hero__eyebrow">Administrador Global</span>
+                            <h2 id="welcome-name" class="overview-hero__title">Control operativo transversal</h2>
+                            <p id="welcome-message" class="overview-hero__description">Resuelve solicitudes cross-provider, consulta la red de entidades y administra membresias sin salir del panel central.</p>
+                            <div class="overview-hero__actions">
+                                <a href="#solicitudes" class="btn btn-primary">
+                                    <i class="fas fa-people-arrows"></i>
+                                    Revisar solicitudes
+                                </a>
+                                <a href="#membresias" class="btn btn-secondary">
+                                    <i class="fas fa-id-card"></i>
+                                    Gestionar membresias
+                                </a>
+                                <a href="#operaciones" class="btn btn-secondary">
+                                    <i class="fas fa-clipboard-list"></i>
+                                    Supervisar operaciones
+                                </a>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="overview-metrics">
+                        <article class="overview-metric">
+                            <div class="overview-metric__icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div>
+                                <span class="overview-metric__value" id="adminProvidersCount">0</span>
+                                <span class="overview-metric__label">Entidades proveedoras</span>
+                                <span class="overview-metric__hint">Red actual habilitada para operar.</span>
+                            </div>
+                        </article>
+                        <article class="overview-metric">
+                            <div class="overview-metric__icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div>
+                                <span class="overview-metric__value" id="adminUsersCount">0</span>
+                                <span class="overview-metric__label">Usuarios registrados</span>
+                                <span class="overview-metric__hint">Base de usuarios detectada en DirectoryMS.</span>
+                            </div>
+                        </article>
+                        <article class="overview-metric">
+                            <div class="overview-metric__icon is-success">
+                                <i class="fas fa-address-book"></i>
+                            </div>
+                            <div>
+                                <span class="overview-metric__value" id="adminClientsCount">0</span>
+                                <span class="overview-metric__label">Clientes con perfil</span>
+                                <span class="overview-metric__hint">Base actual para membresias y creditos.</span>
+                            </div>
+                        </article>
+                        <article class="overview-metric">
+                            <div class="overview-metric__icon">
+                                <i class="fas fa-hourglass-half"></i>
+                            </div>
+                            <div>
+                                <span class="overview-metric__value" id="adminPendingRequestsCount">0</span>
+                                <span class="overview-metric__label">Solicitudes pendientes</span>
+                                <span class="overview-metric__hint">Cambios de entidad esperando decision administrativa.</span>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="overview-grid">
+                        <section class="overview-panel">
+                            <article class="overview-card">
+                                <div class="overview-panel__head">
+                                    <div>
+                                        <span class="overview-panel__eyebrow">Prioridad</span>
+                                        <h3 class="overview-panel__title">Solicitudes pendientes recientes</h3>
+                                        <p class="overview-panel__copy">Vista rapida para `RF-T11` / `RF-AG5` y seguimiento de incorporaciones entre entidades.</p>
+                                    </div>
+                                    <button class="btn btn-secondary" id="refreshAdminDashboard">
+                                        <i class="fas fa-rotate"></i>
+                                        Actualizar
+                                    </button>
+                                </div>
+                                <div class="appointments-list" id="adminDashboardPendingRequests">
+                                    <div class="loading-spinner">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                        <p>Cargando solicitudes...</p>
+                                    </div>
+                                </div>
+                            </article>
+                        </section>
+
+                        <aside class="overview-panel">
+                            <article class="overview-card">
+                                <div class="overview-panel__head">
+                                    <div>
+                                        <span class="overview-panel__eyebrow">Accesos</span>
+                                        <h3 class="overview-panel__title">Frentes actuales</h3>
+                                        <p class="overview-panel__copy">Entradas directas al trabajo administrativo que hoy ya tiene soporte funcional.</p>
+                                    </div>
+                                </div>
+                                <div class="overview-link-list">
+                                    <a class="overview-link-card" href="#solicitudes">
+                                        <strong>Resolver cambios de entidad</strong>
+                                        <span>Aprobar o rechazar solicitudes dirigidas a distintas entidades proveedoras.</span>
+                                    </a>
+                                    <a class="overview-link-card" href="#membresias">
+                                        <strong>Asignar membresias</strong>
+                                        <span>Consulta clientes y crea planes con credito operativo.</span>
+                                    </a>
+                                    <a class="overview-link-card" href="#proveedores">
+                                        <strong>Ver red de proveedores</strong>
+                                        <span>Estado general, administradores y carga basica por entidad.</span>
+                                    </a>
+                                    <a class="overview-link-card" href="#operaciones">
+                                        <strong>Supervisar ordenes y reservas</strong>
+                                        <span>Monitorea excepciones, pendientes y reasignaciones desde un tablero global.</span>
+                                    </a>
+                                    <a class="overview-link-card" href="#usuarios">
+                                        <strong>Auditar usuarios</strong>
+                                        <span>Consulta la base transversal de usuarios y sus roles actuales.</span>
+                                    </a>
+                                </div>
+                            </article>
+
+                            <article class="overview-card">
+                                <div class="overview-panel__head">
+                                    <div>
+                                        <span class="overview-panel__eyebrow">Estado</span>
+                                        <h3 class="overview-panel__title">Shell inicial</h3>
+                                    </div>
+                                </div>
+                                <div class="overview-note">
+                                    <strong>Alcance de esta iteracion</strong>
+                                    El panel ya cubre login admin, resolucion de solicitudes, gestion base de membresias, supervision global y auditoria de usuarios/proveedores.
+                                </div>
+                            </article>
+                        </aside>
+                    </div>
+                </div>
+            </div>
+
+            <section id="adminRequestsSection" class="dashboard-section route-section hidden">
+                <div class="section-header">
+                    <div>
+                        <h3>Solicitudes de cambio de entidad</h3>
+                        <p>Resolucion administrativa de solicitudes creadas por tecnicos para incorporarse a otra entidad proveedora.</p>
+                    </div>
+                    <div class="section-header-actions">
+                        <button type="button" class="btn btn-secondary" id="refreshAdminRequests">
+                            <i class="fas fa-rotate"></i>
+                            Actualizar
+                        </button>
+                    </div>
+                </div>
+                <div id="adminRequestsList" class="appointments-list route-list-surface">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Cargando solicitudes...</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="adminMembershipsSection" class="dashboard-section route-section hidden">
+                <div class="section-header">
+                    <div>
+                        <h3>Membresias y creditos</h3>
+                        <p>Consulta clientes por entidad, revisa saldo actual y crea membresias con credito operativo.</p>
+                    </div>
+                    <div class="section-header-actions">
+                        <button type="button" class="btn btn-secondary" id="refreshAdminMemberships">
+                            <i class="fas fa-rotate"></i>
+                            Actualizar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="admin-membership-layout">
+                    <article class="request-panel-card">
+                        <div class="request-panel-head">
+                            <div>
+                                <h4>Crear membresia</h4>
+                                <p>Primero elige entidad y cliente. Luego define plan, creditos y vigencia.</p>
+                            </div>
+                        </div>
+                        <form id="adminMembershipForm" class="admin-form-grid">
+                            <label>
+                                <span>Entidad proveedora</span>
+                                <select id="adminMembershipProviderSelect" required></select>
+                            </label>
+                            <label>
+                                <span>Cliente</span>
+                                <select id="adminMembershipClientSelect" required></select>
+                            </label>
+                            <label>
+                                <span>Plan</span>
+                                <input type="text" id="adminMembershipPlanName" maxlength="120" required placeholder="Plan Corporativo 12M">
+                            </label>
+                            <label>
+                                <span>Creditos totales</span>
+                                <input type="number" id="adminMembershipTotalCredits" min="1" step="1" required value="12">
+                            </label>
+                            <label>
+                                <span>Vigencia desde</span>
+                                <input type="date" id="adminMembershipValidFrom" required>
+                            </label>
+                            <label>
+                                <span>Vigencia hasta</span>
+                                <input type="date" id="adminMembershipValidTo" required>
+                            </label>
+                            <div class="admin-form-actions">
+                                <button type="submit" class="btn btn-primary" id="adminMembershipSubmitBtn">
+                                    <i class="fas fa-plus-circle"></i>
+                                    Crear membresia
+                                </button>
+                                <span id="adminMembershipFeedback" class="admin-inline-feedback">Selecciona un cliente para ver su situacion actual.</span>
+                            </div>
+                        </form>
+                    </article>
+
+                    <div class="admin-membership-side">
+                        <article class="request-panel-card">
+                            <div class="request-panel-head">
+                                <div>
+                                    <h4>Cliente seleccionado</h4>
+                                    <p>Resumen base para evitar altas sobre perfiles equivocados.</p>
+                                </div>
+                            </div>
+                            <div id="adminMembershipClientSummary" class="admin-meta-list">
+                                <p class="request-empty-text">Selecciona una entidad y un cliente.</p>
+                            </div>
+                        </article>
+
+                        <article class="request-panel-card">
+                            <div class="request-panel-head">
+                                <div>
+                                    <h4>Membresia activa</h4>
+                                    <p>Plan actual, saldo y vigencia del cliente.</p>
+                                </div>
+                            </div>
+                            <div id="adminMembershipDetail" class="admin-meta-list">
+                                <p class="request-empty-text">Cargando detalle de membresia...</p>
+                            </div>
+                        </article>
+
+                        <article class="request-panel-card">
+                            <div class="request-panel-head">
+                                <div>
+                                    <h4>Movimientos de creditos</h4>
+                                    <p>Consumos y variaciones asociadas a la membresia del cliente.</p>
+                                </div>
+                            </div>
+                            <div id="adminMembershipMovements" class="appointments-list">
+                                <p class="request-empty-text">Todavia no hay movimientos para mostrar.</p>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </section>
+
+            <section id="adminProvidersSection" class="dashboard-section route-section hidden">
+                <div class="section-header">
+                    <div>
+                        <h3>Entidades proveedoras</h3>
+                        <p>Estado general, administradores asociados, tecnicos y capacidad de provision administrativa.</p>
+                    </div>
+                    <div class="section-header-actions">
+                        <button type="button" class="btn btn-secondary" id="refreshAdminProviders">
+                            <i class="fas fa-rotate"></i>
+                            Actualizar
+                        </button>
+                    </div>
+                </div>
+                <div class="admin-provider-layout">
+                    <article class="request-panel-card">
+                        <div class="request-panel-head">
+                            <div>
+                                <h4>Nueva entidad proveedora</h4>
+                                <p>Alta inicial de proveedor para ampliar la red operativa.</p>
+                            </div>
+                        </div>
+                        <form id="adminProviderForm" class="admin-form-grid">
+                            <label>
+                                <span>Nombre comercial</span>
+                                <input type="text" id="adminProviderName" maxlength="120" required placeholder="Proveedor Metropolitano">
+                            </label>
+                            <label class="admin-checkbox-row">
+                                <input type="checkbox" id="adminProviderEnabled" checked>
+                                <span>Crear entidad habilitada</span>
+                            </label>
+                            <div class="admin-form-actions">
+                                <button type="submit" class="btn btn-primary" id="adminProviderSubmitBtn">
+                                    <i class="fas fa-building-circle-check"></i>
+                                    Crear entidad
+                                </button>
+                                <span id="adminProviderFeedback" class="admin-inline-feedback">Las nuevas entidades ya quedan disponibles para asignar clientes, tecnicos y admins.</span>
+                            </div>
+                        </form>
+                    </article>
+
+                    <article class="request-panel-card">
+                        <div class="request-panel-head">
+                            <div>
+                                <h4>Nuevo admin de entidad</h4>
+                                <p>Provision administrativa via `AuthMS` con perfil sincronizado en `DirectoryMS`.</p>
+                            </div>
+                        </div>
+                        <form id="adminProviderAdminForm" class="admin-form-grid">
+                            <label>
+                                <span>Entidad proveedora</span>
+                                <select id="adminProviderAdminProviderSelect" required></select>
+                            </label>
+                            <label>
+                                <span>Nombre</span>
+                                <input type="text" id="adminProviderAdminFirstName" maxlength="80" required placeholder="Carla">
+                            </label>
+                            <label>
+                                <span>Apellido</span>
+                                <input type="text" id="adminProviderAdminLastName" maxlength="80" required placeholder="Mendez">
+                            </label>
+                            <label>
+                                <span>Email</span>
+                                <input type="email" id="adminProviderAdminEmail" required placeholder="carla@proveedor.com">
+                            </label>
+                            <label>
+                                <span>DNI</span>
+                                <input type="text" id="adminProviderAdminDni" maxlength="32" required placeholder="30111222">
+                            </label>
+                            <label>
+                                <span>Telefono</span>
+                                <input type="tel" id="adminProviderAdminPhone" maxlength="40" required placeholder="+54 11 5555 5555">
+                            </label>
+                            <label>
+                                <span>Password inicial</span>
+                                <input type="password" id="adminProviderAdminPassword" minlength="8" required placeholder="Minimo 8 caracteres">
+                            </label>
+                            <div class="admin-form-actions">
+                                <button type="submit" class="btn btn-primary" id="adminProviderAdminSubmitBtn">
+                                    <i class="fas fa-user-plus"></i>
+                                    Crear admin
+                                </button>
+                                <span id="adminProviderAdminFeedback" class="admin-inline-feedback">El alta crea el usuario en AuthMS y provisiona su perfil de entidad en DirectoryMS.</span>
+                            </div>
+                        </form>
+                    </article>
+                </div>
+
+                <div id="adminProvidersList" class="admin-provider-grid route-list-surface">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Cargando entidades proveedoras...</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="adminOperationsSection" class="dashboard-section route-section hidden">
+                <div class="section-header">
+                    <div>
+                        <h3>Supervision global</h3>
+                        <p>Visibilidad consolidada de ordenes, reservas, excepciones y reasignaciones administrativas.</p>
+                    </div>
+                    <div class="section-header-actions">
+                        <button type="button" class="btn btn-secondary" id="refreshAdminOperations">
+                            <i class="fas fa-rotate"></i>
+                            Actualizar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="admin-operations-layout">
+                    <article class="request-panel-card">
+                        <div class="request-panel-head">
+                            <div>
+                                <h4>Filtros operativos</h4>
+                                <p>Recorta por entidad y estado para revisar solo el tramo que te interesa intervenir.</p>
+                            </div>
+                        </div>
+                        <form id="adminOperationsFilterForm" class="admin-form-grid">
+                            <label>
+                                <span>Entidad proveedora</span>
+                                <select id="adminOperationsProviderFilter"></select>
+                            </label>
+                            <label>
+                                <span>Estado de orden</span>
+                                <select id="adminOperationsOrderStatusFilter">
+                                    <option value="">Todos</option>
+                                    <option value="1">Creada</option>
+                                    <option value="7">Aprobada</option>
+                                    <option value="2">Confirmada</option>
+                                    <option value="3">En ejecucion</option>
+                                    <option value="4">Finalizada</option>
+                                    <option value="5">Excepcion</option>
+                                    <option value="6">Cerrada</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>Estado de reserva</span>
+                                <select id="adminOperationsReservationStatusFilter">
+                                    <option value="">Todos</option>
+                                    <option value="1">Creada</option>
+                                    <option value="7">Aprobada</option>
+                                    <option value="2">Confirmada</option>
+                                    <option value="3">En ejecucion</option>
+                                    <option value="4">Finalizada</option>
+                                    <option value="5">Excepcion</option>
+                                    <option value="6">Cerrada</option>
+                                </select>
+                            </label>
+                            <div class="admin-form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-filter"></i>
+                                    Aplicar filtros
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="adminOperationsClearFilters">
+                                    <i class="fas fa-eraser"></i>
+                                    Limpiar
+                                </button>
+                            </div>
+                        </form>
+                    </article>
+
+                    <article class="request-panel-card">
+                        <div class="request-panel-head">
+                            <div>
+                                <h4>Resumen operativo</h4>
+                                <p>Lectura rapida de pendientes, excepciones y volumen activo global.</p>
+                            </div>
+                        </div>
+                        <div id="adminOperationsSummary" class="admin-meta-grid">
+                            <p class="request-empty-text">Cargando resumen operativo...</p>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="admin-operations-grid">
+                    <article class="request-panel-card">
+                        <div class="request-panel-head">
+                            <div>
+                                <h4>Ordenes globales</h4>
+                                <p>Incluye excepciones, estados activos y capacidad de reasignacion administrativa.</p>
+                            </div>
+                        </div>
+                        <div id="adminOrdersList" class="appointments-list route-list-surface">
+                            <div class="loading-spinner">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <p>Cargando ordenes...</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="request-panel-card">
+                        <div class="request-panel-head">
+                            <div>
+                                <h4>Reservas globales</h4>
+                                <p>Vista complementaria para revisar asignacion tecnica y consistencia del scheduling.</p>
+                            </div>
+                        </div>
+                        <div id="adminReservationsList" class="appointments-list route-list-surface">
+                            <div class="loading-spinner">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <p>Cargando reservas...</p>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <section id="adminUsersSection" class="dashboard-section route-section hidden">
+                <div class="section-header">
+                    <div>
+                        <h3>Usuarios</h3>
+                        <p>Auditoria simple de la base de usuarios consolidada, con filtros por rol y busqueda textual.</p>
+                    </div>
+                    <div class="section-header-actions">
+                        <button type="button" class="btn btn-secondary" id="refreshAdminUsers">
+                            <i class="fas fa-rotate"></i>
+                            Actualizar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="admin-users-toolbar">
+                    <label>
+                        <span>Filtrar por rol</span>
+                        <select id="adminUsersRoleFilter">
+                            <option value="">Todos</option>
+                            <option value="Admin">Admin</option>
+                            <option value="ProviderAdmin">ProviderAdmin</option>
+                            <option value="Technician">Technician</option>
+                            <option value="Client">Client</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>Buscar</span>
+                        <input type="search" id="adminUsersSearch" placeholder="Nombre, apellido o email">
+                    </label>
+                </div>
+
+                <div id="adminUsersList" class="admin-user-grid route-list-surface">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Cargando usuarios...</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <nav class="mobile-bottom-nav" aria-label="Navegacion inferior del administrador global">
+            <a href="#inicio" class="nav-item active" data-section="inicio">
+                <i class="fas fa-home" aria-hidden="true"></i>
+                <span>Inicio</span>
+            </a>
+            <a href="#solicitudes" class="nav-item" data-section="solicitudes">
+                <i class="fas fa-people-arrows" aria-hidden="true"></i>
+                <span>Solicitudes</span>
+            </a>
+            <a href="#membresias" class="nav-item" data-section="membresias">
+                <i class="fas fa-id-card" aria-hidden="true"></i>
+                <span>Membresias</span>
+            </a>
+            <a href="#operaciones" class="nav-item" data-section="operaciones">
+                <i class="fas fa-clipboard-list" aria-hidden="true"></i>
+                <span>Operaciones</span>
+            </a>
+            <a href="#proveedores" class="nav-item" data-section="proveedores">
+                <i class="fas fa-building" aria-hidden="true"></i>
+                <span>Proveedores</span>
+            </a>
+            <a href="#usuarios" class="nav-item" data-section="usuarios">
+                <i class="fas fa-user-group" aria-hidden="true"></i>
+                <span>Usuarios</span>
+            </a>
+        </nav>
+    </div>
+
+    <script type="module" src="js/admin-js/admin-main.js?v=20260327-1"></script>
+</body>
+</html>

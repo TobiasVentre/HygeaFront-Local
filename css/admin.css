@@ -1,0 +1,406 @@
+.admin-request-card,
+.admin-provider-card,
+.admin-credit-movement,
+.admin-user-card,
+.admin-operation-card {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface-card) 92%, var(--surface-soft) 8%);
+  box-shadow: 0 18px 35px -28px var(--shadow-lg);
+}
+
+.admin-request-card + .admin-request-card,
+.admin-credit-movement + .admin-credit-movement {
+  margin-top: 0.9rem;
+}
+
+.admin-request-head,
+.admin-credit-movement__head,
+.admin-provider-card__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.admin-request-head h4,
+.admin-provider-card__head h4 {
+  margin: 0 0 0.2rem;
+  color: var(--text-primary);
+  font-size: 1.08rem;
+}
+
+.admin-request-head p,
+.admin-provider-card__head p,
+.admin-credit-movement p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.admin-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--info-bg) 64%, var(--surface-card) 36%);
+  color: var(--info-strong);
+}
+
+.admin-status-badge.is-pending {
+  background: color-mix(in srgb, var(--warning-bg) 72%, var(--surface-card) 28%);
+  color: var(--warning-text);
+}
+
+.admin-status-badge.is-approved,
+.admin-provider-state.is-enabled {
+  background: color-mix(in srgb, var(--success-bg) 72%, var(--surface-card) 28%);
+  color: var(--success-strong);
+}
+
+.admin-status-badge.is-rejected,
+.admin-provider-state.is-disabled {
+  background: color-mix(in srgb, var(--danger-bg) 72%, var(--surface-card) 28%);
+  color: var(--danger-strong);
+}
+
+.admin-meta-grid,
+.admin-provider-stats,
+.admin-meta-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-meta-grid {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.admin-meta-item {
+  display: grid;
+  gap: 0.28rem;
+  padding: 0.9rem 1rem;
+  border-radius: 16px;
+  border: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--surface-card) 86%, var(--surface-soft) 14%);
+}
+
+.admin-meta-item strong {
+  color: var(--text-primary);
+  font-size: 0.86rem;
+}
+
+.admin-meta-item span,
+.admin-credit-movement__head span,
+.admin-credit-movement__meta span,
+.admin-inline-feedback {
+  color: var(--text-secondary);
+}
+
+.admin-request-actions,
+.admin-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.admin-request-actions {
+  justify-content: flex-end;
+}
+
+.admin-membership-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+  gap: 1.25rem;
+}
+
+.admin-membership-side {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.admin-form-grid {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.admin-form-grid label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.admin-form-grid span {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.admin-form-grid input,
+.admin-form-grid select {
+  min-height: 44px;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface-card);
+  color: var(--text-primary);
+}
+
+.admin-inline-feedback {
+  flex: 1 1 100%;
+  font-size: 0.95rem;
+}
+
+.admin-inline-feedback.is-success {
+  color: var(--success-strong);
+}
+
+.admin-inline-feedback.is-error {
+  color: var(--danger-strong);
+}
+
+.admin-credit-movement__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.admin-credit-movement.is-consumption {
+  border-color: color-mix(in srgb, var(--warning-bg) 68%, var(--border-subtle) 32%);
+}
+
+.admin-credit-movement.is-credit {
+  border-color: color-mix(in srgb, var(--success-border) 68%, var(--border-subtle) 32%);
+}
+
+.admin-provider-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.admin-provider-layout,
+.admin-operations-layout,
+.admin-operations-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-provider-layout,
+.admin-operations-layout {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  margin-bottom: 1rem;
+}
+
+.admin-operations-grid {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.admin-checkbox-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.admin-checkbox-row input {
+  min-height: 18px;
+  width: 18px;
+}
+
+.admin-provider-admins,
+.admin-provider-technicians,
+.admin-user-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-provider-admins,
+.admin-provider-technicians {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 0.9rem;
+}
+
+.admin-provider-admins h5,
+.admin-provider-technicians h5,
+.admin-users-toolbar span {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.admin-provider-pill,
+.admin-user-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--info-bg) 70%, var(--surface-card) 30%);
+  color: var(--info-strong);
+}
+
+.admin-user-role-badge.is-admin {
+  background: color-mix(in srgb, var(--warning-bg) 72%, var(--surface-card) 28%);
+  color: var(--warning-text);
+}
+
+.admin-user-role-badge.is-provideradmin,
+.admin-provider-pill.is-provideradmin {
+  background: color-mix(in srgb, var(--success-bg) 72%, var(--surface-card) 28%);
+  color: var(--success-strong);
+}
+
+.admin-user-role-badge.is-technician,
+.admin-provider-pill.is-technician {
+  background: color-mix(in srgb, var(--info-bg) 72%, var(--surface-card) 28%);
+  color: var(--info-strong);
+}
+
+.admin-user-role-badge.is-client,
+.admin-provider-pill.is-client {
+  background: color-mix(in srgb, var(--surface-soft) 76%, var(--surface-card) 24%);
+  color: var(--text-secondary);
+}
+
+.admin-provider-edit-form,
+.admin-operation-reassign {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-provider-edit-form input,
+.admin-provider-edit-form select,
+.admin-operation-reassign select,
+.admin-users-toolbar input,
+.admin-users-toolbar select {
+  min-height: 42px;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface-card);
+  color: var(--text-primary);
+}
+
+.admin-provider-edit-actions,
+.admin-operation-reassign__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.admin-provider-people-list,
+.admin-operation-card__meta {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.admin-provider-people-item,
+.admin-user-card,
+.admin-operation-card {
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  background: color-mix(in srgb, var(--surface-card) 88%, var(--surface-soft) 12%);
+}
+
+.admin-provider-people-item strong,
+.admin-user-card strong,
+.admin-operation-card strong {
+  color: var(--text-primary);
+}
+
+.admin-provider-people-item span,
+.admin-user-card span,
+.admin-operation-card span,
+.admin-operation-card p {
+  color: var(--text-secondary);
+}
+
+.admin-operations-summary-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--warning-bg) 72%, var(--surface-card) 28%);
+  color: var(--warning-text);
+}
+
+.admin-users-toolbar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.admin-users-toolbar label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.admin-user-grid {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.admin-user-card__head,
+.admin-operation-card__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.admin-user-card__meta,
+.admin-operation-card__meta {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.admin-operation-card.is-exception {
+  border-color: color-mix(in srgb, var(--danger-bg) 62%, var(--border-subtle) 38%);
+}
+
+.admin-operation-card.is-attention {
+  border-color: color-mix(in srgb, var(--warning-bg) 62%, var(--border-subtle) 38%);
+}
+
+.admin-provider-state {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+@media (max-width: 1100px) {
+  .admin-membership-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-request-head,
+  .admin-provider-card__head,
+  .admin-credit-movement__head,
+  .admin-credit-movement__meta,
+  .admin-request-actions,
+  .admin-form-actions,
+  .admin-provider-edit-actions,
+  .admin-user-card__head,
+  .admin-operation-card__head,
+  .admin-operation-reassign__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

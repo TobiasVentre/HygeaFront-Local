@@ -302,6 +302,14 @@ body {
     box-shadow: 0 2px 6px var(--brand-glow-md);
 }
 
+.user-btn__icon {
+    font-size: 1.5rem;
+}
+
+.user-btn__chevron {
+    font-size: 0.8rem;
+}
+
 .user-btn:hover {
     background: linear-gradient(135deg, var(--brand-softer) 0%, var(--brand-soft) 100%);
     border-color: var(--brand-glow-md);
@@ -848,7 +856,6 @@ body {
     align-items: flex-start;
     gap: 1rem;
     padding: 1.25rem;
-    background: linear-gradient(135deg, var(--success-bg) 0%, var(--surface-card) 100%);
     border-bottom: 1px solid var(--border-subtle);
     flex-shrink: 0;
 }
@@ -1513,6 +1520,18 @@ body {
     transition: box-shadow 0.2s ease;
 }
 
+.profile-page-header.sticky {
+    box-shadow: 0 16px 30px -24px var(--shadow-lg);
+}
+
+.profile-header-trigger {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 1px;
+    height: 1px;
+    pointer-events: none;
+}
+
 .profile-header-content {
     display: flex;
     justify-content: space-between;
@@ -2005,6 +2024,27 @@ body {
         width: 100%;
         justify-content: center;
     }
+
+    .section-subnav {
+        gap: 0.6rem;
+    }
+
+    .section-subnav__item {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .availability-timeline-card {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        padding: 0.95rem 1rem;
+    }
+
+    .availability-agenda-date {
+        width: 100%;
+        min-width: 0;
+    }
 }
 
 @media (max-width: 480px) {
@@ -2019,6 +2059,21 @@ body {
     .modal-content {
         width: 95%;
         margin: 1rem;
+    }
+
+    .availability-day-card,
+    .availability-list-section,
+    .availability-visual-section {
+        padding: 0.9rem;
+    }
+
+    .availability-form-actions {
+        flex-direction: column;
+    }
+
+    .availability-form-actions .btn {
+        width: 100%;
+        justify-content: center;
     }
 }
 
@@ -2551,6 +2606,111 @@ body {
     border-radius: 8px;
 }
 
+.section-subnav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.section-subnav__item {
+    border: 1px solid var(--border-subtle);
+    background: var(--surface-card);
+    color: var(--text-secondary);
+    border-radius: 999px;
+    padding: 0.7rem 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.section-subnav__item:hover {
+    border-color: var(--brand-soft);
+    color: var(--brand-strong);
+    background: var(--brand-faint);
+}
+
+.section-subnav__item.is-active {
+    background: linear-gradient(135deg, var(--brand-softer) 0%, var(--brand-soft) 100%);
+    border-color: var(--brand-soft);
+    color: var(--brand-strong);
+}
+
+.availability-pane {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.availability-list-section,
+.availability-visual-section {
+    margin-top: 0;
+}
+
+.availability-agenda-date {
+    min-width: 220px;
+}
+
+.availability-day-summary,
+.availability-timeline {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.availability-timeline-card {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 1rem;
+    padding: 1rem 1.1rem;
+    border-radius: 16px;
+    border: 1px solid var(--border-subtle);
+    background: var(--surface-card);
+}
+
+.availability-timeline-card.is-availability {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--success-bg) 55%, var(--surface-card) 45%) 0%, var(--surface-card) 100%);
+}
+
+.availability-timeline-card.is-absence {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--danger-bg) 55%, var(--surface-card) 45%) 0%, var(--surface-card) 100%);
+}
+
+.availability-timeline-card__time {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.availability-timeline-card__time strong {
+    color: var(--text-primary);
+}
+
+.availability-timeline-card__time span {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.availability-timeline-card__body {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.availability-timeline-card__body p {
+    margin: 0;
+    color: var(--text-secondary);
+}
+
+.availability-timeline-card__badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    background: var(--surface-card);
+    color: var(--brand-strong);
+    border: 1px solid var(--border-subtle);
+}
+
 /* Título del día */
 .availability-day-title {
     margin-bottom: 1rem;
@@ -2629,6 +2789,18 @@ body {
 .agenda-loading {
     padding: 2rem;
     text-align: center;
+}
+
+.agenda-loading.is-info {
+    color: var(--info-text);
+}
+
+.agenda-loading.is-success {
+    color: var(--success-strong);
+}
+
+.agenda-loading.is-error {
+    color: var(--danger-strong);
 }
 
 /* Spinner */
@@ -3864,5 +4036,941 @@ body {
     .custom-calendar-days,
     .custom-calendar-weekdays {
         gap: 0.25rem;
+    }
+}
+
+.technician-agenda-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.agenda-visual-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.9rem;
+}
+
+.agenda-visual-metric {
+    display: grid;
+    gap: 0.3rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--surface-card) 92%, var(--surface-soft) 8%);
+    box-shadow: 0 18px 34px -30px var(--shadow-lg);
+}
+
+.agenda-visual-metric__label {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.agenda-visual-metric__value {
+    color: var(--text-primary);
+    font-size: 1.05rem;
+    line-height: 1.35;
+}
+
+.agenda-day-orders {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.agenda-day-card--timeline {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 18px 34px -30px var(--shadow-lg);
+}
+
+.agenda-day-scale {
+    position: relative;
+    display: block;
+    height: 1.25rem;
+    margin: 0 1.5rem;
+    border-bottom: 1px dashed var(--border-strong);
+}
+
+.agenda-day-scale__tick {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.agenda-day-orders--visual {
+    padding: 1rem 1.5rem 1.35rem;
+}
+
+.agenda-visual-row {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(220px, 260px) minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.95rem 1rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--surface-card) 94%, var(--surface-soft) 6%);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.agenda-visual-row:hover {
+    border-color: var(--brand-soft);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px -22px var(--shadow-lg);
+}
+
+.agenda-visual-row__meta {
+    display: grid;
+    gap: 0.18rem;
+    min-width: 0;
+}
+
+.agenda-visual-track {
+    position: relative;
+    min-height: 2.5rem;
+    border-radius: 999px;
+    background:
+        linear-gradient(90deg, transparent 0, transparent calc(25% - 1px), var(--border-subtle) calc(25% - 1px), var(--border-subtle) 25%, transparent 25%, transparent calc(50% - 1px), var(--border-subtle) calc(50% - 1px), var(--border-subtle) 50%, transparent 50%, transparent calc(75% - 1px), var(--border-subtle) calc(75% - 1px), var(--border-subtle) 75%, transparent 75%, transparent calc(100% - 1px), var(--border-subtle) calc(100% - 1px)),
+        color-mix(in srgb, var(--surface-page) 68%, var(--surface-soft) 32%);
+    overflow: hidden;
+}
+
+.agenda-visual-track__grid {
+    position: absolute;
+    inset: 0;
+}
+
+.agenda-visual-track__grid .agenda-day-scale__tick {
+    top: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+}
+
+.agenda-visual-bar {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 1.4rem;
+    min-width: 3rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.55rem;
+    font-size: 0.74rem;
+    font-weight: 800;
+    white-space: nowrap;
+    box-shadow: 0 10px 22px -18px var(--shadow-lg);
+}
+
+.agenda-visual-bar.status-creada {
+    background: var(--surface-subtle);
+    color: var(--text-secondary);
+}
+
+.agenda-visual-bar.status-confirmada {
+    background: var(--brand-softer);
+    color: var(--brand-ink);
+}
+
+.agenda-visual-bar.status-en-ejecucion {
+    background: var(--warning-bg);
+    color: var(--warning-text);
+}
+
+.agenda-visual-bar.status-finalizada {
+    background: var(--success-bg);
+    color: var(--success-text);
+}
+
+.agenda-visual-bar.status-excepcion {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
+
+.agenda-visual-bar.status-cerrada {
+    background: var(--surface-page);
+    color: var(--text-muted);
+}
+
+.agenda-order-item {
+    width: 100%;
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    background: var(--surface-card);
+    padding: 1rem 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.agenda-order-item:hover {
+    border-color: var(--brand-strong);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px var(--shadow-xs);
+}
+
+.agenda-order-time {
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.2rem;
+}
+
+.agenda-order-services {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.absence-card {
+    border-left: 4px solid var(--warning-border);
+}
+
+.absence-reason {
+    margin-top: 0.45rem;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.technician-orders-shell,
+.technician-order-detail-view {
+    display: grid;
+    gap: 1rem;
+}
+
+.technician-orders-panel,
+.technician-order-detail-view {
+    display: grid;
+    gap: 1rem;
+}
+
+.technician-order-detail {
+    min-height: 360px;
+}
+
+.consultation-item[data-order-id] {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.consultation-item[data-order-id]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px var(--shadow-xs);
+    border-color: var(--brand-soft);
+}
+
+.technician-order-detail-view .technician-order-detail {
+    min-height: calc(100vh - 300px);
+}
+
+.technician-order-detail-view .technician-order-detail-card {
+    min-height: 100%;
+}
+
+.technician-order-empty {
+    min-height: 320px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    color: var(--text-muted);
+    background: var(--surface-subtle);
+    text-align: center;
+    padding: 2rem;
+}
+
+.technician-order-empty i {
+    font-size: 2rem;
+    color: var(--brand-strong);
+}
+
+.technician-order-detail-card {
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    background: var(--surface-card);
+    overflow: hidden;
+}
+
+.technician-order-detail-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.35rem 1.35rem 1rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.technician-order-detail-head h3 {
+    margin: 0.25rem 0 0;
+    color: var(--text-primary);
+}
+
+.technician-order-kicker {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.technician-order-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    padding: 1.2rem 1.35rem;
+}
+
+.technician-order-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.technician-order-label {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.technician-order-alert {
+    margin: 0 1.35rem 1rem;
+    padding: 0.9rem 1rem;
+    border-radius: 12px;
+    background: var(--warning-bg);
+    color: var(--warning-text);
+    border: 1px solid var(--warning-border);
+}
+
+.technician-order-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding: 0 1.35rem 1.2rem;
+}
+
+.technician-order-actions .btn[disabled] {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.technician-order-block {
+    padding: 0 1.35rem 1.35rem;
+}
+
+.technician-order-block h4 {
+    margin: 0 0 0.9rem;
+    color: var(--text-primary);
+}
+
+.technician-order-items,
+.technician-order-history {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.technician-order-item,
+.technician-order-history-item {
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 0.95rem 1rem;
+    background: var(--surface-page);
+}
+
+.technician-order-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.technician-order-subline {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+}
+
+.technician-order-history-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.35rem;
+    color: var(--text-primary);
+}
+
+.technician-order-history-head span {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.technician-order-history-body {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.technician-evidence-cta {
+    margin: -0.35rem 1.35rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.technician-evidence-feedback {
+    margin: 0 1.35rem 1rem;
+    padding: 0.9rem 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+    background: var(--surface-subtle);
+    color: var(--text-secondary);
+}
+
+.technician-evidence-feedback.is-success {
+    background: var(--success-bg);
+    border-color: var(--success-border);
+    color: var(--success-text);
+}
+
+.technician-evidence-feedback.is-error {
+    background: var(--danger-bg);
+    border-color: var(--danger-border);
+    color: var(--danger);
+}
+
+.technician-evidence-feedback.is-info {
+    background: var(--surface-subtle);
+    border-color: var(--brand-soft);
+    color: var(--text-secondary);
+}
+
+.technician-evidence-list {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.technician-evidence-empty {
+    border: 1px dashed var(--border-strong);
+    border-radius: 12px;
+    padding: 1rem;
+    background: var(--surface-page);
+}
+
+.technician-evidence-item {
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 1rem;
+    background: var(--surface-page);
+    display: grid;
+    gap: 0.6rem;
+}
+
+.technician-evidence-preview {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+    background: var(--surface-subtle);
+    min-height: 180px;
+    display: grid;
+    place-items: center;
+}
+
+.technician-evidence-preview img {
+    display: block;
+    width: 100%;
+    max-height: 280px;
+    object-fit: cover;
+}
+
+.technician-evidence-preview.is-loading span {
+    color: var(--text-muted);
+    font-size: 0.92rem;
+}
+
+.technician-evidence-item-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.technician-evidence-item-head strong {
+    display: block;
+    color: var(--text-primary);
+}
+
+.technician-evidence-item-head span {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.technician-evidence-badge {
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    background: var(--surface-subtle);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-subtle);
+    font-size: 0.82rem;
+    white-space: nowrap;
+}
+
+.technician-evidence-item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.technician-evidence-item-meta span {
+    padding: 0.25rem 0.55rem;
+    border-radius: 999px;
+    background: var(--surface-subtle);
+}
+
+.technician-evidence-item-note {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.technician-evidence-item-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.technician-evidence-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.9rem;
+}
+
+.technician-evidence-form {
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    background: var(--surface-page);
+    padding: 1rem;
+    display: grid;
+    gap: 0.8rem;
+}
+
+.technician-evidence-form-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: baseline;
+}
+
+.technician-evidence-form-head h5 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.technician-evidence-form-head span {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.technician-evidence-upload {
+    border: 1px dashed var(--border-strong);
+    border-radius: 12px;
+    padding: 0.9rem;
+    background: var(--surface-subtle);
+    cursor: pointer;
+    display: grid;
+    gap: 0.35rem;
+}
+
+.technician-evidence-upload input {
+    display: none;
+}
+
+.technician-evidence-upload-label {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.technician-evidence-upload small {
+    color: var(--text-muted);
+}
+
+.technician-evidence-form-field {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.technician-evidence-form-field span {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.technician-evidence-form-field textarea {
+    width: 100%;
+    min-height: 92px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 0.8rem 0.9rem;
+    resize: vertical;
+    font: inherit;
+    color: var(--text-primary);
+    background: var(--surface-card);
+}
+
+.technician-evidence-form-field select {
+    width: 100%;
+    min-height: 48px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 0.8rem 0.9rem;
+    font: inherit;
+    color: var(--text-primary);
+    background: var(--surface-card);
+}
+
+.profile-static-value {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 0.9rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+    background: var(--surface-subtle);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.profile-inline-form,
+.profile-inline-history {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.profile-inline-actions {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.profile-inline-feedback {
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+}
+
+.profile-inline-feedback.is-info {
+    background: var(--brand-softer);
+    color: var(--brand-ink);
+}
+
+.profile-inline-feedback.is-success {
+    background: var(--success-bg);
+    color: var(--success-text);
+}
+
+.profile-inline-feedback.is-error {
+    background: var(--danger-bg);
+    color: var(--danger-text);
+}
+
+.profile-inline-history-title {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.profile-request-card {
+    display: grid;
+    gap: 0.9rem;
+    padding: 1rem 1.1rem;
+    border-radius: 18px;
+    border: 1px solid var(--border-subtle);
+    background: var(--surface-card);
+}
+
+.profile-request-card__head {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    align-items: flex-start;
+}
+
+.profile-request-card__head h4,
+.profile-request-card__head p {
+    margin: 0;
+}
+
+.profile-request-card__head p,
+.request-empty-text {
+    color: var(--text-muted);
+}
+
+.provider-status-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.35rem 0.7rem;
+    background: var(--surface-subtle);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.provider-meta-list {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.provider-meta-item {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.provider-meta-item strong {
+    color: var(--text-primary);
+    font-size: 0.85rem;
+}
+
+.provider-meta-item span {
+    color: var(--text-muted);
+    font-size: 0.92rem;
+}
+
+.appointment-status-badge.status-creada {
+    background: var(--surface-subtle);
+    color: var(--text-secondary);
+}
+
+.appointment-status-badge.status-confirmada {
+    background: var(--brand-softer);
+    color: var(--brand-ink);
+}
+
+.appointment-status-badge.status-en-ejecucion {
+    background: var(--warning-bg);
+    color: var(--warning-text);
+}
+
+.appointment-status-badge.status-finalizada {
+    background: var(--success-bg);
+    color: var(--success-text);
+}
+
+.appointment-status-badge.status-excepcion {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
+
+.appointment-status-badge.status-cerrada {
+    background: var(--surface-page);
+    color: var(--text-muted);
+}
+
+.app-shell-feedback-host {
+    margin-bottom: 1.25rem;
+}
+
+.app-shell-feedback {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: start;
+    padding: 1rem 1.1rem;
+    border-radius: 16px;
+    border: 1px solid var(--border-subtle);
+    background: var(--surface-card);
+    color: var(--text-secondary);
+    box-shadow: 0 18px 35px -28px var(--shadow-lg);
+}
+
+.app-shell-feedback.is-info {
+    background: var(--surface-info);
+    border-color: var(--info-border);
+    color: var(--info-text);
+}
+
+.app-shell-feedback.is-success {
+    background: var(--success-bg);
+    border-color: var(--success-border);
+    color: var(--success-strong);
+}
+
+.app-shell-feedback.is-error {
+    background: var(--danger-bg);
+    border-color: var(--danger-border);
+    color: var(--danger-strong);
+}
+
+.app-shell-feedback__content {
+    display: grid;
+    gap: 0.2rem;
+    min-width: 0;
+}
+
+.app-shell-feedback__content span {
+    overflow-wrap: anywhere;
+}
+
+.app-shell-feedback__dismiss {
+    width: 2rem;
+    height: 2rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: currentColor;
+    cursor: pointer;
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.app-shell-dialog-open {
+    overflow: hidden;
+}
+
+.app-shell-dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: rgba(15, 23, 42, 0.42);
+    backdrop-filter: blur(6px);
+}
+
+.app-shell-dialog {
+    width: min(100%, 480px);
+    display: grid;
+    gap: 1rem;
+    padding: 1.35rem;
+    border-radius: 20px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: var(--surface-card);
+    color: var(--text-primary);
+    box-shadow: 0 30px 60px -35px var(--shadow-xl);
+}
+
+.app-shell-dialog__title {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.app-shell-dialog__description {
+    margin: 0;
+    color: var(--text-secondary);
+    line-height: 1.55;
+}
+
+.app-shell-dialog__actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.btn.is-danger {
+    background: var(--danger);
+    color: var(--surface-card);
+}
+
+.btn.is-danger:hover {
+    background: var(--danger-strong);
+}
+
+.btn:focus-visible,
+.nav-item:focus-visible,
+.user-btn:focus-visible,
+.close-modal:focus-visible,
+.app-shell-feedback__dismiss:focus-visible {
+    outline: 3px solid var(--brand-soft);
+    outline-offset: 2px;
+}
+
+.modal-visually-hidden-control {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@media (max-width: 900px) {
+    .agenda-visual-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .agenda-day-scale {
+        display: none;
+    }
+
+    .agenda-visual-row,
+    .agenda-order-item,
+    .technician-order-item,
+    .technician-order-history-head,
+    .technician-order-detail-head,
+    .technician-evidence-item-head,
+    .technician-evidence-form-head {
+        grid-template-columns: 1fr;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .agenda-visual-track {
+        width: 100%;
+    }
+
+    .agenda-day-orders--visual {
+        padding: 1rem;
+    }
+
+    .technician-order-detail-grid,
+    .technician-evidence-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-request-card__head,
+    .profile-inline-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .profile-inline-actions .btn,
+    .provider-meta-list {
+        width: 100%;
+    }
+
+    .app-shell-feedback,
+    .app-shell-dialog {
+        border-radius: 16px;
+    }
+
+    .app-shell-dialog__actions {
+        flex-direction: column-reverse;
+    }
+
+    .app-shell-dialog__actions .btn {
+        width: 100%;
     }
 }

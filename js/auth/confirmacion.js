@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Solo permitir letras y números en el código (sin espacios ni caracteres especiales)
     codeInput.addEventListener("input", (e) => {
-        e.target.value = e.target.value.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+        e.target.value = e.target.value.replace(/[^A-Za-z0-9]/g, "");
     });
 
     function showFeedback(message, type = "info") {

@@ -58,6 +58,15 @@ let currentTechniciansById = new Map();
 let isClientBootstrapComplete = false;
 const ACTIVE_RESERVATION_STATUSES = new Set([1, 2, 3, "Created", "Confirmed", "InProgress"]);
 
+function logClientAvailability(message, payload = null) {
+  if (payload === null) {
+    console.log(`[ClientAvailability] ${message}`);
+    return;
+  }
+
+  console.log(`[ClientAvailability] ${message}`, payload);
+}
+
 function getErrorMessage(error, fallbackMessage) {
   if (!error) return fallbackMessage;
   if (typeof error.message === "string" && error.message.trim() !== "") return error.message;
@@ -672,6 +681,7 @@ async function loadServiceOptions() {
   if (!select) return;
 
   currentServiceOfferings = await FrontGateway.catalog.getEnabledServiceOfferings();
+  logClientAvailability("Service offerings loaded", currentServiceOfferings);
   select.innerHTML = '<option value="">Seleccionar servicio</option>';
 
   for (const service of currentServiceOfferings) {
@@ -912,6 +922,9 @@ function addSelectedItem() {
     quantity
   });
 
+  logClientAvailability("Added order item", currentOrderItems[currentOrderItems.length - 1]);
+  logClientAvailability("Current order items", currentOrderItems);
+
   renderOrderItems();
   select.value = "";
   quantityInput.value = "1";
@@ -1110,6 +1123,12 @@ async function refreshSuggestedSlots() {
   const container = document.getElementById("suggested-slots-list");
   const requestedDate = getRequestedDateValue();
 
+  logClientAvailability("Refreshing suggested slots", {
+    providerEntityId,
+    requestedDate,
+    currentOrderItems
+  });
+
   resetOrderSelection();
   updateSelectedSlotSummary();
 
@@ -1127,6 +1146,7 @@ async function refreshSuggestedSlots() {
   }
 
   const requestedDurationMinutes = getRequestedDurationMinutes();
+  logClientAvailability("Requested duration minutes", requestedDurationMinutes);
   if (!Number.isInteger(requestedDurationMinutes) || requestedDurationMinutes <= 0) {
     currentSuggestedSlots = [];
     renderSuggestedSlots();
@@ -1153,10 +1173,12 @@ async function refreshSuggestedSlots() {
   showRequestFeedback("");
 
   const technicians = await FrontGateway.directory.getTechniciansByProvider(providerEntityId);
+  logClientAvailability("Technicians by provider", technicians);
   const activeTechnicians = technicians.filter((technician) => {
     const status = technician.status ?? technician.Status;
     return status === TECHNICIAN_STATUS_ACTIVE;
   });
+  logClientAvailability("Active technicians", activeTechnicians);
 
   if (activeTechnicians.length === 0) {
     currentSuggestedSlots = [];
@@ -1177,14 +1199,24 @@ async function refreshSuggestedSlots() {
           FrontGateway.scheduling.getBusyPeriodsByTechnician(technicianId)
         ]);
 
+        logClientAvailability(`Snapshot for technician ${technicianId}`, {
+          availability,
+          absences,
+          reservations
+        });
+
         return { availability, absences, reservations };
-      } catch {
+      } catch (error) {
+        logClientAvailability(`Snapshot failed for technician ${technicianId}`, error);
         return { availability: [], absences: [], reservations: [] };
       }
     })
   );
 
+  logClientAvailability("Snapshots by technician", snapshotsByTechnician);
+
   currentSuggestedSlots = buildSuggestedSlots(activeTechnicians, snapshotsByTechnician, requestedDurationMinutes);
+  logClientAvailability("Suggested slots", currentSuggestedSlots);
   renderSuggestedSlots();
 
   if (currentSuggestedSlots.length === 0) {

@@ -803,6 +803,11 @@ export const FrontGateway = {
       const data = await ApiScheduling.get(`reservations/technician/${technicianId}`);
       return Array.isArray(data) ? data : [];
     },
+    async getBusyPeriodsByTechnician(technicianId) {
+      if (!isGuid(technicianId)) throw new Error("TechnicianId invalido para SchedulingMS.");
+      const data = await ApiScheduling.get(`reservations/technician/${technicianId}/busy-periods`);
+      return Array.isArray(data) ? data : [];
+    },
     async getReservationById(reservationId) {
       if (!isGuid(reservationId)) throw new Error("ReservationId invalido para SchedulingMS.");
       return await ApiScheduling.get(`reservations/${reservationId}`);

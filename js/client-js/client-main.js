@@ -1174,7 +1174,7 @@ async function refreshSuggestedSlots() {
         const [availability, absences, reservations] = await Promise.all([
           FrontGateway.scheduling.getAvailabilityByTechnician(technicianId, fromUtc, toUtc),
           FrontGateway.scheduling.getAbsencesByTechnician(technicianId, fromUtc, toUtc),
-          FrontGateway.scheduling.getReservationsByTechnician(technicianId)
+          FrontGateway.scheduling.getBusyPeriodsByTechnician(technicianId)
         ]);
 
         return { availability, absences, reservations };

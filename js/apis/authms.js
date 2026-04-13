@@ -59,6 +59,26 @@ export async function resendVerificationEmail(email) {
     }
 }
 
+export async function requestPasswordReset(email) {
+    try {
+        console.log('📧 Solicitando blanqueo para:', email);
+        return await ApiAuth.post("Auth/PasswordResetRequest", { email });
+    } catch (error) {
+        console.error("❌ Error en requestPasswordReset:", error);
+        throw new Error(error.message || "Error al solicitar el blanqueo de clave");
+    }
+}
+
+export async function confirmPasswordReset(email, resetCode, newPassword) {
+    try {
+        console.log('🔐 Confirmando blanqueo para:', email);
+        return await ApiAuth.post("Auth/PasswordResetConfirm", { email, resetCode, newPassword });
+    } catch (error) {
+        console.error("❌ Error en confirmPasswordReset:", error);
+        throw new Error(error.message || "Error al restablecer la contrasena");
+    }
+}
+
 /**
  * Extrae los datos del usuario desde el JWT almacenado
  * Ya no necesita llamar al backend porque el token contiene toda la info

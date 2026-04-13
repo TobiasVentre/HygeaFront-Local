@@ -34,6 +34,34 @@
                     <div class="error-message" id="emailError"></div>
                 </div>
 
+                <div id="resetConfirmFields" style="display:none;">
+                    <div class="form-group">
+                        <label for="resetCode">Codigo de restablecimiento</label>
+                        <div class="input-icon">
+                            <i class="fas fa-key"></i>
+                            <input type="text" id="resetCode" name="resetCode" placeholder="XXXXXX" maxlength="6" pattern="[A-Za-z0-9]{6}">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newPassword">Nueva contrasena</label>
+                        <div class="input-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="newPassword" name="newPassword" minlength="8" placeholder="Minimo 8 caracteres">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirmar contrasena</label>
+                        <div class="input-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="confirmPassword" name="confirmPassword" minlength="8" placeholder="Repite la contrasena">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="confirm-feedback" id="resetFeedback" role="alert" aria-live="polite" style="display:none;"></div>
+
                 <button type="submit" class="blanqueo-button" id="blanqueoButton">
                     <i class="fas fa-paper-plane"></i>
                     Enviar Instrucciones
@@ -48,6 +76,6 @@
         </div>
     </div>
 
-    <script src="js/blanqueo.js"></script>
+    <script type="module" src="js/blanqueo.js"></script>
 </body>
 </html>

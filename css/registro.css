@@ -369,6 +369,31 @@
             background: var(--success);
         }
 
+        .password-req-list {
+            list-style: none;
+            padding: 0;
+            margin: 0.4rem 0 0;
+            font-size: 0.8rem;
+            display: none;
+        }
+
+        .password-req-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--text-muted);
+            margin: 0.15rem 0;
+            transition: color 0.2s;
+        }
+
+        .password-req-list li.pwd-req--met {
+            color: var(--success, #22c55e);
+        }
+
+        .pwd-req-icon {
+            font-size: 0.7rem;
+        }
+
         .terms-checkbox {
             display: flex;
             align-items: flex-start;

@@ -336,9 +336,19 @@
                                         <option value="">Seleccionar servicio</option>
                                     </select>
                                 </label>
-                                <label>Cantidad
-                                    <input id="service-quantity" type="number" min="1" value="1">
+                                <label>Cantidad (máx. 5)
+                                    <input id="service-quantity" type="number" min="1" max="5" value="1">
                                 </label>
+                            </div>
+
+                            <div id="service-preview" class="service-preview hidden">
+                                <i class="fas fa-tag service-preview__icon"></i>
+                                <span id="service-preview-price" class="service-preview__price"></span>
+                                <span class="service-preview__sep">·</span>
+                                <i class="fas fa-clock service-preview__icon"></i>
+                                <span id="service-preview-duration" class="service-preview__duration"></span>
+                                <span class="service-preview__sep">·</span>
+                                <span id="service-preview-total" class="service-preview__total"></span>
                             </div>
 
                             <div class="request-form-actions">

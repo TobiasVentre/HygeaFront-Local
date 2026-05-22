@@ -256,6 +256,7 @@ function getPageRefs() {
     technicianProviderChangeFeedback: document.getElementById("technicianProviderChangeFeedback"),
     technicianProviderChangeRequests: document.getElementById("technicianProviderChangeRequests"),
     manageSchedule: document.getElementById("manageSchedule"),
+    viewAgendaBtn: document.getElementById("viewAgendaBtn"),
     viewClients: document.getElementById("viewClients"),
     emitPrescription: document.getElementById("emitPrescription"),
     navItems: Array.from(document.querySelectorAll(".sidebar-nav .nav-item"))
@@ -2139,6 +2140,7 @@ function setupNavigation() {
     });
   });
 
+  refs.viewAgendaBtn?.addEventListener("click", (event) => { event.preventDefault(); setSection("agenda"); });
   refs.manageSchedule?.addEventListener("click", () => setSection("disponibilidad"));
   refs.viewClients?.addEventListener("click", () => setSection("ordenes"));
   refs.emitPrescription?.addEventListener("click", () => {

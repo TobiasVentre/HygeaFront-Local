@@ -194,7 +194,7 @@ function getStatusValue(status) {
 }
 
 function requiresProviderDecision(statusValue) {
-  return statusValue === ORDER_STATUS_VALUES.Created || statusValue === ORDER_STATUS_VALUES.Approved;
+  return statusValue === ORDER_STATUS_VALUES.Created;
 }
 
 function isActiveOrderStatus(statusValue) {

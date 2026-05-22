@@ -860,9 +860,14 @@ function renderOrderItems() {
     <div class="request-order-item">
       <div>
         <strong>${escapeHtml(item.serviceName)}</strong><br>
-        <span class="request-order-item__meta">Cantidad: ${item.quantity} - Precio unitario: ${formatCurrency(item.unitPrice)} - Duracion por unidad: ${formatDurationMinutes(item.durationMinutes)}</span>
+        <span class="request-order-item__meta">${formatCurrency(item.unitPrice)} c/u · ${formatDurationMinutes(item.durationMinutes)} c/u</span>
       </div>
       <div class="request-order-item__totals">
+        <div class="request-qty-control">
+          <button type="button" class="request-qty-btn qty-minus" data-index="${index}" ${item.quantity <= 1 ? "disabled" : ""} aria-label="Reducir cantidad">−</button>
+          <span class="request-qty-value">${item.quantity}</span>
+          <button type="button" class="request-qty-btn qty-plus" data-index="${index}" ${item.quantity >= 5 ? "disabled" : ""} aria-label="Aumentar cantidad">+</button>
+        </div>
         <span class="request-order-item__amount">${formatCurrency(item.unitPrice * item.quantity)}</span>
         <span class="request-order-item__meta">${formatDurationMinutes(item.durationMinutes * item.quantity)}</span>
         <button type="button" data-index="${index}" class="remove-order-item request-order-item__remove">
@@ -871,6 +876,28 @@ function renderOrderItems() {
       </div>
     </div>
   `).join("");
+
+  container.querySelectorAll(".qty-minus").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const index = Number(btn.dataset.index);
+      if (currentOrderItems[index] && currentOrderItems[index].quantity > 1) {
+        currentOrderItems[index].quantity -= 1;
+        renderOrderItems();
+        refreshSuggestedSlots().catch((error) => showRequestFeedback(error.message, "error"));
+      }
+    });
+  });
+
+  container.querySelectorAll(".qty-plus").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const index = Number(btn.dataset.index);
+      if (currentOrderItems[index] && currentOrderItems[index].quantity < 5) {
+        currentOrderItems[index].quantity += 1;
+        renderOrderItems();
+        refreshSuggestedSlots().catch((error) => showRequestFeedback(error.message, "error"));
+      }
+    });
+  });
 
   container.querySelectorAll(".remove-order-item").forEach((button) => {
     button.addEventListener("click", () => {
@@ -903,6 +930,11 @@ function addSelectedItem() {
     return;
   }
 
+  if (quantity > 5) {
+    showRequestFeedback("La cantidad máxima por servicio es 5.", "error");
+    return;
+  }
+
   if (Number(selectedOption.dataset.price || 0) <= 0) {
     showRequestFeedback("El servicio seleccionado no tiene un precio valido para crear la orden.", "error");
     return;
@@ -928,6 +960,7 @@ function addSelectedItem() {
   renderOrderItems();
   select.value = "";
   quantityInput.value = "1";
+  select.dispatchEvent(new Event("change")); // limpia el preview
   showRequestFeedback("Servicio agregado a la orden.", "success");
   refreshSuggestedSlots().catch((error) => showRequestFeedback(error.message, "error"));
 }
@@ -1650,6 +1683,34 @@ function registerEvents() {
   };
 
   addItemButton?.addEventListener("click", addSelectedItem);
+
+  // Preview de precio y duración al seleccionar un servicio
+  const serviceSelect = document.getElementById("service-offering");
+  const servicePreview = document.getElementById("service-preview");
+  const previewPrice = document.getElementById("service-preview-price");
+  const previewDuration = document.getElementById("service-preview-duration");
+  const previewTotal = document.getElementById("service-preview-total");
+  const quantityInput = document.getElementById("service-quantity");
+
+  function updateServicePreview() {
+    const option = serviceSelect?.selectedOptions?.[0];
+    const price = Number(option?.dataset?.price || 0);
+    const duration = Number(option?.dataset?.durationMinutes || 0);
+    const qty = Number(quantityInput?.value || 1);
+
+    if (!serviceSelect?.value || price <= 0) {
+      servicePreview?.classList.add("hidden");
+      return;
+    }
+
+    if (previewPrice) previewPrice.textContent = `${formatCurrency(price)} c/u`;
+    if (previewDuration) previewDuration.textContent = formatDurationMinutes(duration);
+    if (previewTotal) previewTotal.textContent = `Total: ${formatCurrency(price * qty)}`;
+    servicePreview?.classList.remove("hidden");
+  }
+
+  serviceSelect?.addEventListener("change", updateServicePreview);
+  quantityInput?.addEventListener("input", updateServicePreview);
   statusFilter?.addEventListener("change", renderOrders);
   refreshRecentHistoryButton?.addEventListener("click", refreshOrders);
   refreshOrdersSectionButton?.addEventListener("click", refreshOrders);

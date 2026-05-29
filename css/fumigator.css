@@ -47,7 +47,17 @@ body {
     padding-top: 4.5rem;
     overflow-y: auto;
     position: relative;
-    
+}
+
+/* Neutralise the 70px margin-top that dashboard-shell.css adds to .overview-shell.
+   The padding-top on .dashboard-content already handles the topbar clearance. */
+.overview-shell {
+    margin-top: 0;
+}
+
+/* Hidden by default; shown only inside the ≤1024px media query below */
+.mobile-bottom-nav {
+    display: none;
 }
 
 .dashboard-title {
@@ -4972,5 +4982,106 @@ body {
 
     .app-shell-dialog__actions .btn {
         width: 100%;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE ≤1024px — fix sidebar overlap + mobile bottom nav
+   ============================================================
+   Root-cause: this file loads AFTER dashboard-shell.css, so
+   fumigator.css BASE rules beat shell.css @media rules at equal
+   specificity. We fix that here with an explicit ≤1024px block
+   that wins on source order.
+   ============================================================ */
+@media (max-width: 1024px) {
+
+    /* 1. Make the topbar stretch full-width and stick to the top
+          (sidebar is hidden by shell.css at this breakpoint, so
+          left: 250px would leave a dead zone — we reset it here) */
+    .topbar {
+        position: sticky;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+    }
+
+    /* 2. Remove topbar clearance from padding-top (sticky takes it)
+          and add bottom padding so content clears the mobile nav bar */
+    .dashboard-content {
+        padding-top: 1.25rem;
+        padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* 3. Kill the shell-level margin-top so the hero isn't double-spaced */
+    .overview-shell,
+    .dashboard-section {
+        margin-top: 0;
+    }
+
+    /* 4. Mobile bottom navigation bar */
+    .mobile-bottom-nav {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 130;
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 0.25rem;
+        padding: 0.6rem 0.5rem calc(0.6rem + env(safe-area-inset-bottom, 0px));
+        border-top: 1px solid var(--border-subtle);
+        background: color-mix(in srgb, var(--surface-card) 92%, var(--surface-page) 8%);
+        box-shadow: 0 -12px 28px -24px var(--shadow-xl);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+    }
+
+    .mobile-bottom-nav .nav-item {
+        min-width: 0;
+        margin: 0;
+        padding: 0.55rem 0.25rem;
+        border: 1px solid transparent;
+        border-left: none;
+        border-radius: 16px;
+        display: grid;
+        justify-items: center;
+        gap: 0.2rem;
+        color: var(--text-muted);
+        background: transparent;
+        font-size: inherit;
+        text-decoration: none;
+        transition: color 0.2s, background 0.2s, border-color 0.2s;
+    }
+
+    .mobile-bottom-nav .nav-item i {
+        width: auto;
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .mobile-bottom-nav .nav-item span {
+        font-size: 0.65rem;
+        font-weight: 700;
+        line-height: 1.1;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
+    .mobile-bottom-nav .nav-item.active,
+    .mobile-bottom-nav .nav-item[aria-current="page"] {
+        color: var(--brand-strong);
+        background: var(--brand-faint);
+        border-color: color-mix(in srgb, var(--brand-soft) 60%, transparent 40%);
+    }
+
+    .mobile-bottom-nav .nav-item:hover {
+        border-left: none;
+        color: var(--brand-strong);
+        background: var(--surface-soft);
+        border-color: var(--border-subtle);
     }
 }

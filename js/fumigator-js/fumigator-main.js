@@ -259,7 +259,7 @@ function getPageRefs() {
     viewAgendaBtn: document.getElementById("viewAgendaBtn"),
     viewClients: document.getElementById("viewClients"),
     emitPrescription: document.getElementById("emitPrescription"),
-    navItems: Array.from(document.querySelectorAll(".sidebar-nav .nav-item"))
+    navItems: Array.from(document.querySelectorAll(".nav-item[data-section]"))
   };
 }
 

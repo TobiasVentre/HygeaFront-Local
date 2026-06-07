@@ -1955,6 +1955,15 @@ function setupAvailabilityActions() {
   refs.availabilityForm?.addEventListener("submit", submitAvailabilityForm);
   refs.availabilityCancelEditBtn?.addEventListener("click", resetAvailabilityForm);
   refs.availabilityAgendaDate?.addEventListener("change", renderAvailabilityDaySummary);
+
+  // Preset chips — llenan Desde/Hasta con un clic
+  refs.availabilityForm?.addEventListener("click", (event) => {
+    const chip = event.target.closest(".avail-preset-chip");
+    if (!chip) return;
+    event.preventDefault();
+    if (refs.availabilityStartTime) refs.availabilityStartTime.value = chip.dataset.start || "";
+    if (refs.availabilityEndTime) refs.availabilityEndTime.value = chip.dataset.end || "";
+  });
   refs.availabilitySubnav?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-availability-view]");
     if (!button) return;
@@ -1989,6 +1998,15 @@ function setupAbsenceActions() {
   const refs = getPageRefs();
   refs.absenceForm?.addEventListener("submit", submitAbsenceForm);
   refs.absenceCancelEditBtn?.addEventListener("click", resetAbsenceForm);
+
+  // Preset chips — llenan Desde/Hasta con un clic
+  refs.absenceForm?.addEventListener("click", (event) => {
+    const chip = event.target.closest(".avail-preset-chip");
+    if (!chip) return;
+    event.preventDefault();
+    if (refs.absenceStartTime) refs.absenceStartTime.value = chip.dataset.start || "";
+    if (refs.absenceEndTime) refs.absenceEndTime.value = chip.dataset.end || "";
+  });
 
   refs.absenceList?.addEventListener("click", async (event) => {
     const actionButton = event.target.closest("[data-action]");

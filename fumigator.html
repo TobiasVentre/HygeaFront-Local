@@ -270,88 +270,100 @@
                 </div>
 
                 <div class="availability-pane" id="availabilityViewAvailability">
-                    <div class="availability-day-card">
-                        <form id="availabilityForm" class="availability-form" novalidate>
-                            <div class="profile-fields-row">
-                                <div class="profile-field">
-                                    <label class="availability-label" for="availabilityDate">Dia</label>
-                                    <input type="date" id="availabilityDate" class="availability-input" required>
-                                </div>
-                                <div class="profile-field">
-                                    <label class="availability-label" for="availabilityStartTime">Desde</label>
-                                    <input type="time" id="availabilityStartTime" class="availability-input" required>
-                                </div>
-                                <div class="profile-field">
-                                    <label class="availability-label" for="availabilityEndTime">Hasta</label>
-                                    <input type="time" id="availabilityEndTime" class="availability-input" required>
-                                </div>
-                            </div>
-
-                            <div class="availability-form-actions">
-                                <button type="submit" class="btn btn-primary" id="availabilitySubmitBtn">Guardar disponibilidad</button>
-                                <button type="button" class="btn btn-secondary hidden" id="availabilityCancelEditBtn">Cancelar edicion</button>
-                            </div>
-
-                            <div id="availabilityFeedback" class="agenda-loading hidden"></div>
-                        </form>
-                    </div>
-
-                    <div class="dashboard-section availability-list-section">
-                        <div class="section-header">
+                    <div class="dashboard-section">
+                        <header class="section-header">
                             <div>
-                                <h3>Proximos bloques</h3>
-                                <p>Ventana de trabajo cargada para los proximos 21 dias.</p>
+                                <h3>Bloques de disponibilidad</h3>
+                                <p>Cargá las franjas en las que estás disponible para recibir órdenes.</p>
                             </div>
+                        </header>
+
+                        <form id="availabilityForm" class="avail-form" novalidate>
+                            <div class="avail-presets">
+                                <span class="avail-preset-label">Acceso rápido:</span>
+                                <button type="button" class="avail-preset-chip" data-start="08:00" data-end="12:00">Mañana · 08–12h</button>
+                                <button type="button" class="avail-preset-chip" data-start="13:00" data-end="18:00">Tarde · 13–18h</button>
+                                <button type="button" class="avail-preset-chip" data-start="08:00" data-end="18:00">Día completo · 08–18h</button>
+                            </div>
+                            <div class="avail-form-row">
+                                <div class="avail-field">
+                                    <label class="avail-label" for="availabilityDate">Día</label>
+                                    <input type="date" id="availabilityDate" class="avail-input" required>
+                                </div>
+                                <div class="avail-field avail-field--time">
+                                    <label class="avail-label" for="availabilityStartTime">Desde</label>
+                                    <input type="time" id="availabilityStartTime" class="avail-input" required>
+                                </div>
+                                <div class="avail-field avail-field--time">
+                                    <label class="avail-label" for="availabilityEndTime">Hasta</label>
+                                    <input type="time" id="availabilityEndTime" class="avail-input" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary avail-submit-btn" id="availabilitySubmitBtn">Guardar disponibilidad</button>
+                            </div>
+                            <div class="avail-form-footer">
+                                <button type="button" class="btn btn-secondary hidden" id="availabilityCancelEditBtn">Cancelar edición</button>
+                                <div id="availabilityFeedback" class="agenda-loading hidden"></div>
+                            </div>
+                        </form>
+
+                        <hr class="avail-divider">
+
+                        <div class="avail-list-header">
+                            <h4 class="avail-list-title">Próximos bloques</h4>
+                            <span class="avail-list-hint">Próximos 21 días</span>
                         </div>
                         <div id="availabilityList" class="consultations-list"></div>
                     </div>
                 </div>
 
                 <div class="availability-pane hidden" id="availabilityViewAbsences">
-                    <div class="dashboard-section availability-list-section">
-                        <div class="section-header">
+                    <div class="dashboard-section">
+                        <header class="section-header">
                             <div>
                                 <h3>Ausencias programadas</h3>
-                                <p>Bloquea periodos en los que no deberias recibir ordenes.</p>
+                                <p>Bloquea períodos en los que no deberías recibir órdenes.</p>
                             </div>
-                        </div>
+                        </header>
 
-                        <form id="absenceForm" class="availability-form" novalidate>
-                            <div class="profile-fields-row">
-                                <div class="profile-field">
-                                    <label class="availability-label" for="absenceDate">Dia</label>
-                                    <input type="date" id="absenceDate" class="availability-input" required>
+                        <form id="absenceForm" class="avail-form" novalidate>
+                            <div class="avail-presets">
+                                <span class="avail-preset-label">Bloquear rápido:</span>
+                                <button type="button" class="avail-preset-chip" data-start="08:00" data-end="12:00">Mañana · 08–12h</button>
+                                <button type="button" class="avail-preset-chip" data-start="13:00" data-end="18:00">Tarde · 13–18h</button>
+                                <button type="button" class="avail-preset-chip" data-start="08:00" data-end="18:00">Día completo · 08–18h</button>
+                            </div>
+                            <div class="avail-form-row avail-form-row--3col">
+                                <div class="avail-field">
+                                    <label class="avail-label" for="absenceDate">Día</label>
+                                    <input type="date" id="absenceDate" class="avail-input" required>
                                 </div>
-                                <div class="profile-field">
-                                    <label class="availability-label" for="absenceStartTime">Desde</label>
-                                    <input type="time" id="absenceStartTime" class="availability-input" required>
+                                <div class="avail-field avail-field--time">
+                                    <label class="avail-label" for="absenceStartTime">Desde</label>
+                                    <input type="time" id="absenceStartTime" class="avail-input" required>
                                 </div>
-                                <div class="profile-field">
-                                    <label class="availability-label" for="absenceEndTime">Hasta</label>
-                                    <input type="time" id="absenceEndTime" class="availability-input" required>
+                                <div class="avail-field avail-field--time">
+                                    <label class="avail-label" for="absenceEndTime">Hasta</label>
+                                    <input type="time" id="absenceEndTime" class="avail-input" required>
                                 </div>
                             </div>
-
-                            <div class="profile-field">
-                                <label class="availability-label" for="absenceReason">Motivo</label>
-                                <input type="text" id="absenceReason" class="availability-input" placeholder="Ej. licencia, clima, formacion interna" required>
+                            <div class="avail-form-row avail-form-row--motivo">
+                                <div class="avail-field">
+                                    <label class="avail-label" for="absenceReason">Motivo</label>
+                                    <input type="text" id="absenceReason" class="avail-input" placeholder="Ej. licencia, clima, formación interna" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary avail-submit-btn" id="absenceSubmitBtn">Guardar ausencia</button>
                             </div>
-
-                            <div class="availability-form-actions">
-                                <button type="submit" class="btn btn-primary" id="absenceSubmitBtn">Guardar ausencia</button>
-                                <button type="button" class="btn btn-secondary hidden" id="absenceCancelEditBtn">Cancelar edicion</button>
+                            <div class="avail-form-footer">
+                                <button type="button" class="btn btn-secondary hidden" id="absenceCancelEditBtn">Cancelar edición</button>
+                                <div id="absenceFeedback" class="agenda-loading hidden"></div>
                             </div>
-
-                            <div id="absenceFeedback" class="agenda-loading hidden"></div>
                         </form>
-                    </div>
 
-                    <div class="dashboard-section availability-list-section">
-                        <div class="section-header">
-                            <div>
-                                <h3>Bloqueos cargados</h3>
-                                <p>Listado de ausencias activas para los proximos 21 dias.</p>
-                            </div>
+                        <hr class="avail-divider">
+
+                        <div class="avail-list-header">
+                            <h4 class="avail-list-title">Bloqueos activos</h4>
+                            <span class="avail-list-hint">Próximos 21 días</span>
                         </div>
                         <div id="absenceList" class="consultations-list"></div>
                     </div>
@@ -359,14 +371,15 @@
 
                 <div class="availability-pane hidden" id="availabilityViewAgendaDay">
                     <div class="dashboard-section availability-visual-section">
-                        <div class="section-header">
+                        <header class="section-header">
                             <div>
-                                <h3>Agenda por dia</h3>
-                                <p>Visualiza disponibilidad y bloqueos del dia que selecciones.</p>
+                                <h3>Agenda por día</h3>
+                                <p>Visualiza disponibilidad y bloqueos del día que selecciones.</p>
                             </div>
-                            <div class="section-header-actions">
-                                <input type="date" id="availabilityAgendaDate" class="availability-input availability-agenda-date">
-                            </div>
+                        </header>
+                        <div class="avail-date-picker-row">
+                            <label class="avail-label" for="availabilityAgendaDate">Seleccionar día</label>
+                            <input type="date" id="availabilityAgendaDate" class="avail-input avail-input--date-inline">
                         </div>
                         <div id="availabilityDaySummary" class="availability-day-summary"></div>
                     </div>

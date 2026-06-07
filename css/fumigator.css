@@ -4986,6 +4986,194 @@ body {
 }
 
 /* ============================================================
+   DISPONIBILIDAD — Formulario compacto remodelado
+   ============================================================ */
+
+.avail-form {
+    display: grid;
+    gap: 0.85rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Chips de acceso rápido */
+.avail-presets {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding: 0.6rem 0.75rem;
+    background: color-mix(in srgb, var(--surface-page) 60%, var(--surface-card) 40%);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+}
+
+.avail-preset-label {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.avail-preset-chip {
+    padding: 0.3rem 0.85rem;
+    border: 1.5px solid var(--border-subtle);
+    border-radius: 999px;
+    background: var(--surface-card);
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.15s;
+    white-space: nowrap;
+    line-height: 1.4;
+}
+
+.avail-preset-chip:hover {
+    background: var(--brand-faint);
+    border-color: var(--brand-soft);
+    color: var(--brand-strong);
+    transform: translateY(-1px);
+}
+
+.avail-preset-chip:active {
+    transform: translateY(0);
+}
+
+/* Fila principal del formulario: [Día] [Desde] [Hasta] [Botón] */
+.avail-form-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 0.75rem;
+    align-items: end;
+}
+
+/* Variante 3 columnas — para ausencias, fila 1 sin botón */
+.avail-form-row--3col {
+    grid-template-columns: 2fr 1fr 1fr;
+}
+
+/* Variante motivo + botón — para ausencias, fila 2 */
+.avail-form-row--motivo {
+    grid-template-columns: 1fr auto;
+}
+
+/* Campo individual: label + input apilados */
+.avail-field {
+    display: grid;
+    gap: 0.3rem;
+}
+
+.avail-label {
+    font-size: 0.83rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    letter-spacing: 0.01em;
+}
+
+/* Input unificado para date y time */
+.avail-input {
+    width: 100%;
+    padding: 0.72rem 0.9rem;
+    border: 1.5px solid var(--border-subtle);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: var(--surface-muted);
+    color: var(--text-primary);
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.avail-input:focus {
+    outline: none;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-glow-sm);
+    background: var(--surface-card);
+}
+
+/* El botón de submit vive en la fila del form, alineado al fondo */
+.avail-submit-btn {
+    align-self: end;
+    white-space: nowrap;
+    height: fit-content;
+}
+
+/* Footer: cancelar + feedback */
+.avail-form-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 1.5rem;
+}
+
+/* Divisor entre form y lista */
+.avail-divider {
+    border: none;
+    border-top: 1px solid var(--border-subtle);
+    margin: 1.5rem 0 1rem;
+}
+
+/* Header de la lista inline */
+.avail-list-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
+}
+
+.avail-list-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.avail-list-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* Date picker en "Agenda por día" — debajo del header, alineado a la izquierda */
+.avail-date-picker-row {
+    display: grid;
+    gap: 0.3rem;
+    width: fit-content;
+    min-width: 200px;
+    margin-bottom: 1.25rem;
+}
+
+.avail-input--date-inline {
+    width: auto;
+}
+
+/* Responsive ≤768px — formulario en columnas apiladas */
+@media (max-width: 768px) {
+    .avail-form-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .avail-form-row .avail-submit-btn {
+        grid-column: 1 / -1;
+        width: 100%;
+    }
+
+    .avail-form-row--3col {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .avail-form-row--motivo {
+        grid-template-columns: 1fr;
+    }
+
+    .avail-form-row--motivo .avail-submit-btn {
+        width: 100%;
+    }
+}
+
+/* ============================================================
    RESPONSIVE ≤1024px — fix sidebar overlap + mobile bottom nav
    ============================================================
    Root-cause: this file loads AFTER dashboard-shell.css, so

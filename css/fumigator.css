@@ -5272,4 +5272,11 @@ body {
         background: var(--surface-soft);
         border-color: var(--border-subtle);
     }
+
+    /* 5. Hide the desktop sidebar — the base rule in this file sets
+          display:flex which wins over shell.css's @media display:none
+          because fumigator.css loads later. We re-apply it here. */
+    .dashboard-sidebar {
+        display: none;
+    }
 }

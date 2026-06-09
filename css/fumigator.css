@@ -5151,8 +5151,21 @@ body {
 
 /* Responsive ≤768px — formulario en columnas apiladas */
 @media (max-width: 768px) {
+    /* El pane y el form deben estar acotados al ancho del contenedor */
+    .availability-pane {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .avail-form {
+        min-width: 0;
+        width: 100%;
+    }
+
     .avail-form-row {
         grid-template-columns: 1fr 1fr;
+        min-width: 0;         /* el row mismo no desborda */
+        width: 100%;
     }
 
     .avail-form-row .avail-submit-btn {
@@ -5170,6 +5183,38 @@ body {
 
     .avail-form-row--motivo .avail-submit-btn {
         width: 100%;
+    }
+
+    /* Evita que los ítems del grid se expandan más allá de su celda
+       (CSS grid: min-width:auto por defecto causa desborde) */
+    .avail-field,
+    .avail-form-row > *,
+    .avail-form-row--3col > *,
+    .avail-form-row--motivo > * {
+        min-width: 0;
+    }
+
+    /* Presets: que los chips hagan wrap sin romper el contenedor */
+    .avail-presets {
+        gap: 0.4rem;
+        flex-wrap: wrap;
+    }
+}
+
+/* Responsive ≤480px — columna única para pantallas muy estrechas */
+@media (max-width: 480px) {
+    .avail-form-row,
+    .avail-form-row--3col {
+        grid-template-columns: 1fr;
+    }
+
+    .avail-form-row .avail-submit-btn {
+        grid-column: auto;
+        width: 100%;
+    }
+
+    .avail-form-row--motivo {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -5194,17 +5239,26 @@ body {
         z-index: 100;
     }
 
-    /* 2. Remove topbar clearance from padding-top (sticky takes it)
+    /* 2. Remove topbar clearance from padding-top (sticky takes it),
+          reduce horizontal padding so nested sections don't eat all width,
           and add bottom padding so content clears the mobile nav bar */
     .dashboard-content {
         padding-top: 1.25rem;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
         padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
     }
 
-    /* 3. Kill the shell-level margin-top so the hero isn't double-spaced */
+    /* 3. Kill the shell-level margin-top so the hero isn't double-spaced.
+          Also reduce section padding so nested .dashboard-section don't
+          consume all the available width on narrow viewports. */
     .overview-shell,
     .dashboard-section {
         margin-top: 0;
+    }
+
+    .dashboard-section {
+        padding: 1rem;
     }
 
     /* 4. Mobile bottom navigation bar */

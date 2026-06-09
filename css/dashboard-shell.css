@@ -1216,9 +1216,52 @@ body {
     outline-offset: 2px;
 }
 
+/* ── Hamburger toggle — oculto en desktop ── */
+.topbar-hamburger {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.45rem;
+    color: var(--text-secondary);
+    font-size: 1.25rem;
+    border-radius: 8px;
+    line-height: 1;
+    transition: background 0.2s, color 0.2s;
+}
+.topbar-hamburger:hover {
+    background: var(--surface-subtle);
+    color: var(--text-primary);
+}
+
+/* ── Backdrop del drawer ── */
+.sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 150;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+.sidebar-backdrop.is-visible {
+    display: block;
+    animation: backdropIn 0.22s ease;
+}
+@keyframes backdropIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
 @media (max-width: 1024px) {
     .topbar {
         left: 0;
+        justify-content: space-between;
     }
 
     .topbar .brand {
@@ -1226,8 +1269,22 @@ body {
         align-items: center;
     }
 
+    /* Mostrar hamburguesa */
+    .topbar-hamburger {
+        display: flex;
+        order: -1;
+    }
+
+    /* Drawer: se desliza desde la izquierda en vez de display:none */
     .dashboard-sidebar {
-        display: none;
+        transform: translateX(-100%);
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 200;
+    }
+
+    .dashboard-sidebar.is-open {
+        transform: translateX(0);
+        box-shadow: 4px 0 32px rgba(15, 23, 42, 0.18);
     }
 
     .dashboard-content {

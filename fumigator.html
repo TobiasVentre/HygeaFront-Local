@@ -11,6 +11,11 @@
 </head>
 <body>
     <header class="topbar">
+        <button class="topbar-hamburger" id="sidebarToggle" type="button"
+                aria-label="Abrir menú de navegación" aria-expanded="false"
+                aria-controls="dashboardSidebar">
+            <i class="fas fa-bars" aria-hidden="true"></i>
+        </button>
         <div class="brand">
             <img src="img\Logo-Blanco.png" alt="logo-Hygea">
         </div>
@@ -28,8 +33,9 @@
         </div>
     </header>
 
+    <div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
     <div class="dashboard">
-        <div class="dashboard-sidebar">
+        <div class="dashboard-sidebar" id="dashboardSidebar">
             <div class="sidebar-header">
                 <div class="logo">
                     <img src="img\Logo-Blanco.png" alt="logo-Hygea">
@@ -887,5 +893,6 @@
         })();
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+    <script src="js/sidebar-mobile.js"></script>
 </body>
 </html>

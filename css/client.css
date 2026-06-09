@@ -4658,3 +4658,30 @@ body {
         border-radius: 18px;
     }
 }
+
+/* ============================================================
+   MOBILE DRAWER — wins by source order (end of file)
+   Overrides the conflicting @media ≤768px rule that sets
+   .dashboard-sidebar to position:relative / height:auto,
+   and the ≤1024px rule that sets left:200px on .topbar.
+   ============================================================ */
+@media (max-width: 1024px) {
+    .topbar {
+        left: 0;
+        justify-content: space-between;
+    }
+
+    .dashboard-sidebar {
+        position: fixed;
+        width: 280px;
+        height: 100vh;
+        transform: translateX(-100%);
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 200;
+    }
+
+    .dashboard-sidebar.is-open {
+        transform: translateX(0);
+        box-shadow: 4px 0 32px rgba(15, 23, 42, 0.18);
+    }
+}

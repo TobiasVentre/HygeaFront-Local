@@ -5273,10 +5273,18 @@ body {
         border-color: var(--border-subtle);
     }
 
-    /* 5. Hide the desktop sidebar — the base rule in this file sets
-          display:flex which wins over shell.css's @media display:none
-          because fumigator.css loads later. We re-apply it here. */
+    /* 5. Drawer sidebar — fumigator.css base sets display:flex which wins
+          over shell.css cascade. Here we reinforce the transform approach
+          and add the is-open state so the drawer works correctly. */
     .dashboard-sidebar {
-        display: none;
+        display: flex;
+        transform: translateX(-100%);
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 200;
+    }
+
+    .dashboard-sidebar.is-open {
+        transform: translateX(0);
+        box-shadow: 4px 0 32px rgba(15, 23, 42, 0.18);
     }
 }

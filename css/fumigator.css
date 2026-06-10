@@ -5157,6 +5157,13 @@ body {
         max-width: 100%;
     }
 
+    /* .availability-pane es display:grid — sus hijos directos son grid items
+       con min-width:auto por defecto, lo que los hace expandirse más allá del
+       contenedor. min-width:0 fuerza el colapso correcto. */
+    .availability-pane > * {
+        min-width: 0;
+    }
+
     .avail-form {
         min-width: 0;
         width: 100%;

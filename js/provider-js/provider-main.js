@@ -246,6 +246,7 @@ function normalizeOrder(rawOrder) {
     totalAmount: rawOrder.totalAmount ?? rawOrder.TotalAmount ?? 0,
     status: rawOrder.status ?? rawOrder.Status,
     exceptionReason: rawOrder.exceptionReason ?? rawOrder.ExceptionReason ?? null,
+    address: rawOrder.address ?? rawOrder.Address ?? null,
     createdAtUtc: rawOrder.createdAtUtc ?? rawOrder.CreatedAtUtc,
     items: Array.isArray(items)
       ? items.map((item) => ({
@@ -965,6 +966,10 @@ function renderOrderDetail() {
       <div class="provider-meta-item">
         <strong>Total</strong>
         <span>${escapeHtml(formatCurrency(order.totalAmount))}</span>
+      </div>
+      <div class="provider-meta-item">
+        <strong>Direccion</strong>
+        <span>${escapeHtml(order.address || "-")}</span>
       </div>
       <div class="provider-meta-item">
         <strong>Excepcion</strong>

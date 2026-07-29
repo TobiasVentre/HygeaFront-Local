@@ -354,6 +354,7 @@ function normalizeOrder(rawOrder) {
     totalAmount: rawOrder.totalAmount ?? rawOrder.TotalAmount ?? 0,
     status: rawOrder.status ?? rawOrder.Status,
     exceptionReason: rawOrder.exceptionReason ?? rawOrder.ExceptionReason ?? null,
+    address: rawOrder.address ?? rawOrder.Address ?? null,
     createdAtUtc: rawOrder.createdAtUtc ?? rawOrder.CreatedAtUtc,
     items: Array.isArray(items)
       ? items.map((item) => ({
@@ -969,6 +970,25 @@ function getRequestedDurationMinutes() {
   return currentOrderItems.reduce((total, item) => total + (Number(item.durationMinutes || 0) * Number(item.quantity || 0)), 0);
 }
 
+function hasPendingSelection() {
+  const select = document.getElementById("service-offering");
+  return Boolean(select?.value);
+}
+
+function getPendingSelectionDurationMinutes() {
+  const select = document.getElementById("service-offering");
+  const quantityInput = document.getElementById("service-quantity");
+  const option = select?.selectedOptions?.[0];
+  if (!select?.value || !option) return 0;
+
+  const durationMinutes = Number(option.dataset.durationMinutes || 0);
+  const quantity = Number(quantityInput?.value || 1);
+  if (!Number.isInteger(durationMinutes) || durationMinutes <= 0) return 0;
+  if (!Number.isInteger(quantity) || quantity <= 0) return 0;
+
+  return durationMinutes * quantity;
+}
+
 function updateDurationSummary() {
   const summary = document.getElementById("requestDurationSummary");
   if (!summary) return;
@@ -1091,11 +1111,11 @@ function renderSuggestedSlots() {
 
   const requestedDate = getRequestedDateValue();
 
-  if (currentOrderItems.length === 0) {
+  if (currentOrderItems.length === 0 && !hasPendingSelection()) {
     container.innerHTML = `
       <div class="loading-spinner">
         <i class="fas fa-calendar-alt"></i>
-        <p>Agrega items para ver dias y horarios disponibles.</p>
+        <p>Selecciona un tipo de servicio para ver dias y horarios disponibles.</p>
       </div>
     `;
     return;
@@ -1171,14 +1191,14 @@ async function refreshSuggestedSlots() {
     return;
   }
 
-  if (currentOrderItems.length === 0) {
+  if (currentOrderItems.length === 0 && !hasPendingSelection()) {
     currentSuggestedSlots = [];
     renderSuggestedSlots();
     showRequestFeedback("");
     return;
   }
 
-  const requestedDurationMinutes = getRequestedDurationMinutes();
+  const requestedDurationMinutes = getRequestedDurationMinutes() + getPendingSelectionDurationMinutes();
   logClientAvailability("Requested duration minutes", requestedDurationMinutes);
   if (!Number.isInteger(requestedDurationMinutes) || requestedDurationMinutes <= 0) {
     currentSuggestedSlots = [];
@@ -1343,6 +1363,12 @@ function renderOrderDetail(order = currentOrderDetail) {
         <span class="order-detail-label">Duracion estimada</span>
         <strong>${escapeHtml(formatDurationMinutes(Math.max(0, Math.round((new Date(order.scheduledEndAtUtc) - new Date(order.scheduledStartAtUtc)) / 60000))))}</strong>
       </div>
+      ${order.address ? `
+      <div class="order-detail-field">
+        <span class="order-detail-label">Direccion</span>
+        <strong>${escapeHtml(order.address)}</strong>
+      </div>
+      ` : ""}
     </div>
     ${exceptionBlock}
     ${canDownloadReceipt ? `
@@ -1625,11 +1651,14 @@ async function handleCreateOrder(event) {
     throw new Error("El perfil del cliente no tiene datos validos para crear la orden.");
   }
 
+  const addressValue = document.getElementById("request-address")?.value?.trim() || null;
+
   const createdFlow = await FrontGateway.scheduling.createReservationWithOrder({
     clientId,
     providerEntityId,
     startAtUtc: currentSelectedSlot.startAtUtc,
-    items: currentOrderItems
+    items: currentOrderItems,
+    address: addressValue
   });
 
   const createdOrderId = createdFlow.orderId ?? createdFlow.OrderId;
@@ -1644,6 +1673,8 @@ async function handleCreateOrder(event) {
   resetOrderSelection();
   renderOrderItems();
   renderSuggestedSlots();
+  const addressInput = document.getElementById("request-address");
+  if (addressInput) addressInput.value = "";
   showRequestFeedback("");
   await loadOrders();
   showAppFeedback("La orden se creo correctamente y ya podes revisar su detalle.", {
@@ -1709,8 +1740,24 @@ function registerEvents() {
     servicePreview?.classList.remove("hidden");
   }
 
-  serviceSelect?.addEventListener("change", updateServicePreview);
-  quantityInput?.addEventListener("input", updateServicePreview);
+  let suggestedSlotsRefreshTimer = null;
+  const scheduleSuggestedSlotsRefresh = (delayMs = 400) => {
+    if (suggestedSlotsRefreshTimer) clearTimeout(suggestedSlotsRefreshTimer);
+    suggestedSlotsRefreshTimer = setTimeout(() => {
+      refreshSuggestedSlots().catch((error) => showRequestFeedback(error.message, "error"));
+    }, delayMs);
+  };
+
+  serviceSelect?.addEventListener("change", () => {
+    updateServicePreview();
+    if (serviceSelect.value) {
+      scheduleSuggestedSlotsRefresh(0);
+    }
+  });
+  quantityInput?.addEventListener("input", () => {
+    updateServicePreview();
+    scheduleSuggestedSlotsRefresh();
+  });
   statusFilter?.addEventListener("change", renderOrders);
   refreshRecentHistoryButton?.addEventListener("click", refreshOrders);
   refreshOrdersSectionButton?.addEventListener("click", refreshOrders);

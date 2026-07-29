@@ -316,7 +316,7 @@
                 <div class="section-header">
                     <div>
                         <h3>Solicitar orden de servicio</h3>
-                        <p>Primero arma la orden. La duracion se calcula desde el catalogo de servicios. Despues elegi un horario disponible.</p>
+                        <p>Elegi el servicio y la fecha para ver los horarios disponibles antes de agregarlo a la orden.</p>
                     </div>
                     <div class="section-header-actions">
                         <button type="button" id="backToDashboard" class="btn btn-secondary">
@@ -331,8 +331,8 @@
                         <article class="request-panel-card">
                             <div class="request-panel-head">
                                 <div>
-                                    <h4>1. Arma tu orden</h4>
-                                    <p>Agrega uno o mas servicios antes de elegir horario.</p>
+                                    <h4>1. Elegi el servicio</h4>
+                                    <p>Al seleccionar el servicio y la cantidad ya podes ver los horarios disponibles, antes de agregarlo a la orden.</p>
                                 </div>
                             </div>
 
@@ -384,13 +384,25 @@
                                 <p class="request-empty-text">Todavia no agregaste items.</p>
                             </div>
                         </article>
+
+                        <article class="request-panel-card">
+                            <div class="request-panel-head">
+                                <div>
+                                    <h4>3. Direccion del servicio</h4>
+                                    <p>Indica donde se va a realizar el servicio (opcional).</p>
+                                </div>
+                            </div>
+                            <label>Direccion
+                                <textarea id="request-address" rows="2" maxlength="500" placeholder="Calle, numero, piso/depto, localidad..."></textarea>
+                            </label>
+                        </article>
                     </div>
 
                     <div class="request-availability-panel">
                         <article class="request-panel-card">
                             <div class="request-panel-head">
                                 <div>
-                                    <h4>3. Elige un horario disponible</h4>
+                                    <h4>4. Elige un horario disponible</h4>
                                     <p>Primero elegi la fecha. Despues te mostramos horarios que cubren la duracion real de los servicios elegidos.</p>
                                 </div>
                                 <button type="button" id="refreshSuggestedSlots" class="btn btn-secondary">
@@ -412,7 +424,7 @@
                             <div id="suggested-slots-list" class="suggested-slots-list">
                                 <div class="loading-spinner">
                                     <i class="fas fa-calendar-alt"></i>
-                                    <p>Agrega items para ver dias y horarios disponibles.</p>
+                                    <p>Selecciona un tipo de servicio para ver dias y horarios disponibles.</p>
                                 </div>
                             </div>
                         </article>

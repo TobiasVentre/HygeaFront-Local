@@ -851,7 +851,7 @@ export const FrontGateway = {
 
       return await ApiScheduling.post("reservations", payload);
     },
-    async createReservationWithOrder({ clientId, providerEntityId, startAtUtc, items }) {
+    async createReservationWithOrder({ clientId, providerEntityId, startAtUtc, items, address = null }) {
       const normalizedClientId = toStableGuid(clientId);
       if (!normalizedClientId) throw new Error("ClientId invalido para SchedulingMS.");
       if (!isGuid(providerEntityId)) throw new Error("ProviderEntityId invalido para SchedulingMS.");
@@ -867,7 +867,8 @@ export const FrontGateway = {
           unitPrice: Number(item.unitPrice),
           quantity: Number(item.quantity),
           durationMinutes: Number(item.durationMinutes)
-        }))
+        })),
+        address
       });
     },
     async updateReservationStatus(reservationId, { status, changedByUserId = null, note = null }) {

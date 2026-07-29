@@ -407,6 +407,7 @@ function normalizeOrder(order) {
     totalAmount: order.totalAmount ?? order.TotalAmount ?? 0,
     status: order.status ?? order.Status,
     exceptionReason: order.exceptionReason ?? order.ExceptionReason ?? null,
+    address: order.address ?? order.Address ?? null,
     createdAtUtc: order.createdAtUtc ?? order.CreatedAtUtc,
     items: Array.isArray(order.items ?? order.Items) ? (order.items ?? order.Items).map((item) => ({
       id: item.id ?? item.Id,
@@ -1180,25 +1181,11 @@ function renderOrderDetail() {
     : "";
   const cancellationMarkup = canRequestCancellation
     ? `
-      <form class="technician-evidence-form" data-form="cancellation-request" data-order-id="${escapeHtml(order.id)}">
-        <div class="technician-evidence-form-head">
-          <h5>Solicitar cancelacion justificada</h5>
-          <span>Queda pendiente de revision del proveedor</span>
-        </div>
-        <label class="technician-evidence-form-field">
-          <span>Motivo</span>
-          <select name="reason" required>
-            <option value="">Seleccionar motivo</option>
-            <option value="1">Falta de insumos</option>
-            <option value="2">Clima adverso</option>
-          </select>
-        </label>
-        <label class="technician-evidence-form-field">
-          <span>Detalle</span>
-          <textarea name="note" rows="3" placeholder="Describe brevemente por que no puedes completar la orden"></textarea>
-        </label>
-        <button type="submit" class="btn btn-secondary">Enviar solicitud</button>
-      </form>
+      <div class="technician-evidence-form-head">
+        <h5>Solicitar cancelacion justificada</h5>
+        <span>Queda pendiente de revision del proveedor</span>
+      </div>
+      <button type="button" class="btn btn-secondary" data-action="open-cancellation-modal" data-order-id="${escapeHtml(order.id)}">Solicitar cancelacion</button>
     `
     : pendingCancellationRequest
       ? `<p class="technician-evidence-cta">Ya hay una solicitud pendiente enviada el ${escapeHtml(formatDateTime(pendingCancellationRequest.requestedAtUtc))}. Espera la decision del proveedor.</p>`
@@ -1275,6 +1262,7 @@ function renderOrderDetail() {
         </div>
       </div>
 
+      ${order.address ? `<div class="technician-order-field"><span class="technician-order-label">Direccion</span><strong>${escapeHtml(order.address)}</strong></div>` : ""}
       ${order.exceptionReason ? `<div class="technician-order-alert"><strong>Motivo de excepcion:</strong> ${escapeHtml(order.exceptionReason)}</div>` : ""}
 
       ${actionsMarkup}
@@ -1653,6 +1641,17 @@ async function createCancellationRequest(orderId, formElement) {
   setOrderActionFeedback("Solicitud de cancelacion enviada correctamente.", "success");
   await loadOrders();
   await openOrderDetail(orderId, { preserveFeedback: true });
+}
+
+function openCancellationModal(orderId) {
+  const modal = document.getElementById("cancellation-modal");
+  if (!modal) return;
+
+  const form = document.getElementById("cancellationForm");
+  form?.reset();
+  modal.dataset.orderId = orderId;
+  modal.classList.remove("hidden");
+  syncDialogVisibility(modal);
 }
 
 async function loadProviderContext() {
@@ -2083,6 +2082,11 @@ function setupOrderActions() {
           actionButton.dataset.evidenceId,
           actionButton.dataset.fileName || "evidencia.bin"
         );
+        return;
+      }
+
+      if (actionButton.dataset.action === "open-cancellation-modal") {
+        openCancellationModal(orderId);
       }
     } catch (error) {
       console.error("No se pudo actualizar la orden.", error);
@@ -2120,12 +2124,6 @@ function setupOrderActions() {
       if (form.dataset.form === "digital-check") {
         setOrderActionFeedback("Registrando check digital...", "info");
         await addDigitalCheckEvidence(orderId, form);
-        return;
-      }
-
-      if (form.dataset.form === "cancellation-request") {
-        setOrderActionFeedback("Enviando solicitud de cancelacion...", "info");
-        await createCancellationRequest(orderId, form);
       }
     } catch (error) {
       console.error("No se pudo registrar la evidencia.", error);
@@ -2236,6 +2234,61 @@ function setupAccessibleDialogs() {
     syncDialogVisibility(rescheduleModal);
   });
   observer.observe(rescheduleModal, { attributes: true, attributeFilter: ["class"] });
+
+  setupCancellationModal();
+}
+
+function setupCancellationModal() {
+  const cancellationModal = document.getElementById("cancellation-modal");
+  if (!cancellationModal) return;
+
+  decorateDialog(cancellationModal, {
+    titleId: "cancellationModalTitle",
+    descriptionId: "cancellationModalDescription"
+  });
+  syncDialogVisibility(cancellationModal);
+
+  const closeDialog = () => {
+    cancellationModal.classList.add("hidden");
+    syncDialogVisibility(cancellationModal);
+  };
+
+  cancellationModal.querySelectorAll(".close-modal, #cancelCancellationModal").forEach((button) => {
+    button.addEventListener("click", closeDialog);
+  });
+
+  cancellationModal.addEventListener("click", (event) => {
+    if (event.target === cancellationModal) {
+      closeDialog();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !cancellationModal.classList.contains("hidden")) {
+      event.preventDefault();
+      closeDialog();
+    }
+  });
+
+  const observer = new MutationObserver(() => {
+    syncDialogVisibility(cancellationModal);
+  });
+  observer.observe(cancellationModal, { attributes: true, attributeFilter: ["class"] });
+
+  document.getElementById("cancellationForm")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const orderId = cancellationModal.dataset.orderId;
+    if (!isGuid(orderId)) return;
+
+    try {
+      setOrderActionFeedback("Enviando solicitud de cancelacion...", "info");
+      await createCancellationRequest(orderId, event.target);
+      closeDialog();
+    } catch (error) {
+      console.error("No se pudo enviar la solicitud de cancelacion.", error);
+      setOrderActionFeedback(getErrorMessage(error, "No se pudo enviar la solicitud de cancelacion."), "error");
+    }
+  });
 }
 
 function setupProfileEnhancements() {

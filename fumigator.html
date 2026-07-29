@@ -690,6 +690,39 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal solicitar cancelacion -->
+    <div id="cancellation-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="cancellationModalTitle" aria-describedby="cancellationModalDescription" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h3 id="cancellationModalTitle">Solicitar cancelacion justificada</h3>
+                    <p id="cancellationModalDescription" class="modal-subtitle">Queda pendiente de revision del proveedor.</p>
+                </div>
+                <button type="button" class="close-modal" aria-label="Cerrar solicitud de cancelacion">&times;</button>
+            </div>
+
+            <form id="cancellationForm" class="modal-body">
+                <div class="form-group">
+                    <label for="cancellationReason">Motivo</label>
+                    <select id="cancellationReason" name="reason" required>
+                        <option value="">Seleccionar motivo</option>
+                        <option value="1">Falta de insumos</option>
+                        <option value="2">Clima adverso</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="cancellationNote">Detalle</label>
+                    <textarea id="cancellationNote" name="note" rows="3" placeholder="Describe brevemente por que no puedes completar la orden"></textarea>
+                </div>
+            </form>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelCancellationModal">Cerrar</button>
+                <button type="submit" form="cancellationForm" class="btn btn-primary" id="submitCancellationRequest">Enviar solicitud</button>
+            </div>
+        </div>
+    </div>
 <!-- TEMPLATE: Tarjeta de orden -->
 <template id="template-appointment-card">
     <div class="appointment-card">

@@ -221,6 +221,7 @@ function normalizeOrder(rawOrder) {
     totalAmount: rawOrder.totalAmount ?? rawOrder.TotalAmount ?? 0,
     status: rawOrder.status ?? rawOrder.Status,
     exceptionReason: rawOrder.exceptionReason ?? rawOrder.ExceptionReason ?? null,
+    address: rawOrder.address ?? rawOrder.Address ?? null,
     createdAtUtc: rawOrder.createdAtUtc ?? rawOrder.CreatedAtUtc,
     items: Array.isArray(items) ? items : []
   };

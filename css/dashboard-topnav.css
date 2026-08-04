@@ -1,0 +1,208 @@
+/**
+ * Layout de navegacion horizontal superior.
+ * ------------------------------------------
+ * Se activa agregando la clase `layout-topnav` al <body> del panel.
+ * Reemplaza al sidebar vertical por una unica barra fija arriba
+ * (marca + navegacion + cuenta).
+ *
+ * Modificador opcional `has-mobile-drawer`: para paneles que NO tienen
+ * barra inferior en mobile y siguen dependiendo del drawer lateral
+ * (hoy: provider.html).
+ *
+ * Este archivo debe cargarse DESPUES de dashboard-shell.css y del css
+ * propio de cada panel.
+ */
+
+/* ── Barra superior ───────────────────────────────────────────────── */
+
+body.layout-topnav .topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1.5rem;
+    height: 68px;
+    padding: 0 1.75rem;
+    background: var(--surface-card);
+    border-bottom: 1px solid var(--border-subtle);
+    box-shadow: 0 1px 3px var(--shadow-xs);
+    z-index: 100;
+}
+
+body.layout-topnav .topbar .brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    height: 40px;
+    padding: 0 1rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--brand-strong) 0%, var(--brand-ink) 100%);
+}
+
+body.layout-topnav .topbar .brand img {
+    display: block;
+    height: 22px;
+    width: auto;
+}
+
+body.layout-topnav .topbar .panel-title {
+    flex: 0 0 auto;
+    padding-left: 1.25rem;
+    border-left: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+/* ── Navegacion horizontal ────────────────────────────────────────── */
+
+body.layout-topnav .topbar .sidebar-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+body.layout-topnav .topbar .sidebar-nav::-webkit-scrollbar {
+    display: none;
+}
+
+body.layout-topnav .topbar .nav-item {
+    gap: 0.5rem;
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0.55rem 0.85rem;
+    border-left: none;
+    border-radius: 10px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+body.layout-topnav .topbar .nav-item i {
+    width: auto;
+    font-size: 0.95rem;
+}
+
+body.layout-topnav .topbar .nav-item:hover {
+    border-left: none;
+    background: var(--surface-subtle);
+    color: var(--brand);
+}
+
+body.layout-topnav .topbar .nav-item.active,
+body.layout-topnav .topbar .nav-item[aria-current="page"] {
+    border-left: none;
+    background: var(--brand-faint);
+    color: var(--brand);
+    font-weight: 600;
+}
+
+body.layout-topnav .topbar .nav-item.active i,
+body.layout-topnav .topbar .nav-item[aria-current="page"] i {
+    color: var(--brand);
+}
+
+body.layout-topnav .topbar .actions {
+    flex: 0 0 auto;
+    margin-left: auto;
+}
+
+/* ── Sidebar vertical y hamburguesa: fuera en desktop ─────────────── */
+
+body.layout-topnav .dashboard-sidebar,
+body.layout-topnav .sidebar-backdrop,
+body.layout-topnav .topbar-hamburger {
+    display: none;
+}
+
+/* ── Contenido ────────────────────────────────────────────────────── */
+
+body.layout-topnav .dashboard-content {
+    margin-left: 0;
+    padding-top: calc(68px + 2rem);
+}
+
+body.layout-topnav .overview-shell,
+body.layout-topnav .dashboard-section,
+body.layout-topnav .welcome-section {
+    margin-top: 0;
+}
+
+/* ── Desktop angosto: liberar espacio antes de recurrir al scroll ─── */
+
+/* El subtitulo del panel es lo primero que se sacrifica */
+@media (max-width: 1360px) {
+    body.layout-topnav .topbar .panel-title {
+        display: none;
+    }
+}
+
+/* Luego se compacta la barra y los items */
+@media (max-width: 1200px) {
+    body.layout-topnav .topbar {
+        gap: 1rem;
+        padding: 0 1.25rem;
+    }
+
+    body.layout-topnav .topbar .nav-item {
+        padding: 0.55rem 0.65rem;
+        font-size: 0.85rem;
+    }
+
+    body.layout-topnav .topbar .nav-item i {
+        font-size: 0.9rem;
+    }
+}
+
+/* ── Mobile ───────────────────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+    body.layout-topnav .topbar {
+        gap: 1rem;
+        padding: 0 1rem;
+    }
+
+    /* La navegacion pasa a la barra inferior (o al drawer) */
+    body.layout-topnav .topbar .sidebar-nav,
+    body.layout-topnav .topbar .panel-title {
+        display: none;
+    }
+
+    body.layout-topnav .dashboard-content {
+        padding-top: calc(68px + 1rem);
+        padding-left: 1rem;
+        padding-right: 1rem;
+        padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* Paneles sin barra inferior: se reactiva el drawer lateral */
+    body.layout-topnav.has-mobile-drawer .topbar-hamburger {
+        display: flex;
+        order: -1;
+    }
+
+    body.layout-topnav.has-mobile-drawer .dashboard-sidebar {
+        display: block;
+    }
+
+    body.layout-topnav.has-mobile-drawer .sidebar-backdrop.is-visible {
+        display: block;
+    }
+
+    /* Sin barra inferior no hace falta reservar espacio abajo */
+    body.layout-topnav.has-mobile-drawer .dashboard-content {
+        padding-bottom: 2rem;
+    }
+}

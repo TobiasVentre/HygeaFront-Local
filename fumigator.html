@@ -6,7 +6,7 @@
     <title>Hygea - Panel TÃ©cnico</title>
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/dashboard-shell.css">
-    <link rel="stylesheet" href="css/fumigator.css">
+    <link rel="stylesheet" href="css/fumigator.css?v=20260807-2">
     <link rel="stylesheet" href="css/dashboard-topnav.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -712,6 +712,62 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal cargar evidencia -->
+    <div id="evidence-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="evidenceModalTitle" aria-describedby="evidenceModalDescription" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h3 id="evidenceModalTitle">Cargar evidencia</h3>
+                    <p id="evidenceModalDescription" class="modal-subtitle">Queda asociada a la orden y la ve el cliente.</p>
+                </div>
+                <button type="button" class="close-modal" aria-label="Cerrar carga de evidencia">&times;</button>
+            </div>
+
+            <div class="modal-body evidence-modal-body">
+                <div class="evidence-modal-tabs" role="tablist" aria-label="Tipo de evidencia">
+                    <button type="button" class="evidence-modal-tab is-active" role="tab" aria-selected="true" aria-controls="evidencePhotoPanel" data-evidence-tab="photo">
+                        <i class="fas fa-camera" aria-hidden="true"></i>
+                        Foto
+                    </button>
+                    <button type="button" class="evidence-modal-tab" role="tab" aria-selected="false" aria-controls="evidenceCheckPanel" data-evidence-tab="check">
+                        <i class="fas fa-clipboard-check" aria-hidden="true"></i>
+                        Check digital
+                    </button>
+                </div>
+
+                <form id="evidencePhotoPanel" class="technician-evidence-form" role="tabpanel" data-form="photo-evidence" data-evidence-panel="photo">
+                    <label class="technician-evidence-upload" for="photoEvidenceFile">
+                        <input type="file" id="photoEvidenceFile" name="file" accept="image/*" required>
+                        <span class="technician-evidence-upload-label">
+                            <i class="fas fa-cloud-arrow-up" aria-hidden="true"></i>
+                            Seleccionar imagen
+                        </span>
+                        <small data-role="file-name">Todavia no elegiste un archivo.</small>
+                    </label>
+                    <label class="technician-evidence-form-field">
+                        <span>Nota</span>
+                        <textarea name="note" rows="3" placeholder="Observacion breve sobre la imagen"></textarea>
+                    </label>
+                    <p class="technician-evidence-hint">Formatos de imagen, hasta 10 MB.</p>
+                    <button type="submit" class="btn btn-primary">Guardar foto</button>
+                </form>
+
+                <form id="evidenceCheckPanel" class="technician-evidence-form hidden" role="tabpanel" data-form="digital-check" data-evidence-panel="check">
+                    <label class="technician-evidence-form-field">
+                        <span>Nota</span>
+                        <textarea name="note" rows="5" placeholder="Deja constancia del control realizado"></textarea>
+                    </label>
+                    <p class="technician-evidence-hint">Sin archivo adjunto: queda como registro escrito.</p>
+                    <button type="submit" class="btn btn-primary">Registrar check</button>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelEvidenceModal">Cerrar</button>
+            </div>
+        </div>
+    </div>
 <!-- TEMPLATE: Tarjeta de orden -->
 <template id="template-appointment-card">
     <div class="appointment-card">
@@ -770,7 +826,7 @@
 
 
     <script type="module">
-    import { initializeFumigatorPanel } from './js/fumigator-js/fumigator-main.js';
+    import { initializeFumigatorPanel } from './js/fumigator-js/fumigator-main.js?v=20260807-2';
     
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', async () => {

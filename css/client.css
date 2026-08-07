@@ -4912,6 +4912,75 @@ body {
     color: var(--danger);
 }
 
+/* --- Detalle de orden: mismo lenguaje que la tarjeta ---
+   El hero es contenedor para que apliquen las mismas container queries
+   de la grilla y del progreso. */
+.order-detail-hero.client-order-surface {
+    --client-order-accent: var(--brand);
+    --client-order-accent-soft: var(--brand-softer);
+    --client-order-accent-strong: var(--brand-strong);
+
+    container-type: inline-size;
+    display: grid;
+    gap: 1.1rem;
+}
+
+.order-detail-hero[data-tone="created"],
+.order-detail-hero[data-tone="closed"] {
+    --client-order-accent: var(--text-subtle);
+    --client-order-accent-soft: var(--surface-subtle);
+    --client-order-accent-strong: var(--text-tertiary);
+}
+
+.order-detail-hero[data-tone="approved"] {
+    --client-order-accent: var(--info);
+    --client-order-accent-soft: var(--surface-info);
+    --client-order-accent-strong: var(--info-strong);
+}
+
+.order-detail-hero[data-tone="progress"] {
+    --client-order-accent: var(--warning);
+    --client-order-accent-soft: var(--warning-bg);
+    --client-order-accent-strong: var(--warning-text);
+}
+
+.order-detail-hero[data-tone="finalized"] {
+    --client-order-accent: var(--success-bright);
+    --client-order-accent-soft: var(--success-bg);
+    --client-order-accent-strong: var(--success-strong);
+}
+
+.order-detail-hero[data-tone="exception"] {
+    --client-order-accent: var(--danger-bright);
+    --client-order-accent-soft: var(--danger-bg);
+    --client-order-accent-strong: var(--danger-strong);
+}
+
+.route-section .order-detail-hero .order-detail-head {
+    margin-bottom: 0;
+}
+
+.order-detail-hero .order-detail-subtitle {
+    margin: 0.35rem 0 0;
+    color: var(--text-secondary);
+}
+
+.order-detail-hero .order-detail-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+@container (max-width: 620px) {
+    .order-detail-hero .order-detail-head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .order-detail-hero .client-order-card__badges {
+        justify-content: flex-start;
+    }
+}
+
 /* --- Estado vacio --- */
 .client-orders-empty {
     display: grid;

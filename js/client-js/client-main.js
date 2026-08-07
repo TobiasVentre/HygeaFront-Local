@@ -1474,49 +1474,73 @@ function renderOrderDetail(order = currentOrderDetail) {
     ?? technicianDirectoryEntry?.specialty;
   const orderStatusValue = getStatusValue(order.status);
   const canDownloadReceipt = orderStatusValue === 4 || orderStatusValue === 6;
+  const tone = getOrderStatusTone(order.status);
+  const timingBadge = getOrderTimingBadge(order);
+  const durationMinutes = getOrderDurationMinutes(order);
+  const servicesCount = (order.items || []).length;
+  const hasSchedule = Boolean(order.scheduledStartAtUtc) && !Number.isNaN(new Date(order.scheduledStartAtUtc).getTime());
+
+  hero.classList.add("client-order-surface");
+  hero.dataset.tone = tone;
 
   hero.innerHTML = `
     <div class="order-detail-head">
-      <div>
-        <div class="order-detail-kicker">Orden #${escapeHtml(String(order.id).slice(0, 8))}</div>
-        <h4>${escapeHtml(getStatusLabel(order.status))}</h4>
-        <p>${escapeHtml(itemSummary || "Sin items cargados")}</p>
+      <div class="client-order-card__identity">
+        <p class="client-order-card__meta">
+          <span class="client-order-card__ref">#${escapeHtml(String(order.id).slice(0, 8))}</span>
+          <span>${escapeHtml(`${servicesCount} servicio${servicesCount === 1 ? "" : "s"}`)}</span>
+          ${order.createdAtUtc ? `<span>Solicitada el ${escapeHtml(formatArgentinaDate(order.createdAtUtc, { weekday: undefined, day: "2-digit", month: "2-digit", year: "2-digit" }))}</span>` : ""}
+        </p>
+        <h4>${escapeHtml(getOrderTitle(order))}</h4>
+        ${servicesCount > 1 ? `<p class="order-detail-subtitle">${escapeHtml(itemSummary)}</p>` : ""}
       </div>
-      <span class="order-detail-status">${escapeHtml(getStatusLabel(order.status))}</span>
+      <div class="client-order-card__badges">
+        <span class="client-order-card__status">
+          <i class="fas ${escapeHtml(getOrderStatusIcon(order.status))}" aria-hidden="true"></i>
+          ${escapeHtml(getStatusLabel(order.status))}
+        </span>
+        ${timingBadge ? `
+          <span class="client-order-card__timing is-${escapeHtml(timingBadge.tone)}">
+            <i class="fas ${escapeHtml(timingBadge.icon)}" aria-hidden="true"></i>
+            ${escapeHtml(timingBadge.label)}
+          </span>` : ""}
+      </div>
     </div>
-    <div class="order-detail-grid">
-      <div class="order-detail-field">
-        <span class="order-detail-label">Programada</span>
-        <strong>${escapeHtml(formatDateTime(order.scheduledStartAtUtc))}</strong>
+
+    <div class="client-order-card__grid">
+      <div class="client-order-card__item is-primary">
+        <span class="client-order-card__label"><i class="fas fa-calendar-day" aria-hidden="true"></i> Visita programada</span>
+        ${hasSchedule ? `
+          <strong>${escapeHtml(formatArgentinaDate(order.scheduledStartAtUtc, { weekday: "long", day: "2-digit", month: "long" }))}</strong>
+          <span class="client-order-card__value-sub">
+            ${escapeHtml(formatArgentinaTime(order.scheduledStartAtUtc, { hourCycle: "h23" }))} a ${escapeHtml(formatArgentinaTime(order.scheduledEndAtUtc, { hourCycle: "h23" }))}
+            ${durationMinutes ? ` &middot; ${escapeHtml(formatCompactDuration(durationMinutes))}` : ""}
+          </span>` : `
+          <strong>Sin fecha asignada</strong>
+          <span class="client-order-card__value-sub">La agenda se confirma cuando se aprueba la orden.</span>`}
       </div>
-      <div class="order-detail-field">
-        <span class="order-detail-label">Fin estimado</span>
-        <strong>${escapeHtml(formatDateTime(order.scheduledEndAtUtc))}</strong>
+      <div class="client-order-card__item">
+        <span class="client-order-card__label"><i class="fas fa-user-gear" aria-hidden="true"></i> Tecnico asignado</span>
+        <div class="client-order-card__technician">
+          <span class="client-order-card__avatar" aria-hidden="true">${escapeHtml(getInitials(technicianLabel))}</span>
+          <span>
+            <strong>${escapeHtml(technicianLabel)}</strong>
+            <span class="client-order-card__value-sub">${escapeHtml(technicianSpecialty || "Sin especialidad registrada")}</span>
+          </span>
+        </div>
       </div>
-      <div class="order-detail-field">
-        <span class="order-detail-label">Monto total</span>
+      <div class="client-order-card__item">
+        <span class="client-order-card__label"><i class="fas fa-location-dot" aria-hidden="true"></i> Direccion del servicio</span>
+        <strong>${escapeHtml(order.address || "Sin direccion registrada")}</strong>
+      </div>
+      <div class="client-order-card__item is-amount">
+        <span class="client-order-card__label"><i class="fas fa-receipt" aria-hidden="true"></i> Total de la orden</span>
         <strong>${escapeHtml(formatCurrency(order.totalAmount))}</strong>
+        <span class="client-order-card__value-sub">${escapeHtml(`${servicesCount} servicio${servicesCount === 1 ? "" : "s"} en la orden`)}</span>
       </div>
-      <div class="order-detail-field">
-        <span class="order-detail-label">Tecnico asignado</span>
-        <strong>${escapeHtml(technicianLabel)}</strong>
-        ${technicianSpecialty ? `<span class="order-detail-subvalue">${escapeHtml(technicianSpecialty)}</span>` : ""}
-      </div>
-      <div class="order-detail-field">
-        <span class="order-detail-label">Creada</span>
-        <strong>${escapeHtml(formatDateTime(order.createdAtUtc))}</strong>
-      </div>
-      <div class="order-detail-field">
-        <span class="order-detail-label">Duracion estimada</span>
-        <strong>${escapeHtml(formatDurationMinutes(Math.max(0, Math.round((new Date(order.scheduledEndAtUtc) - new Date(order.scheduledStartAtUtc)) / 60000))))}</strong>
-      </div>
-      ${order.address ? `
-      <div class="order-detail-field">
-        <span class="order-detail-label">Direccion</span>
-        <strong>${escapeHtml(order.address)}</strong>
-      </div>
-      ` : ""}
     </div>
+
+    ${renderOrderProgressTrack(order)}
     ${exceptionBlock}
     ${canDownloadReceipt ? `
       <div class="order-detail-actions">

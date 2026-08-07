@@ -79,6 +79,51 @@ const REQUEST_STATUS_LABELS = {
   3: "Rechazada"
 };
 
+const ORDER_STATUS_TONES = {
+  Created: "created",
+  Approved: "approved",
+  Confirmed: "confirmed",
+  InProgress: "progress",
+  Finalized: "finalized",
+  Exception: "exception",
+  Closed: "closed",
+  1: "created",
+  2: "confirmed",
+  3: "progress",
+  4: "finalized",
+  5: "exception",
+  6: "closed",
+  7: "approved"
+};
+
+const ORDER_STATUS_ICONS = {
+  created: "fa-file-circle-plus",
+  approved: "fa-circle-check",
+  confirmed: "fa-calendar-check",
+  progress: "fa-spray-can",
+  finalized: "fa-flag-checkered",
+  exception: "fa-triangle-exclamation",
+  closed: "fa-lock"
+};
+
+const ORDER_PROGRESS_STEPS = [
+  { tone: "created", label: "Creada" },
+  { tone: "approved", label: "Aprobada" },
+  { tone: "confirmed", label: "Confirmada" },
+  { tone: "progress", label: "En ejecucion" },
+  { tone: "finalized", label: "Finalizada" }
+];
+
+const ORDER_PROGRESS_RANKS = {
+  created: 0,
+  approved: 1,
+  confirmed: 2,
+  progress: 3,
+  finalized: 4,
+  closed: 5,
+  exception: -1
+};
+
 const state = {
   user: null,
   technicianProfile: null,
@@ -502,6 +547,63 @@ function getOrderStatusClass(status) {
     .replace(/\s+/g, "-")
     .toLowerCase();
   return `status-${label}`;
+}
+
+function getOrderTone(status) {
+  return ORDER_STATUS_TONES[status] ?? "created";
+}
+
+function getOrderStatusIcon(status) {
+  return ORDER_STATUS_ICONS[getOrderTone(status)] ?? "fa-circle-info";
+}
+
+function getOrderProgressRank(status) {
+  const rank = ORDER_PROGRESS_RANKS[getOrderTone(status)];
+  return Number.isInteger(rank) ? rank : 0;
+}
+
+function getDayOffsetFromToday(dateValue) {
+  if (!dateValue) return null;
+
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return null;
+
+  const [targetYear, targetMonth, targetDay] = getArgentinaDateInputValue(date).split("-").map(Number);
+  const [todayYear, todayMonth, todayDay] = getArgentinaDateInputValue().split("-").map(Number);
+
+  return Math.round((Date.UTC(targetYear, targetMonth - 1, targetDay) - Date.UTC(todayYear, todayMonth - 1, todayDay)) / 86400000);
+}
+
+function getOrderTimingBadge(order) {
+  const dayOffset = getDayOffsetFromToday(order?.scheduledStartAtUtc);
+  if (dayOffset === null) return null;
+
+  const tone = getOrderTone(order?.status);
+
+  if (tone === "finalized" || tone === "closed" || tone === "exception") {
+    if (dayOffset > 0) return { tone: "neutral", icon: "fa-calendar-day", label: `Agendada en ${dayOffset} dias` };
+    if (dayOffset === 0) return { tone: "neutral", icon: "fa-clock-rotate-left", label: "Visita de hoy" };
+    if (dayOffset === -1) return { tone: "neutral", icon: "fa-clock-rotate-left", label: "Visita de ayer" };
+    return { tone: "neutral", icon: "fa-clock-rotate-left", label: `Hace ${Math.abs(dayOffset)} dias` };
+  }
+
+  if (dayOffset < 0) {
+    return {
+      tone: "late",
+      icon: "fa-triangle-exclamation",
+      label: dayOffset === -1 ? "Vencida ayer" : `Vencida hace ${Math.abs(dayOffset)} dias`
+    };
+  }
+
+  if (dayOffset === 0) {
+    return { tone: "today", icon: "fa-bolt", label: `Hoy ${formatArgentinaTime(order.scheduledStartAtUtc, { hourCycle: "h23" })}` };
+  }
+
+  if (dayOffset === 1) {
+    return { tone: "soon", icon: "fa-hourglass-half", label: `Visita el ${formatArgentinaDate(order.scheduledStartAtUtc, { weekday: "long", day: undefined, month: undefined })}` };
+  }
+
+  return { tone: dayOffset <= 7 ? "soon" : "neutral", icon: "fa-calendar-day", label: `En ${dayOffset} dias` };
 }
 
 function getEvidenceKindLabel(kind) {
@@ -1156,141 +1258,211 @@ function renderOrderDetail() {
     : '<p class="agenda-loading">No hay solicitudes de cancelacion para esta orden.</p>';
 
   const orderStatusValue = getOrderStatusValue(order.status);
+  const tone = getOrderTone(order.status);
   const canStartOrder = orderStatusValue === ORDER_STATUS_VALUES.Confirmed;
   const canFinalizeOrder = orderStatusValue === ORDER_STATUS_VALUES.InProgress;
   const canCaptureEvidence = orderStatusValue === ORDER_STATUS_VALUES.InProgress || orderStatusValue === ORDER_STATUS_VALUES.Finalized;
   const canRequestCancellation = [ORDER_STATUS_VALUES.Created, ORDER_STATUS_VALUES.Approved, ORDER_STATUS_VALUES.Confirmed].includes(orderStatusValue) && !pendingCancellationRequest;
+  const timingBadge = getOrderTimingBadge(order);
+  const hasSchedule = Boolean(order.scheduledStartAtUtc) && !Number.isNaN(new Date(order.scheduledStartAtUtc).getTime());
+  const servicesCount = order.items.length;
+
   const feedbackMarkup = state.orderActionFeedback?.message
     ? `<div class="technician-evidence-feedback is-${escapeHtml(state.orderActionFeedback.type || "info")}">${escapeHtml(state.orderActionFeedback.message)}</div>`
     : "";
-  const actionsMarkup = (canStartOrder || canFinalizeOrder)
-    ? `
-      <div class="technician-order-actions">
-        ${canStartOrder ? '<button type="button" class="btn btn-primary" data-action="start-order" data-order-id="' + escapeHtml(order.id) + '">Iniciar orden</button>' : ""}
-        ${canFinalizeOrder ? '<button type="button" class="btn btn-primary" data-action="finalize-order" data-order-id="' + escapeHtml(order.id) + '"' + (hasEvidence ? "" : " disabled") + '>Finalizar orden</button>' : ""}
-      </div>
-    `
-    : "";
-  const providerConfirmationHintMarkup = orderStatusValue === ORDER_STATUS_VALUES.Created
-    ? '<p class="technician-evidence-cta">La orden todavia no fue aprobada ni confirmada por el proveedor. No puedes iniciarla hasta que pase a estado Confirmada.</p>'
-    : orderStatusValue === ORDER_STATUS_VALUES.Approved
-      ? '<p class="technician-evidence-cta">La orden ya fue aprobada, pero todavia falta la confirmacion operativa del proveedor.</p>'
-      : "";
-  const evidenceHintMarkup = canFinalizeOrder && !hasEvidence
-    ? '<p class="technician-evidence-cta">Necesitas al menos una evidencia registrada para cerrar la orden.</p>'
-    : "";
-  const cancellationMarkup = canRequestCancellation
-    ? `
-      <div class="technician-evidence-form-head">
-        <h5>Solicitar cancelacion justificada</h5>
-        <span>Queda pendiente de revision del proveedor</span>
-      </div>
-      <button type="button" class="btn btn-secondary" data-action="open-cancellation-modal" data-order-id="${escapeHtml(order.id)}">Solicitar cancelacion</button>
-    `
-    : pendingCancellationRequest
-      ? `<p class="technician-evidence-cta">Ya hay una solicitud pendiente enviada el ${escapeHtml(formatDateTime(pendingCancellationRequest.requestedAtUtc))}. Espera la decision del proveedor.</p>`
-      : '<p class="technician-evidence-cta">La cancelacion justificada ya no esta disponible para el estado actual de la orden.</p>';
-  const evidenceFormsMarkup = canCaptureEvidence
-    ? `
-      <div class="technician-evidence-grid">
-        <form class="technician-evidence-form" data-form="photo-evidence" data-order-id="${escapeHtml(order.id)}">
-          <div class="technician-evidence-form-head">
-            <h5>Cargar foto</h5>
-            <span>Hasta 10 MB</span>
-          </div>
-          <label class="technician-evidence-upload" for="photoEvidenceFile">
-            <input type="file" id="photoEvidenceFile" name="file" accept="image/*" required>
-            <span class="technician-evidence-upload-label">Seleccionar imagen</span>
-            <small data-role="file-name">Todavia no elegiste un archivo.</small>
-          </label>
-          <label class="technician-evidence-form-field">
-            <span>Nota</span>
-            <textarea name="note" rows="3" placeholder="Observacion breve sobre la imagen"></textarea>
-          </label>
-          <button type="submit" class="btn btn-secondary">Guardar foto</button>
-        </form>
 
-        <form class="technician-evidence-form" data-form="digital-check" data-order-id="${escapeHtml(order.id)}">
-          <div class="technician-evidence-form-head">
-            <h5>Registrar check digital</h5>
-            <span>Sin archivo adjunto</span>
-          </div>
-          <label class="technician-evidence-form-field">
-            <span>Nota</span>
-            <textarea name="note" rows="4" placeholder="Deja constancia del control realizado"></textarea>
-          </label>
-          <button type="submit" class="btn btn-secondary">Registrar check</button>
-        </form>
+  const actionButtons = [
+    canStartOrder
+      ? `<button type="button" class="btn btn-primary" data-action="start-order" data-order-id="${escapeHtml(order.id)}"><i class="fas fa-play" aria-hidden="true"></i> Iniciar orden</button>`
+      : "",
+    canFinalizeOrder
+      ? `<button type="button" class="btn btn-primary" data-action="finalize-order" data-order-id="${escapeHtml(order.id)}"${hasEvidence ? "" : " disabled"}><i class="fas fa-flag-checkered" aria-hidden="true"></i> Finalizar orden</button>`
+      : "",
+    canCaptureEvidence
+      ? `<button type="button" class="btn btn-secondary" data-action="open-evidence-modal" data-order-id="${escapeHtml(order.id)}"><i class="fas fa-camera" aria-hidden="true"></i> Cargar evidencia</button>`
+      : "",
+    canRequestCancellation
+      ? `<button type="button" class="btn btn-ghost-danger" data-action="open-cancellation-modal" data-order-id="${escapeHtml(order.id)}"><i class="fas fa-ban" aria-hidden="true"></i> Solicitar cancelacion</button>`
+      : ""
+  ].filter(Boolean).join("");
+
+  const actionsMarkup = actionButtons
+    ? `<div class="technician-order-actions">${actionButtons}</div>`
+    : "";
+
+  const hints = [
+    orderStatusValue === ORDER_STATUS_VALUES.Created
+      ? "La orden todavia no fue aprobada ni confirmada por el proveedor. No podes iniciarla hasta que pase a Confirmada."
+      : "",
+    orderStatusValue === ORDER_STATUS_VALUES.Approved
+      ? "La orden ya fue aprobada, pero todavia falta la confirmacion operativa del proveedor."
+      : "",
+    canFinalizeOrder && !hasEvidence
+      ? "Necesitas al menos una evidencia registrada para cerrar la orden."
+      : ""
+  ].filter(Boolean)
+    .map((hint) => `<p class="technician-order-hint"><i class="fas fa-circle-info" aria-hidden="true"></i> ${escapeHtml(hint)}</p>`)
+    .join("");
+
+  const pendingCancellationMarkup = pendingCancellationRequest
+    ? `
+      <div class="technician-order-alert is-pending">
+        <i class="fas fa-hourglass-half" aria-hidden="true"></i>
+        <div>
+          <strong>Cancelacion pendiente de revision</strong>
+          <p>${escapeHtml(getCancellationReasonLabel(pendingCancellationRequest.reason))} · enviada el ${escapeHtml(formatDateTime(pendingCancellationRequest.requestedAtUtc))}. Espera la decision del proveedor.</p>
+        </div>
       </div>
     `
-    : '<p class="technician-evidence-cta">La evidencia se habilita cuando la orden esta en ejecucion y sigue visible una vez finalizada.</p>';
+    : "";
+
+  const exceptionMarkup = order.exceptionReason
+    ? `
+      <div class="technician-order-alert is-danger">
+        <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+        <div>
+          <strong>Motivo de excepcion</strong>
+          <p>${escapeHtml(order.exceptionReason)}</p>
+        </div>
+      </div>
+    `
+    : "";
 
   refs.technicianOrderDetail.innerHTML = `
-    <div class="technician-order-detail-card">
-      <div class="technician-order-detail-head">
-        <div>
-          <div class="technician-order-kicker">Orden #${escapeHtml(shortenGuid(order.id))}</div>
+    <article class="technician-order-detail-card is-${escapeHtml(tone)}">
+      <header class="technician-order-detail-head">
+        <div class="technician-order-identity">
+          <p class="technician-order-kicker">
+            <span class="technician-order-ref">#${escapeHtml(shortenGuid(order.id))}</span>
+            <span>${escapeHtml(`${servicesCount} servicio${servicesCount === 1 ? "" : "s"}`)}</span>
+            ${order.createdAtUtc ? `<span>Creada el ${escapeHtml(formatArgentinaDate(order.createdAtUtc, { weekday: undefined, day: "2-digit", month: "2-digit", year: "2-digit" }))}</span>` : ""}
+          </p>
           <h3>${escapeHtml(order.items.map((item) => item.serviceName).join(", ") || "Orden de servicio")}</h3>
         </div>
-        <span class="appointment-status-badge ${escapeHtml(getOrderStatusClass(order.status))}">${escapeHtml(getOrderStatusLabel(order.status))}</span>
-      </div>
+        <div class="technician-order-badges">
+          <span class="technician-order-status">
+            <i class="fas ${escapeHtml(getOrderStatusIcon(order.status))}" aria-hidden="true"></i>
+            ${escapeHtml(getOrderStatusLabel(order.status))}
+          </span>
+          ${timingBadge ? `
+            <span class="technician-order-timing is-${escapeHtml(timingBadge.tone)}">
+              <i class="fas ${escapeHtml(timingBadge.icon)}" aria-hidden="true"></i>
+              ${escapeHtml(timingBadge.label)}
+            </span>` : ""}
+        </div>
+      </header>
 
       <div class="technician-order-detail-grid">
-        <div class="technician-order-field">
-          <span class="technician-order-label">Programada</span>
-          <strong>${escapeHtml(formatDateTime(order.scheduledStartAtUtc))}</strong>
+        <div class="technician-order-field is-primary">
+          <span class="technician-order-label"><i class="fas fa-calendar-day" aria-hidden="true"></i> Visita programada</span>
+          ${hasSchedule ? `
+            <strong>${escapeHtml(formatArgentinaDate(order.scheduledStartAtUtc, { weekday: "long", day: "2-digit", month: "long" }))}</strong>
+            <span class="technician-order-subvalue">${escapeHtml(formatArgentinaTime(order.scheduledStartAtUtc, { hourCycle: "h23" }))} a ${escapeHtml(formatArgentinaTime(order.scheduledEndAtUtc, { hourCycle: "h23" }))} &middot; ${escapeHtml(orderDurationLabel(order))}</span>`
+            : `
+            <strong>Sin fecha asignada</strong>
+            <span class="technician-order-subvalue">La agenda se define cuando el proveedor confirma la orden.</span>`}
         </div>
         <div class="technician-order-field">
-          <span class="technician-order-label">Fin estimado</span>
-          <strong>${escapeHtml(formatDateTime(order.scheduledEndAtUtc))}</strong>
+          <span class="technician-order-label"><i class="fas fa-location-dot" aria-hidden="true"></i> Direccion</span>
+          <strong>${escapeHtml(order.address || "Sin direccion registrada")}</strong>
+          ${order.address ? "" : '<span class="technician-order-subvalue">Coordina el acceso con el proveedor.</span>'}
         </div>
         <div class="technician-order-field">
-          <span class="technician-order-label">Cliente</span>
-          <strong>${escapeHtml(shortenGuid(order.clientId))}</strong>
+          <span class="technician-order-label"><i class="fas fa-user" aria-hidden="true"></i> Cliente</span>
+          <strong>#${escapeHtml(shortenGuid(order.clientId))}</strong>
         </div>
         <div class="technician-order-field">
-          <span class="technician-order-label">Monto total</span>
+          <span class="technician-order-label"><i class="fas fa-receipt" aria-hidden="true"></i> Monto total</span>
           <strong>${escapeHtml(formatCurrency(order.totalAmount))}</strong>
         </div>
-        <div class="technician-order-field">
-          <span class="technician-order-label">Duracion</span>
-          <strong>${escapeHtml(orderDurationLabel(order))}</strong>
-        </div>
-        <div class="technician-order-field">
-          <span class="technician-order-label">Creada</span>
-          <strong>${escapeHtml(formatDateTime(order.createdAtUtc))}</strong>
-        </div>
       </div>
 
-      ${order.address ? `<div class="technician-order-field"><span class="technician-order-label">Direccion</span><strong>${escapeHtml(order.address)}</strong></div>` : ""}
-      ${order.exceptionReason ? `<div class="technician-order-alert"><strong>Motivo de excepcion:</strong> ${escapeHtml(order.exceptionReason)}</div>` : ""}
+      ${renderOrderProgressTrack(order)}
 
       ${actionsMarkup}
-      ${providerConfirmationHintMarkup}
-      ${evidenceHintMarkup}
+      ${hints}
+      ${pendingCancellationMarkup}
+      ${exceptionMarkup}
       ${feedbackMarkup}
 
-      <div class="technician-order-block">
-        <h4>Cancelacion justificada</h4>
-        ${cancellationMarkup}
-        <div class="technician-order-history">${cancellationHistoryMarkup}</div>
-      </div>
+      <details class="technician-order-block" ${canCaptureEvidence || hasEvidence ? "open" : ""}>
+        <summary>
+          <span><i class="fas fa-camera" aria-hidden="true"></i> Evidencia operativa</span>
+          <span class="technician-order-count">${evidenceItems.length}</span>
+        </summary>
+        <div class="technician-order-block-body">
+          <div class="technician-evidence-list">${renderEvidenceListMarkup(evidenceItems)}</div>
+          ${canCaptureEvidence
+            ? ""
+            : '<p class="technician-order-hint"><i class="fas fa-circle-info" aria-hidden="true"></i> La carga de evidencia se habilita cuando la orden esta en ejecucion y sigue disponible una vez finalizada.</p>'}
+        </div>
+      </details>
 
-      <div class="technician-order-block">
-        <h4>Evidencia operativa</h4>
-        <div class="technician-evidence-list">${renderEvidenceListMarkup(evidenceItems)}</div>
-        ${evidenceFormsMarkup}
-      </div>
+      <details class="technician-order-block" open>
+        <summary>
+          <span><i class="fas fa-list-check" aria-hidden="true"></i> Servicios a realizar</span>
+          <span class="technician-order-count">${servicesCount}</span>
+        </summary>
+        <div class="technician-order-block-body">
+          <div class="technician-order-items">${itemsMarkup}</div>
+        </div>
+      </details>
 
-      <div class="technician-order-block">
-        <h4>Items</h4>
-        <div class="technician-order-items">${itemsMarkup}</div>
-      </div>
+      <details class="technician-order-block">
+        <summary>
+          <span><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> Historial de estados</span>
+          <span class="technician-order-count">${state.currentOrderHistory.length}</span>
+        </summary>
+        <div class="technician-order-block-body">
+          <div class="technician-order-history">${historyMarkup}</div>
+        </div>
+      </details>
 
-      <div class="technician-order-block">
-        <h4>Historial</h4>
-        <div class="technician-order-history">${historyMarkup}</div>
-      </div>
+      ${cancellationRequests.length ? `
+        <details class="technician-order-block">
+          <summary>
+            <span><i class="fas fa-ban" aria-hidden="true"></i> Solicitudes de cancelacion</span>
+            <span class="technician-order-count">${cancellationRequests.length}</span>
+          </summary>
+          <div class="technician-order-block-body">
+            <div class="technician-order-history">${cancellationHistoryMarkup}</div>
+          </div>
+        </details>` : ""}
+    </article>
+  `;
+}
+
+function renderOrderProgressTrack(order) {
+  const tone = getOrderTone(order.status);
+  if (tone === "exception") return "";
+
+  const currentRank = getOrderProgressRank(order.status);
+  const isClosed = tone === "closed";
+  const lastStepIndex = ORDER_PROGRESS_STEPS.length - 1;
+
+  const steps = ORDER_PROGRESS_STEPS.map((step, index) => {
+    const isDone = isClosed || index < currentRank;
+    const isCurrent = !isClosed && index === currentRank;
+    const label = isClosed && index === lastStepIndex ? "Cerrada" : step.label;
+
+    return `
+      <li class="technician-order-progress__step ${isDone ? "is-done" : isCurrent ? "is-current" : ""}">
+        <span class="technician-order-progress__dot" aria-hidden="true"></span>
+        <span class="technician-order-progress__label">${escapeHtml(label)}</span>
+      </li>
+    `;
+  }).join("");
+
+  const completedRatio = isClosed ? 1 : Math.min(1, Math.max(0, currentRank / lastStepIndex));
+
+  return `
+    <div class="technician-order-progress" style="--technician-order-progress: ${completedRatio.toFixed(2)}">
+      <ol class="technician-order-progress__steps" aria-label="Progreso de la orden">
+        ${steps}
+      </ol>
+      <p class="technician-order-progress__caption">
+        Paso ${Math.min(ORDER_PROGRESS_STEPS.length, currentRank + 1)} de ${ORDER_PROGRESS_STEPS.length} &middot; <strong>${escapeHtml(getOrderStatusLabel(order.status))}</strong>
+      </p>
     </div>
   `;
 }
@@ -1651,6 +1823,48 @@ function openCancellationModal(orderId) {
   form?.reset();
   modal.dataset.orderId = orderId;
   modal.classList.remove("hidden");
+  syncDialogVisibility(modal);
+}
+
+function setEvidenceModalTab(tabKey) {
+  const modal = document.getElementById("evidence-modal");
+  if (!modal) return;
+
+  modal.querySelectorAll("[data-evidence-tab]").forEach((tab) => {
+    const isActive = tab.dataset.evidenceTab === tabKey;
+    tab.classList.toggle("is-active", isActive);
+    tab.setAttribute("aria-selected", isActive ? "true" : "false");
+  });
+
+  modal.querySelectorAll("[data-evidence-panel]").forEach((panel) => {
+    panel.classList.toggle("hidden", panel.dataset.evidencePanel !== tabKey);
+  });
+}
+
+function openEvidenceModal(orderId) {
+  const modal = document.getElementById("evidence-modal");
+  if (!modal) return;
+
+  modal.dataset.orderId = orderId;
+  modal.querySelectorAll("form[data-form]").forEach((form) => {
+    form.reset();
+    form.dataset.orderId = orderId;
+    const fileNameElement = form.querySelector('[data-role="file-name"]');
+    if (fileNameElement) {
+      fileNameElement.textContent = "Todavia no elegiste un archivo.";
+    }
+  });
+
+  setEvidenceModalTab("photo");
+  modal.classList.remove("hidden");
+  syncDialogVisibility(modal);
+}
+
+function closeEvidenceModal() {
+  const modal = document.getElementById("evidence-modal");
+  if (!modal || modal.classList.contains("hidden")) return;
+
+  modal.classList.add("hidden");
   syncDialogVisibility(modal);
 }
 
@@ -2058,7 +2272,7 @@ function setupOrderActions() {
   refs.technicianBackToOrders?.addEventListener("click", () => {
     setTechnicianOrdersMode("list");
   });
-  refs.technicianOrderDetail?.addEventListener("click", async (event) => {
+  const handleOrderActionClick = async (event) => {
     const actionButton = event.target.closest("[data-action]");
     if (!actionButton) return;
 
@@ -2085,6 +2299,11 @@ function setupOrderActions() {
         return;
       }
 
+      if (actionButton.dataset.action === "open-evidence-modal") {
+        openEvidenceModal(orderId);
+        return;
+      }
+
       if (actionButton.dataset.action === "open-cancellation-modal") {
         openCancellationModal(orderId);
       }
@@ -2093,9 +2312,9 @@ function setupOrderActions() {
       setOrderActionFeedback(getErrorMessage(error, "No se pudo completar la accion sobre la orden."), "error");
       renderOrderDetail();
     }
-  });
+  };
 
-  refs.technicianOrderDetail?.addEventListener("change", (event) => {
+  const handleEvidenceFileChange = (event) => {
     const fileInput = event.target.closest('input[type="file"][name="file"]');
     if (!fileInput) return;
 
@@ -2104,9 +2323,9 @@ function setupOrderActions() {
     if (fileNameElement) {
       fileNameElement.textContent = fileInput.files?.[0]?.name || "Todavia no elegiste un archivo.";
     }
-  });
+  };
 
-  refs.technicianOrderDetail?.addEventListener("submit", async (event) => {
+  const handleEvidenceFormSubmit = async (event) => {
     const form = event.target.closest("form[data-form]");
     if (!form) return;
 
@@ -2118,18 +2337,29 @@ function setupOrderActions() {
       if (form.dataset.form === "photo-evidence") {
         setOrderActionFeedback("Guardando foto de evidencia...", "info");
         await addPhotoEvidence(orderId, form);
+        closeEvidenceModal();
         return;
       }
 
       if (form.dataset.form === "digital-check") {
         setOrderActionFeedback("Registrando check digital...", "info");
         await addDigitalCheckEvidence(orderId, form);
+        closeEvidenceModal();
       }
     } catch (error) {
       console.error("No se pudo registrar la evidencia.", error);
       setOrderActionFeedback(getErrorMessage(error, "No se pudo registrar la evidencia."), "error");
       renderOrderDetail();
     }
+  };
+
+  // Los formularios de evidencia viven en el modal, fuera del contenedor del
+  // detalle: los mismos handlers se enganchan en ambos lugares.
+  const evidenceModal = document.getElementById("evidence-modal");
+  [refs.technicianOrderDetail, evidenceModal].forEach((container) => {
+    container?.addEventListener("click", handleOrderActionClick);
+    container?.addEventListener("change", handleEvidenceFileChange);
+    container?.addEventListener("submit", handleEvidenceFormSubmit);
   });
 }
 
@@ -2236,6 +2466,46 @@ function setupAccessibleDialogs() {
   observer.observe(rescheduleModal, { attributes: true, attributeFilter: ["class"] });
 
   setupCancellationModal();
+  setupEvidenceModal();
+}
+
+function setupEvidenceModal() {
+  const evidenceModal = document.getElementById("evidence-modal");
+  if (!evidenceModal) return;
+
+  decorateDialog(evidenceModal, {
+    titleId: "evidenceModalTitle",
+    descriptionId: "evidenceModalDescription"
+  });
+  syncDialogVisibility(evidenceModal);
+
+  evidenceModal.querySelectorAll(".close-modal, #cancelEvidenceModal").forEach((button) => {
+    button.addEventListener("click", closeEvidenceModal);
+  });
+
+  evidenceModal.addEventListener("click", (event) => {
+    if (event.target === evidenceModal) {
+      closeEvidenceModal();
+      return;
+    }
+
+    const tab = event.target.closest("[data-evidence-tab]");
+    if (tab) {
+      setEvidenceModalTab(tab.dataset.evidenceTab);
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !evidenceModal.classList.contains("hidden")) {
+      event.preventDefault();
+      closeEvidenceModal();
+    }
+  });
+
+  const observer = new MutationObserver(() => {
+    syncDialogVisibility(evidenceModal);
+  });
+  observer.observe(evidenceModal, { attributes: true, attributeFilter: ["class"] });
 }
 
 function setupCancellationModal() {

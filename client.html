@@ -6,7 +6,7 @@
     <title>Hygea - Panel Cliente</title>
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/dashboard-shell.css">
-    <link rel="stylesheet" href="css/client.css">
+    <link rel="stylesheet" href="css/client.css?v=20260807-1">
     <link rel="stylesheet" href="css/dashboard-topnav.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -216,6 +216,21 @@
                         </button>
                     </div>
                 </div>
+
+                <div class="orders-toolbar">
+                    <div class="orders-toolbar__stats" id="clientOrdersStats" aria-live="polite"></div>
+                    <label class="orders-toolbar__filter" for="orders-status-filter">
+                        <span>Filtrar por estado</span>
+                        <select id="orders-status-filter">
+                            <option value="">Todos los estados</option>
+                            <option value="1">Creada</option>
+                            <option value="7">Aprobada</option>
+                            <option value="2">Confirmada</option>
+                            <option value="3">En ejecucion</option>
+                        </select>
+                    </label>
+                </div>
+
                 <div class="appointments-list route-list-surface" id="clientOrdersList">
                     <div class="loading-spinner">
                         <i class="fas fa-spinner fa-spin"></i>
@@ -510,6 +525,6 @@
         </nav>
     </div>
 
-    <script type="module" src="js/client-js/client-main.js?v=20260316-2"></script>
+    <script type="module" src="js/client-js/client-main.js?v=20260807-1"></script>
 </body>
 </html>

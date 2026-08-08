@@ -128,6 +128,7 @@ const state = {
   user: null,
   technicianProfile: null,
   currentProviderEntity: null,
+  clientNamesById: new Map(),
   availableProviders: [],
   providerChangeRequests: [],
   availability: [],
@@ -1118,9 +1119,9 @@ function renderTechnicianOrderCard(order) {
             : "<strong>Sin fecha asignada</strong>"}
         </div>
         <div class="technician-order-field">
-          <span class="technician-order-label"><i class="fas fa-location-dot" aria-hidden="true"></i> Donde</span>
+          <span class="technician-order-label"><i class="fas fa-location-dot" aria-hidden="true"></i> Donde y con quien</span>
           <strong>${escapeHtml(order.address || "Sin direccion registrada")}</strong>
-          ${order.address ? "" : '<span class="technician-order-subvalue">Coordina el acceso con el proveedor.</span>'}
+          <span class="technician-order-subvalue">${escapeHtml(getClientDisplayName(order.clientId))}</span>
         </div>
       </div>
 
@@ -1536,7 +1537,7 @@ function renderOrderDetail() {
         </div>
         <div class="technician-order-field">
           <span class="technician-order-label"><i class="fas fa-user" aria-hidden="true"></i> Cliente</span>
-          <strong>#${escapeHtml(shortenGuid(order.clientId))}</strong>
+          <strong>${escapeHtml(getClientDisplayName(order.clientId))}</strong>
         </div>
         <div class="technician-order-field">
           <span class="technician-order-label"><i class="fas fa-receipt" aria-hidden="true"></i> Monto total</span>
@@ -1869,12 +1870,40 @@ async function loadOrders() {
     .map(normalizeOrder)
     .sort((left, right) => new Date(left.scheduledStartAtUtc) - new Date(right.scheduledStartAtUtc));
 
+  await loadClientNames();
+
   renderDashboardOrders();
   renderOrderWeekSummary(refs.weeklySchedule, state.orders);
   renderAgendaList();
   renderExecutionOrders();
   renderOrdersList();
   renderSummaryCards();
+}
+
+// El tecnico veia al cliente como "#c1111111". Los nombres viven en
+// DirectoryMS por entidad proveedora; si el rol no tuviera permiso sobre ese
+// endpoint, se conserva el identificador corto como respaldo.
+async function loadClientNames() {
+  const providerEntityId = state.technicianProfile?.providerEntityId;
+  if (!isGuid(providerEntityId)) return;
+
+  try {
+    const profiles = await FrontGateway.directory.getClientProfilesByProvider(providerEntityId);
+    state.clientNamesById = new Map(
+      profiles
+        .map((profile) => [
+          profile.id ?? profile.Id,
+          profile.fullName ?? profile.FullName ?? ""
+        ])
+        .filter(([id, fullName]) => isGuid(id) && fullName)
+    );
+  } catch (error) {
+    console.warn("No se pudieron resolver los nombres de los clientes.", error);
+  }
+}
+
+function getClientDisplayName(clientId) {
+  return state.clientNamesById?.get(clientId) || `Cliente #${shortenGuid(clientId)}`;
 }
 
 async function openOrderDetail(orderId, { preserveFeedback = false } = {}) {

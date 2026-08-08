@@ -1007,7 +1007,11 @@ function getFilteredOrders() {
   });
 }
 
-function renderOrdersInto(containerId, { limit = 0, decisionFirst = false, focusMode = false } = {}) {
+function isOrdersFilterActive() {
+  return Boolean(filters.ordersStatus) || Boolean(filters.ordersSearch.trim());
+}
+
+function renderOrdersInto(containerId, { limit = 0, decisionFirst = false, focusMode = false, excludePending = false } = {}) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
@@ -1027,7 +1031,15 @@ function renderOrdersInto(containerId, { limit = 0, decisionFirst = false, focus
       return leftPending - rightPending;
     });
   } else {
-    orders = sortOrdersBySchedule(getFilteredOrders(), "asc");
+    // Las que ya estan en "Esperan tu decision" no se repiten en la bandeja,
+    // salvo que haya una busqueda o un filtro activos: ahi el usuario espera
+    // ver todos los resultados juntos.
+    orders = sortOrdersBySchedule(
+      excludePending
+        ? getFilteredOrders().filter((order) => !needsProviderAction(getStatusValue(order.status)))
+        : getFilteredOrders(),
+      "asc"
+    );
   }
 
   const visibleOrders = limit > 0 ? orders.slice(0, limit) : orders;
@@ -1037,10 +1049,12 @@ function renderOrdersInto(containerId, { limit = 0, decisionFirst = false, focus
       state.orders.length
         ? {
             icon: "fa-filter-circle-xmark",
-            title: decisionFirst ? "No hay ordenes esperando decision" : "Sin resultados",
+            title: decisionFirst ? "No hay ordenes esperando decision" : excludePending ? "No hay mas ordenes" : "Sin resultados",
             message: decisionFirst
               ? "Todas las ordenes de la entidad ya fueron aprobadas o confirmadas."
-              : "Proba con otro estado o limpia la busqueda para ver el resto de las ordenes."
+              : excludePending
+                ? "Todas las ordenes de la entidad estan en el grupo de arriba, esperando tu decision."
+                : "Proba con otro estado o limpia la busqueda para ver el resto de las ordenes."
           }
         : {
             icon: "fa-clipboard-list",
@@ -1114,18 +1128,28 @@ function renderProviderOrdersSection() {
 
   const decisionGroup = document.getElementById("providerDecisionGroup");
   const decisionCount = state.orders.filter((order) => needsProviderAction(getStatusValue(order.status))).length;
+  // Buscar o filtrar arma una lista plana: el grupo de decision es una ayuda
+  // de la vista por defecto, no un tercer resultado que compita con la busqueda.
+  const showsDecisionGroup = decisionCount > 0 && !isOrdersFilterActive();
 
   if (decisionGroup) {
-    decisionGroup.classList.toggle("hidden", decisionCount === 0);
+    decisionGroup.classList.toggle("hidden", !showsDecisionGroup);
     const counter = document.getElementById("providerDecisionCount");
     if (counter) counter.textContent = decisionCount === 1 ? "1 orden" : `${decisionCount} ordenes`;
   }
 
-  if (decisionCount > 0) {
+  if (showsDecisionGroup) {
     renderOrdersInto("providerDecisionList", { decisionFirst: true });
   }
 
-  renderOrdersInto("providerOrdersTray");
+  const trayCopy = document.getElementById("providerTrayCopy");
+  if (trayCopy) {
+    trayCopy.textContent = showsDecisionGroup
+      ? "El resto de las ordenes de la entidad, de la visita mas proxima a la mas lejana."
+      : "Todas las ordenes de la entidad, de la visita mas proxima a la mas lejana.";
+  }
+
+  renderOrdersInto("providerOrdersTray", { excludePending: showsDecisionGroup });
 }
 
 function renderTechniciansStats() {

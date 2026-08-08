@@ -2108,12 +2108,13 @@ function renderOrdersStats(activeOrders) {
 }
 
 function renderOrders() {
-  const overviewFilter = document.getElementById("status-filter")?.value || "";
+  // Inicio es un resumen de tres items por lista: filtrarlo por estado con un
+  // segundo select, ademas confundia porque afectaba a las dos listas a la vez
+  // con estados que solo aplican a una. El unico filtro vive en "Mis ordenes".
   const ordersFilter = document.getElementById("orders-status-filter")?.value || "";
 
-  const overviewOrders = filterOrdersByStatus(currentOrders, overviewFilter);
-  const overviewActive = sortOrdersBySchedule(overviewOrders.filter((order) => !isClosedOrderStatus(order.status)), "asc");
-  const overviewHistory = sortOrdersBySchedule(overviewOrders.filter((order) => isClosedOrderStatus(order.status)), "desc");
+  const overviewActive = sortOrdersBySchedule(currentOrders.filter((order) => !isClosedOrderStatus(order.status)), "asc");
+  const overviewHistory = sortOrdersBySchedule(currentOrders.filter((order) => isClosedOrderStatus(order.status)), "desc");
 
   const routeOrders = filterOrdersByStatus(currentOrders, ordersFilter);
   const routeActive = sortOrdersBySchedule(routeOrders.filter((order) => !isClosedOrderStatus(order.status)), "asc");
@@ -2237,7 +2238,6 @@ async function handleCreateOrder(event) {
 function registerEvents() {
   const form = document.getElementById("appointment-form");
   const addItemButton = document.getElementById("add-service-item");
-  const statusFilter = document.getElementById("status-filter");
   const ordersStatusFilter = document.getElementById("orders-status-filter");
   const refreshRecentHistoryButton = document.getElementById("refreshRecentHistory");
   const refreshOrdersSectionButton = document.getElementById("refreshOrdersSection");
@@ -2304,7 +2304,6 @@ function registerEvents() {
     updateServicePreview();
     scheduleSuggestedSlotsRefresh();
   });
-  statusFilter?.addEventListener("change", renderOrders);
   ordersStatusFilter?.addEventListener("change", renderOrders);
   refreshRecentHistoryButton?.addEventListener("click", refreshOrders);
   refreshOrdersSectionButton?.addEventListener("click", refreshOrders);

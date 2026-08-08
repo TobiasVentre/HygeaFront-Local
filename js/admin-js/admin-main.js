@@ -119,9 +119,14 @@ function getUserDisplayName() {
 }
 
 function formatDateTime(value) {
+  // 24h como el resto del producto: `timeStyle: short` en es-AR da "12:00 p. m.".
   return formatArgentinaDateTime(value, {
-    dateStyle: "short",
-    timeStyle: "short"
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23"
   });
 }
 
@@ -441,6 +446,46 @@ function setupUserMenu() {
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("user");
     window.location.href = "login.html";
+  });
+}
+
+function setAdminModalOpen(modalId, isOpen) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+
+  modal.classList.toggle("hidden", !isOpen);
+  modal.setAttribute("aria-hidden", isOpen ? "false" : "true");
+  document.body.classList.toggle("admin-modal-open", isOpen);
+
+  if (isOpen) {
+    modal.querySelector("input, select, textarea")?.focus();
+  }
+}
+
+function setupAdminModals() {
+  const triggers = [
+    ["adminOpenProviderModal", "admin-provider-modal"],
+    ["adminOpenProviderAdminModal", "admin-provider-admin-modal"]
+  ];
+
+  triggers.forEach(([triggerId, modalId]) => {
+    document.getElementById(triggerId)?.addEventListener("click", () => setAdminModalOpen(modalId, true));
+
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    modal.querySelectorAll("[data-admin-modal-close]").forEach((button) => {
+      button.addEventListener("click", () => setAdminModalOpen(modalId, false));
+    });
+
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) setAdminModalOpen(modalId, false);
+    });
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    triggers.forEach(([, modalId]) => setAdminModalOpen(modalId, false));
   });
 }
 
@@ -1168,6 +1213,7 @@ async function createProvider(event) {
     await FrontGateway.directory.createProvider({ name, isEnabled });
     document.getElementById("adminProviderForm")?.reset();
     document.getElementById("adminProviderEnabled").checked = true;
+    setAdminModalOpen("admin-provider-modal", false);
     await refreshAdminData();
     setProviderFeedback("Entidad proveedora creada correctamente.", "success");
     showAppFeedback("La nueva entidad ya forma parte de la red global y puede recibir admins, clientes y tecnicos.", {
@@ -1218,9 +1264,10 @@ async function createProviderAdmin(event) {
     await FrontGateway.auth.createProviderAdmin({ firstName, lastName, email, dni, password, phone, providerEntityId });
     document.getElementById("adminProviderAdminForm")?.reset();
     renderProviderSelectors();
+    setAdminModalOpen("admin-provider-admin-modal", false);
     await refreshAdminData();
     setProviderAdminFeedback("Admin de entidad creado correctamente.", "success");
-    showAppFeedback("El usuario administrador quedo provisionado en AuthMS y DirectoryMS.", {
+    showAppFeedback("El admin ya puede ingresar y operar la entidad asignada.", {
       type: "success",
       title: "Admin creado"
     });
@@ -1585,6 +1632,7 @@ async function bootstrap() {
   state.user = await ensureAuthorizedPage(["Admin"]);
   setupUserMenu();
   setupNavigation();
+  setupAdminModals();
   setDefaultMembershipDates();
   registerEvents();
 

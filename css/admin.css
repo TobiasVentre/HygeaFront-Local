@@ -471,3 +471,127 @@
     align-items: stretch;
   }
 }
+
+/* ============================================================
+   MODALES DE ALTA (entidad y admin de entidad)
+   Los formularios ocupaban el tope de la seccion y empujaban la
+   lista de entidades fuera de pantalla.
+   ============================================================ */
+.admin-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(3px);
+}
+
+.admin-modal.hidden {
+    display: none;
+}
+
+body.admin-modal-open {
+    overflow: hidden;
+}
+
+.admin-modal__content {
+    width: min(640px, 100%);
+    max-height: min(88vh, 900px);
+    display: flex;
+    flex-direction: column;
+    border-radius: 22px;
+    background: var(--surface-card);
+    box-shadow: 0 32px 64px -28px var(--shadow-xl);
+    overflow: hidden;
+}
+
+.admin-modal__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.25rem 1.4rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.admin-modal__header h3 {
+    margin: 0 0 0.2rem;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+}
+
+.admin-modal__header p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+.admin-modal__close {
+    flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    background: var(--surface-card);
+    color: var(--text-muted);
+    font-size: 1.35rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.admin-modal__close:hover {
+    background: var(--surface-subtle);
+    color: var(--text-primary);
+}
+
+.admin-modal__body {
+    padding: 1.25rem 1.4rem;
+    overflow-y: auto;
+}
+
+.admin-modal__body .admin-form-actions {
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-subtle);
+}
+
+/* El checkbox quedaba encima de su etiqueta porque la regla generica de
+   los labels del formulario los pone en grid. */
+.admin-form-grid .admin-checkbox-row,
+.admin-checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.admin-form-grid .admin-checkbox-row input[type="checkbox"],
+.admin-checkbox-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--brand);
+}
+
+/* Resumen operativo con los mismos chips que el resto del producto */
+.admin-operations-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+@media (max-width: 640px) {
+    .admin-modal {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .admin-modal__content {
+        width: 100%;
+        max-height: 92vh;
+        border-radius: 22px 22px 0 0;
+    }
+}

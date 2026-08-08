@@ -6,7 +6,7 @@
     <title>Hygea - Panel Administrador Global</title>
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/dashboard-shell.css">
-    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/admin.css?v=20260808-1">
     <link rel="stylesheet" href="css/dashboard-topnav.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -102,7 +102,7 @@
                             <div>
                                 <span class="overview-metric__value" id="adminUsersCount">0</span>
                                 <span class="overview-metric__label">Usuarios registrados</span>
-                                <span class="overview-metric__hint">Base de usuarios detectada en DirectoryMS.</span>
+                                <span class="overview-metric__hint">Base total de usuarios de la plataforma.</span>
                             </div>
                         </article>
                         <article class="overview-metric">
@@ -325,84 +325,19 @@
                         <p>Estado general, administradores asociados, tecnicos y capacidad de provision administrativa.</p>
                     </div>
                     <div class="section-header-actions">
+                        <button type="button" class="btn btn-primary" id="adminOpenProviderModal">
+                            <i class="fas fa-building-circle-check"></i>
+                            Nueva entidad
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="adminOpenProviderAdminModal">
+                            <i class="fas fa-user-plus"></i>
+                            Nuevo admin
+                        </button>
                         <button type="button" class="btn btn-secondary" id="refreshAdminProviders">
                             <i class="fas fa-rotate"></i>
                             Actualizar
                         </button>
                     </div>
-                </div>
-                <div class="admin-provider-layout">
-                    <article class="request-panel-card">
-                        <div class="request-panel-head">
-                            <div>
-                                <h4>Nueva entidad proveedora</h4>
-                                <p>Alta inicial de proveedor para ampliar la red operativa.</p>
-                            </div>
-                        </div>
-                        <form id="adminProviderForm" class="admin-form-grid">
-                            <label>
-                                <span>Nombre comercial</span>
-                                <input type="text" id="adminProviderName" maxlength="120" required placeholder="Proveedor Metropolitano">
-                            </label>
-                            <label class="admin-checkbox-row">
-                                <input type="checkbox" id="adminProviderEnabled" checked>
-                                <span>Crear entidad habilitada</span>
-                            </label>
-                            <div class="admin-form-actions">
-                                <button type="submit" class="btn btn-primary" id="adminProviderSubmitBtn">
-                                    <i class="fas fa-building-circle-check"></i>
-                                    Crear entidad
-                                </button>
-                                <span id="adminProviderFeedback" class="admin-inline-feedback">Las nuevas entidades ya quedan disponibles para asignar clientes, tecnicos y admins.</span>
-                            </div>
-                        </form>
-                    </article>
-
-                    <article class="request-panel-card">
-                        <div class="request-panel-head">
-                            <div>
-                                <h4>Nuevo admin de entidad</h4>
-                                <p>Provision administrativa via `AuthMS` con perfil sincronizado en `DirectoryMS`.</p>
-                            </div>
-                        </div>
-                        <form id="adminProviderAdminForm" class="admin-form-grid">
-                            <label>
-                                <span>Entidad proveedora</span>
-                                <select id="adminProviderAdminProviderSelect" required></select>
-                            </label>
-                            <label>
-                                <span>Nombre</span>
-                                <input type="text" id="adminProviderAdminFirstName" maxlength="80" required placeholder="Carla">
-                            </label>
-                            <label>
-                                <span>Apellido</span>
-                                <input type="text" id="adminProviderAdminLastName" maxlength="80" required placeholder="Mendez">
-                            </label>
-                            <label>
-                                <span>Email</span>
-                                <input type="email" id="adminProviderAdminEmail" required placeholder="carla@proveedor.com">
-                            </label>
-                            <label>
-                                <span>DNI</span>
-                                <input type="text" id="adminProviderAdminDni" maxlength="32" required placeholder="30111222">
-                            </label>
-                            <label>
-                                <span>Telefono</span>
-                                <input type="tel" id="adminProviderAdminPhone" maxlength="40" required placeholder="+54 11 5555 5555">
-                            </label>
-                            <label>
-                                <span>Password inicial</span>
-                                <input type="password" id="adminProviderAdminPassword" minlength="8" required placeholder="Minimo 8 caracteres">
-                            </label>
-                            <div class="admin-form-actions">
-                                <button type="submit" class="btn btn-primary" id="adminProviderAdminSubmitBtn">
-                                    <i class="fas fa-user-plus"></i>
-                                    Crear admin
-                                </button>
-                                <span id="adminProviderAdminFeedback" class="admin-inline-feedback">El alta crea el usuario en AuthMS y provisiona su perfil de entidad en DirectoryMS.</span>
-                            </div>
-                        </form>
-                    </article>
                 </div>
 
                 <div id="adminProvidersList" class="admin-provider-grid route-list-surface">
@@ -512,7 +447,7 @@
                         <div class="request-panel-head">
                             <div>
                                 <h4>Reservas globales</h4>
-                                <p>Vista complementaria para revisar asignacion tecnica y consistencia del scheduling.</p>
+                                <p>Vista complementaria para revisar la asignacion tecnica y la consistencia de la agenda.</p>
                             </div>
                         </div>
                         <div id="adminReservationsList" class="appointments-list route-list-surface">
@@ -593,6 +528,89 @@
         </nav>
     </div>
 
-    <script type="module" src="js/admin-js/admin-main.js?v=20260327-1"></script>
+
+    <div id="admin-provider-modal" class="admin-modal hidden" role="dialog" aria-modal="true" aria-labelledby="admin-provider-modalTitle" aria-hidden="true">
+        <div class="admin-modal__content">
+            <div class="admin-modal__header">
+                <div>
+                    <h3 id="admin-provider-modalTitle">Nueva entidad proveedora</h3>
+                    <p>Alta inicial de proveedor para ampliar la red operativa.</p>
+                </div>
+                <button type="button" class="admin-modal__close" data-admin-modal-close aria-label="Cerrar">&times;</button>
+            </div>
+            <div class="admin-modal__body">
+<form id="adminProviderForm" class="admin-form-grid">
+                            <label>
+                                <span>Nombre comercial</span>
+                                <input type="text" id="adminProviderName" maxlength="120" required placeholder="Proveedor Metropolitano">
+                            </label>
+                            <label class="admin-checkbox-row">
+                                <input type="checkbox" id="adminProviderEnabled" checked>
+                                <span>Crear entidad habilitada</span>
+                            </label>
+                            <div class="admin-form-actions">
+                                <button type="submit" class="btn btn-primary" id="adminProviderSubmitBtn">
+                                    <i class="fas fa-building-circle-check"></i>
+                                    Crear entidad
+                                </button>
+                                <span id="adminProviderFeedback" class="admin-inline-feedback">Las nuevas entidades ya quedan disponibles para asignar clientes, tecnicos y admins.</span>
+                            </div>
+                        </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-provider-admin-modal" class="admin-modal hidden" role="dialog" aria-modal="true" aria-labelledby="admin-provider-admin-modalTitle" aria-hidden="true">
+        <div class="admin-modal__content">
+            <div class="admin-modal__header">
+                <div>
+                    <h3 id="admin-provider-admin-modalTitle">Nuevo admin de entidad</h3>
+                    <p>Crea el usuario administrador y lo asocia a la entidad elegida.</p>
+                </div>
+                <button type="button" class="admin-modal__close" data-admin-modal-close aria-label="Cerrar">&times;</button>
+            </div>
+            <div class="admin-modal__body">
+<form id="adminProviderAdminForm" class="admin-form-grid">
+                            <label>
+                                <span>Entidad proveedora</span>
+                                <select id="adminProviderAdminProviderSelect" required></select>
+                            </label>
+                            <label>
+                                <span>Nombre</span>
+                                <input type="text" id="adminProviderAdminFirstName" maxlength="80" required placeholder="Carla">
+                            </label>
+                            <label>
+                                <span>Apellido</span>
+                                <input type="text" id="adminProviderAdminLastName" maxlength="80" required placeholder="Mendez">
+                            </label>
+                            <label>
+                                <span>Email</span>
+                                <input type="email" id="adminProviderAdminEmail" required placeholder="carla@proveedor.com">
+                            </label>
+                            <label>
+                                <span>DNI</span>
+                                <input type="text" id="adminProviderAdminDni" maxlength="32" required placeholder="30111222">
+                            </label>
+                            <label>
+                                <span>Telefono</span>
+                                <input type="tel" id="adminProviderAdminPhone" maxlength="40" required placeholder="+54 11 5555 5555">
+                            </label>
+                            <label>
+                                <span>Password inicial</span>
+                                <input type="password" id="adminProviderAdminPassword" minlength="8" required placeholder="Minimo 8 caracteres">
+                            </label>
+                            <div class="admin-form-actions">
+                                <button type="submit" class="btn btn-primary" id="adminProviderAdminSubmitBtn">
+                                    <i class="fas fa-user-plus"></i>
+                                    Crear admin
+                                </button>
+                                <span id="adminProviderAdminFeedback" class="admin-inline-feedback">El admin queda habilitado para operar la entidad ni bien se crea.</span>
+                            </div>
+                        </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/admin-js/admin-main.js?v=20260808-1"></script>
 </body>
 </html>

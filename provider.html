@@ -6,7 +6,7 @@
     <title>Hygea - Panel Entidad Proveedora</title>
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/dashboard-shell.css">
-    <link rel="stylesheet" href="css/provider.css">
+    <link rel="stylesheet" href="css/provider.css?v=20260808-1">
     <link rel="stylesheet" href="css/dashboard-topnav.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -223,16 +223,49 @@
                 </div>
 
                 <div class="provider-orders-shell">
-                    <article class="request-panel-card">
+                    <div class="provider-toolbar">
+                        <div class="provider-toolbar__stats" id="providerOrdersStats" aria-live="polite"></div>
+                        <div class="provider-toolbar__filters">
+                            <label class="provider-field">
+                                <span>Buscar</span>
+                                <input type="search" id="providerOrdersSearch" placeholder="Cliente, tecnico, servicio o #orden" autocomplete="off">
+                            </label>
+                            <label class="provider-field">
+                                <span>Estado</span>
+                                <select id="providerOrdersStatusFilter">
+                                    <option value="">Todos los estados</option>
+                                    <option value="1">Creada</option>
+                                    <option value="7">Aprobada</option>
+                                    <option value="2">Confirmada</option>
+                                    <option value="3">En ejecucion</option>
+                                    <option value="4">Finalizada</option>
+                                    <option value="5">Excepcion</option>
+                                    <option value="6">Cerrada</option>
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+
+                    <article class="request-panel-card provider-cancellations-card hidden" id="providerCancellationsCard">
                         <div class="request-panel-head">
                             <div>
-                                <h4>Cancelaciones justificadas pendientes</h4>
-                                <p>Solicitudes elevadas por tecnicos que requieren decision de la entidad.</p>
+                                <h4><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Cancelaciones a resolver</h4>
+                                <p>Pedidos elevados por tecnicos que frenan la orden hasta que decidas.</p>
                             </div>
+                            <span class="provider-count-badge is-danger" id="providerCancellationsCount">0 solicitudes</span>
                         </div>
-                        <div id="providerPendingCancellationRequests" class="appointments-list">
-                            <p class="request-empty-text">Todavia no hay cancelaciones justificadas pendientes.</p>
+                        <div id="providerPendingCancellationRequests" class="provider-cancellation-list"></div>
+                    </article>
+
+                    <article class="request-panel-card provider-decision-card hidden" id="providerDecisionGroup">
+                        <div class="request-panel-head">
+                            <div>
+                                <h4>Esperan tu decision</h4>
+                                <p>Ordenes creadas o aprobadas que no avanzan hasta que las apruebes o confirmes.</p>
+                            </div>
+                            <span class="provider-count-badge" id="providerDecisionCount">0 ordenes</span>
                         </div>
+                        <div id="providerDecisionList" class="provider-order-list"></div>
                     </article>
 
                     <div id="providerOrdersOverview" class="provider-orders-overview">
@@ -240,10 +273,10 @@
                             <div class="request-panel-head">
                                 <div>
                                     <h4>Bandeja operativa</h4>
-                                    <p>Ordenes ordenadas por fecha y estado.</p>
+                                    <p>Todas las ordenes de la entidad, de la visita mas proxima a la mas lejana.</p>
                                 </div>
                             </div>
-                            <div id="providerOrdersTray" class="appointments-list"></div>
+                            <div id="providerOrdersTray" class="provider-order-list"></div>
                         </article>
                     </div>
 
@@ -327,55 +360,35 @@
                         <h3>Tecnicos de la entidad</h3>
                         <p>Alta operativa y gestion del staff tecnico asociado al proveedor.</p>
                     </div>
-                </div>
-                <article class="request-panel-card provider-staff-card">
-                    <div class="request-panel-head">
-                        <div>
-                            <h4>Alta de tecnico</h4>
-                            <p>Crea un tecnico nuevo dentro de la entidad actual.</p>
-                        </div>
+                    <div class="section-header-actions">
+                        <button type="button" class="btn btn-primary" id="providerOpenTechnicianModal">
+                            <i class="fas fa-user-plus"></i>
+                            Nuevo tecnico
+                        </button>
                     </div>
-                    <form id="providerTechnicianForm" class="provider-technician-form">
-                        <div class="provider-form-grid">
-                            <label class="input-group">
-                                <span>Nombre</span>
-                                <input type="text" id="providerTechnicianFirstName" required maxlength="255" placeholder="Nombre">
-                            </label>
-                            <label class="input-group">
-                                <span>Apellido</span>
-                                <input type="text" id="providerTechnicianLastName" required maxlength="255" placeholder="Apellido">
-                            </label>
-                            <label class="input-group">
-                                <span>Email</span>
-                                <input type="email" id="providerTechnicianEmail" required maxlength="255" placeholder="tecnico@hygea.local">
-                            </label>
-                            <label class="input-group">
-                                <span>DNI</span>
-                                <input type="text" id="providerTechnicianDni" required maxlength="20" placeholder="30111222">
-                            </label>
-                            <label class="input-group">
-                                <span>Telefono</span>
-                                <input type="text" id="providerTechnicianPhone" required maxlength="30" placeholder="1122334455">
-                            </label>
-                            <label class="input-group">
-                                <span>Especialidad</span>
-                                <input type="text" id="providerTechnicianSpecialty" required maxlength="100" placeholder="Control de plagas">
-                            </label>
-                            <label class="input-group provider-form-grid__full">
-                                <span>Contrasena inicial</span>
-                                <input type="password" id="providerTechnicianPassword" required minlength="8" maxlength="255" placeholder="Temporal123!">
-                            </label>
-                        </div>
-                        <div class="provider-form-actions">
-                            <button type="submit" class="btn btn-primary" id="providerTechnicianSubmitBtn">
-                                <i class="fas fa-user-plus"></i>
-                                Crear tecnico
-                            </button>
-                            <span class="provider-inline-note" id="providerTechnicianFeedback">El tecnico quedara asociado automaticamente a esta entidad.</span>
-                        </div>
-                    </form>
-                </article>
+                </div>
+
+                <div class="provider-toolbar">
+                    <div class="provider-toolbar__stats" id="providerTechniciansStats" aria-live="polite"></div>
+                    <div class="provider-toolbar__filters">
+                        <label class="provider-field">
+                            <span>Buscar</span>
+                            <input type="search" id="providerTechniciansSearch" placeholder="Nombre o especialidad" autocomplete="off">
+                        </label>
+                        <label class="provider-field">
+                            <span>Estado</span>
+                            <select id="providerTechniciansStatusFilter">
+                                <option value="">Todos los estados</option>
+                                <option value="1">Activo</option>
+                                <option value="2">Restringido</option>
+                                <option value="3">Inactivo</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+
                 <div id="providerTechniciansList" class="provider-technician-list"></div>
+
                 <article class="request-panel-card provider-staff-card">
                     <div class="request-panel-head">
                         <div>
@@ -422,7 +435,59 @@
         </main>
     </div>
 
-    <script type="module" src="js/provider-js/provider-main.js?v=20260316-2"></script>
+    <div id="provider-technician-modal" class="provider-modal hidden" role="dialog" aria-modal="true" aria-labelledby="providerTechnicianModalTitle" aria-hidden="true">
+        <div class="provider-modal__content">
+            <div class="provider-modal__header">
+                <div>
+                    <h3 id="providerTechnicianModalTitle">Alta de tecnico</h3>
+                    <p>Queda asociado automaticamente a esta entidad y puede recibir ordenes ni bien lo actives.</p>
+                </div>
+                <button type="button" class="provider-modal__close" data-provider-modal-close aria-label="Cerrar alta de tecnico">&times;</button>
+            </div>
+            <form id="providerTechnicianForm" class="provider-modal__body provider-technician-form">
+                <div class="provider-form-grid">
+                    <label class="input-group">
+                        <span>Nombre</span>
+                        <input type="text" id="providerTechnicianFirstName" required maxlength="255" placeholder="Nombre">
+                    </label>
+                    <label class="input-group">
+                        <span>Apellido</span>
+                        <input type="text" id="providerTechnicianLastName" required maxlength="255" placeholder="Apellido">
+                    </label>
+                    <label class="input-group">
+                        <span>Email</span>
+                        <input type="email" id="providerTechnicianEmail" required maxlength="255" placeholder="tecnico@hygea.local">
+                    </label>
+                    <label class="input-group">
+                        <span>DNI</span>
+                        <input type="text" id="providerTechnicianDni" required maxlength="20" placeholder="30111222">
+                    </label>
+                    <label class="input-group">
+                        <span>Telefono</span>
+                        <input type="text" id="providerTechnicianPhone" required maxlength="30" placeholder="1122334455">
+                    </label>
+                    <label class="input-group">
+                        <span>Especialidad</span>
+                        <input type="text" id="providerTechnicianSpecialty" required maxlength="100" placeholder="Control de plagas">
+                    </label>
+                    <label class="input-group provider-form-grid__full">
+                        <span>Contrasena inicial</span>
+                        <input type="password" id="providerTechnicianPassword" required minlength="8" maxlength="255" placeholder="Temporal123!">
+                    </label>
+                </div>
+                <span class="provider-inline-note" id="providerTechnicianFeedback">El tecnico quedara asociado automaticamente a esta entidad.</span>
+                <div class="provider-modal__footer">
+                    <button type="button" class="btn btn-secondary" data-provider-modal-close>Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="providerTechnicianSubmitBtn">
+                        <i class="fas fa-user-plus"></i>
+                        Crear tecnico
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="js/provider-js/provider-main.js?v=20260808-1"></script>
     <script src="js/sidebar-mobile.js"></script>
 </body>
 </html>

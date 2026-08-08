@@ -2,7 +2,8 @@ import { FrontGateway } from "../api.js";
 import {
   formatArgentinaDate,
   formatArgentinaDateTime,
-  formatArgentinaTime
+  formatArgentinaTime,
+  getArgentinaDateInputValue
 } from "../utils/argentina-time.js";
 import {
   clearAppFeedback,
@@ -62,6 +63,51 @@ const REQUEST_STATUS_LABELS = {
   3: "Rechazada"
 };
 
+const ORDER_STATUS_TONES = {
+  Created: "created",
+  Approved: "approved",
+  Confirmed: "confirmed",
+  InProgress: "progress",
+  Finalized: "finalized",
+  Exception: "exception",
+  Closed: "closed",
+  1: "created",
+  2: "confirmed",
+  3: "progress",
+  4: "finalized",
+  5: "exception",
+  6: "closed",
+  7: "approved"
+};
+
+const ORDER_STATUS_ICONS = {
+  created: "fa-file-circle-plus",
+  approved: "fa-circle-check",
+  confirmed: "fa-calendar-check",
+  progress: "fa-spray-can",
+  finalized: "fa-flag-checkered",
+  exception: "fa-triangle-exclamation",
+  closed: "fa-lock"
+};
+
+const ORDER_PROGRESS_STEPS = [
+  { tone: "created", label: "Creada" },
+  { tone: "approved", label: "Aprobada" },
+  { tone: "confirmed", label: "Confirmada" },
+  { tone: "progress", label: "En ejecucion" },
+  { tone: "finalized", label: "Finalizada" }
+];
+
+const ORDER_PROGRESS_RANKS = {
+  created: 0,
+  approved: 1,
+  confirmed: 2,
+  progress: 3,
+  finalized: 4,
+  closed: 5,
+  exception: -1
+};
+
 const ACTIVE_TECHNICIAN_STATUS_VALUES = new Set([1, "1", "active", "Active"]);
 const TECHNICIAN_STATUS_VALUES = {
   Active: 1,
@@ -76,6 +122,13 @@ const TECHNICIAN_STATUS_LABELS = {
   1: "Activo",
   2: "Restringido",
   3: "Inactivo"
+};
+
+const filters = {
+  ordersStatus: "",
+  ordersSearch: "",
+  techniciansStatus: "",
+  techniciansSearch: ""
 };
 
 const state = {
@@ -188,6 +241,97 @@ function getStatusLabel(status) {
   return ORDER_STATUS_LABELS[status] || String(status || "Sin estado");
 }
 
+function getOrderStatusTone(status) {
+  return ORDER_STATUS_TONES[status] || "created";
+}
+
+function getOrderStatusIcon(status) {
+  return ORDER_STATUS_ICONS[getOrderStatusTone(status)] || "fa-circle-info";
+}
+
+function getOrderProgressRank(status) {
+  const rank = ORDER_PROGRESS_RANKS[getOrderStatusTone(status)];
+  return Number.isInteger(rank) ? rank : 0;
+}
+
+function formatCompactDuration(totalMinutes) {
+  const normalizedMinutes = Math.max(0, Math.round(Number(totalMinutes || 0)));
+  if (normalizedMinutes <= 0) return "Sin duracion";
+
+  const hours = Math.floor(normalizedMinutes / 60);
+  const minutes = normalizedMinutes % 60;
+
+  if (hours === 0) return `${minutes} min`;
+  if (minutes === 0) return `${hours} h`;
+  return `${hours} h ${minutes} min`;
+}
+
+function getOrderDurationMinutes(order) {
+  const start = new Date(order?.scheduledStartAtUtc);
+  const end = new Date(order?.scheduledEndAtUtc);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 0;
+  return Math.max(0, Math.round((end - start) / 60000));
+}
+
+function getDayOffsetFromToday(value) {
+  if (!value) return null;
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  const [targetYear, targetMonth, targetDay] = getArgentinaDateInputValue(date).split("-").map(Number);
+  const [todayYear, todayMonth, todayDay] = getArgentinaDateInputValue().split("-").map(Number);
+
+  return Math.round((Date.UTC(targetYear, targetMonth - 1, targetDay) - Date.UTC(todayYear, todayMonth - 1, todayDay)) / 86400000);
+}
+
+function getOrderTimingBadge(order) {
+  const dayOffset = getDayOffsetFromToday(order?.scheduledStartAtUtc);
+  if (dayOffset === null) return null;
+
+  const tone = getOrderStatusTone(order?.status);
+
+  if (tone === "finalized" || tone === "closed" || tone === "exception") {
+    if (dayOffset === 0) return { tone: "neutral", icon: "fa-clock-rotate-left", label: "Visita de hoy" };
+    if (dayOffset < 0) return { tone: "neutral", icon: "fa-clock-rotate-left", label: `Hace ${Math.abs(dayOffset)} dias` };
+    return { tone: "neutral", icon: "fa-calendar-day", label: `En ${dayOffset} dias` };
+  }
+
+  if (dayOffset < 0) {
+    return {
+      tone: "late",
+      icon: "fa-triangle-exclamation",
+      label: dayOffset === -1 ? "Vencida ayer" : `Vencida hace ${Math.abs(dayOffset)} dias`
+    };
+  }
+
+  if (dayOffset === 0) {
+    return { tone: "today", icon: "fa-bolt", label: `Hoy ${formatArgentinaTime(order.scheduledStartAtUtc, { hourCycle: "h23" })}` };
+  }
+
+  if (dayOffset === 1) {
+    return { tone: "soon", icon: "fa-hourglass-half", label: `El ${formatArgentinaDate(order.scheduledStartAtUtc, { weekday: "long", day: undefined, month: undefined })}` };
+  }
+
+  return { tone: dayOffset <= 7 ? "soon" : "neutral", icon: "fa-calendar-day", label: `En ${dayOffset} dias` };
+}
+
+function getInitials(fullName) {
+  const parts = String(fullName || "").trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+}
+
+function getOrderTitle(order) {
+  const items = order?.items || [];
+  if (!items.length) return "Orden sin items";
+
+  const [firstItem, ...restItems] = items;
+  if (!restItems.length) return firstItem.serviceName || "Servicio sin nombre";
+  return `${firstItem.serviceName} +${restItems.length} mas`;
+}
+
 function getStatusValue(status) {
   if (typeof status === "number") return status;
   return ORDER_STATUS_VALUES[status] || null;
@@ -195,6 +339,12 @@ function getStatusValue(status) {
 
 function requiresProviderDecision(statusValue) {
   return statusValue === ORDER_STATUS_VALUES.Created;
+}
+
+// Una orden aprobada tampoco avanza sola: espera la confirmacion de la
+// entidad. Para el panel las dos cuentan como decision pendiente.
+function needsProviderAction(statusValue) {
+  return statusValue === ORDER_STATUS_VALUES.Created || statusValue === ORDER_STATUS_VALUES.Approved;
 }
 
 function isActiveOrderStatus(statusValue) {
@@ -605,7 +755,7 @@ function setupUserMenu() {
 }
 
 function renderSummaryCards() {
-  const pendingOrders = state.orders.filter((order) => requiresProviderDecision(getStatusValue(order.status))).length;
+  const pendingOrders = state.orders.filter((order) => needsProviderAction(getStatusValue(order.status))).length;
   const activeOrders = state.orders.filter((order) => {
     return isActiveOrderStatus(getStatusValue(order.status));
   }).length;
@@ -624,52 +774,192 @@ function renderSummaryCards() {
   setNumber("providerTodayOrders", todayOrders);
 }
 
-function renderOrdersInto(containerId) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
+function renderOrderProgressTrack(order) {
+  const tone = getOrderStatusTone(order.status);
+  if (tone === "exception") return "";
 
-  if (!state.orders.length) {
-    container.innerHTML = '<p class="request-empty-text">Todavia no hay ordenes registradas para esta entidad.</p>';
-    return;
-  }
+  const currentRank = getOrderProgressRank(order.status);
+  const isClosed = tone === "closed";
+  const lastStepIndex = ORDER_PROGRESS_STEPS.length - 1;
 
-  container.innerHTML = state.orders.map((order) => {
-    const technician = getTechnicianInfo(order.technicianId);
-    const clientName = getClientDisplayName(order.clientId);
-    const technicianName = technician?.publicProfile?.fullName
-      || technician?.publicProfile?.FullName
-      || technician?.specialty
-      || "Tecnico asignado";
-    const itemSummary = order.items.map((item) => `${escapeHtml(item.serviceName)} x${item.quantity}`).join(", ");
+  const steps = ORDER_PROGRESS_STEPS.map((step, index) => {
+    const isDone = isClosed || index < currentRank;
+    const isCurrent = !isClosed && index === currentRank;
+    const label = isClosed && index === lastStepIndex ? "Cerrada" : step.label;
 
     return `
-      <article class="appointment-item">
-        <div class="appointment-item__header">
-          <div>
-            <h4>Orden ${escapeHtml(order.id.slice(0, 8))}</h4>
-            <p>${escapeHtml(formatArgentinaDate(order.scheduledStartAtUtc, { weekday: "long", day: "2-digit", month: "long" }))} - ${escapeHtml(formatTimeRange(order.scheduledStartAtUtc, order.scheduledEndAtUtc))}</p>
-          </div>
-          <span class="provider-status-badge">${escapeHtml(getStatusLabel(order.status))}</span>
-        </div>
-        <div class="provider-detail-grid">
-          <div class="provider-inline-note"><strong>Tecnico:</strong> ${escapeHtml(technicianName)}</div>
-          <div class="provider-inline-note"><strong>Cliente:</strong> ${escapeHtml(clientName)}</div>
-          <div class="provider-inline-note"><strong>Servicios:</strong> ${itemSummary || "Sin items"}</div>
-          <div class="provider-inline-note"><strong>Total:</strong> ${escapeHtml(formatCurrency(order.totalAmount))}</div>
-        </div>
-        <div class="appointment-actions">
-          <button class="btn btn-secondary provider-open-order" data-order-id="${escapeHtml(order.id)}">
-            <i class="fas fa-eye"></i>
-            Ver detalle
-          </button>
-        </div>
-      </article>
+      <li class="provider-order-progress__step ${isDone ? "is-done" : isCurrent ? "is-current" : ""}">
+        <span class="provider-order-progress__dot" aria-hidden="true"></span>
+        <span class="provider-order-progress__label">${escapeHtml(label)}</span>
+      </li>
     `;
   }).join("");
 
+  const completedRatio = isClosed ? 1 : Math.min(1, Math.max(0, currentRank / lastStepIndex));
+  const currentStepNumber = Math.min(ORDER_PROGRESS_STEPS.length, currentRank + 1);
+
+  return `
+    <div class="provider-order-progress" style="--provider-order-progress: ${completedRatio.toFixed(2)}">
+      <ol class="provider-order-progress__steps" aria-label="Progreso de la orden">
+        ${steps}
+      </ol>
+      <p class="provider-order-progress__caption">
+        Paso ${currentStepNumber} de ${ORDER_PROGRESS_STEPS.length} &middot; <strong>${escapeHtml(getStatusLabel(order.status))}</strong>
+      </p>
+    </div>
+  `;
+}
+
+function renderProviderOrderCard(order) {
+  const tone = getOrderStatusTone(order.status);
+  const statusValue = getStatusValue(order.status);
+  const technician = getTechnicianInfo(order.technicianId);
+  const technicianName = technician?.publicProfile?.fullName
+    || technician?.publicProfile?.FullName
+    || `Tecnico ${String(order.technicianId || "").slice(0, 8)}`;
+  const technicianSpecialty = technician?.specialty || "Sin especialidad";
+  const clientName = getClientDisplayName(order.clientId);
+  const timingBadge = getOrderTimingBadge(order);
+  const durationMinutes = getOrderDurationMinutes(order);
+  const servicesCount = (order.items || []).length;
+  const hasSchedule = Boolean(order.scheduledStartAtUtc) && !Number.isNaN(new Date(order.scheduledStartAtUtc).getTime());
+  const canApprove = statusValue === ORDER_STATUS_VALUES.Created;
+  const canConfirm = statusValue === ORDER_STATUS_VALUES.Approved;
+
+  const exceptionBlock = order.exceptionReason
+    ? `<div class="provider-order-card__exception">
+        <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+        <div>
+          <strong>Motivo de la excepcion</strong>
+          <p>${escapeHtml(order.exceptionReason)}</p>
+        </div>
+      </div>`
+    : "";
+
+  return `
+    <article class="provider-order-card is-${escapeHtml(tone)}" data-order-id="${escapeHtml(order.id)}">
+      <div class="provider-order-card__header">
+        <div class="provider-order-card__identity">
+          <h4 class="provider-order-card__title">${escapeHtml(getOrderTitle(order))}</h4>
+          <p class="provider-order-card__meta">
+            <span class="provider-order-card__ref">#${escapeHtml(String(order.id).slice(0, 8))}</span>
+            <span>${escapeHtml(`${servicesCount} servicio${servicesCount === 1 ? "" : "s"}`)}</span>
+            ${order.createdAtUtc ? `<span>Creada el ${escapeHtml(formatArgentinaDate(order.createdAtUtc, { weekday: undefined, day: "2-digit", month: "2-digit", year: "2-digit" }))}</span>` : ""}
+          </p>
+        </div>
+        <div class="provider-order-card__badges">
+          <span class="provider-order-card__status">
+            <i class="fas ${escapeHtml(getOrderStatusIcon(order.status))}" aria-hidden="true"></i>
+            ${escapeHtml(getStatusLabel(order.status))}
+          </span>
+          ${timingBadge ? `
+            <span class="provider-order-card__timing is-${escapeHtml(timingBadge.tone)}">
+              <i class="fas ${escapeHtml(timingBadge.icon)}" aria-hidden="true"></i>
+              ${escapeHtml(timingBadge.label)}
+            </span>` : ""}
+        </div>
+      </div>
+
+      <div class="provider-order-card__grid">
+        <div class="provider-order-card__item is-primary">
+          <span class="provider-order-card__label"><i class="fas fa-calendar-day" aria-hidden="true"></i> Visita programada</span>
+          ${hasSchedule ? `
+            <strong>${escapeHtml(formatArgentinaDate(order.scheduledStartAtUtc, { weekday: "long", day: "2-digit", month: "long" }))}</strong>
+            <span class="provider-order-card__value-sub">
+              ${escapeHtml(formatArgentinaTime(order.scheduledStartAtUtc, { hourCycle: "h23" }))} a ${escapeHtml(formatArgentinaTime(order.scheduledEndAtUtc, { hourCycle: "h23" }))}
+              ${durationMinutes ? ` &middot; ${escapeHtml(formatCompactDuration(durationMinutes))}` : ""}
+            </span>` : `
+            <strong>Sin fecha asignada</strong>`}
+        </div>
+
+        <div class="provider-order-card__item">
+          <span class="provider-order-card__label"><i class="fas fa-user" aria-hidden="true"></i> Cliente</span>
+          <strong>${escapeHtml(clientName)}</strong>
+          ${order.address ? `<span class="provider-order-card__value-sub">${escapeHtml(order.address)}</span>` : '<span class="provider-order-card__value-sub">Sin direccion registrada</span>'}
+        </div>
+
+        <div class="provider-order-card__item">
+          <span class="provider-order-card__label"><i class="fas fa-user-gear" aria-hidden="true"></i> Tecnico asignado</span>
+          <div class="provider-order-card__technician">
+            <span class="provider-order-card__avatar" aria-hidden="true">${escapeHtml(getInitials(technicianName))}</span>
+            <span>
+              <strong>${escapeHtml(technicianName)}</strong>
+              <span class="provider-order-card__value-sub">${escapeHtml(technicianSpecialty)}</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="provider-order-card__item is-amount">
+          <span class="provider-order-card__label"><i class="fas fa-receipt" aria-hidden="true"></i> Total</span>
+          <strong>${escapeHtml(formatCurrency(order.totalAmount))}</strong>
+          <span class="provider-order-card__value-sub">${escapeHtml(order.items.map((item) => `${item.serviceName} x${item.quantity}`).join(", ") || "Sin items")}</span>
+        </div>
+      </div>
+
+      ${renderOrderProgressTrack(order)}
+      ${exceptionBlock}
+
+      <div class="provider-order-card__actions">
+        ${canApprove ? `
+          <button type="button" class="btn btn-primary provider-inline-approve" data-order-id="${escapeHtml(order.id)}">
+            <i class="fas fa-thumbs-up" aria-hidden="true"></i>
+            Aprobar
+          </button>` : ""}
+        ${canConfirm ? `
+          <button type="button" class="btn btn-primary provider-inline-confirm" data-order-id="${escapeHtml(order.id)}">
+            <i class="fas fa-check" aria-hidden="true"></i>
+            Confirmar
+          </button>` : ""}
+        <button type="button" class="btn btn-secondary provider-open-order" data-order-id="${escapeHtml(order.id)}">
+          <i class="fas fa-eye" aria-hidden="true"></i>
+          Ver detalle
+        </button>
+      </div>
+    </article>
+  `;
+}
+
+function bindProviderOrderCardEvents(container) {
   container.querySelectorAll(".provider-open-order").forEach((button) => {
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
       openOrderDetail(button.dataset.orderId).catch((error) => {
+        showAppFeedback(getErrorMessage(error, "No se pudo abrir el detalle de la orden."), {
+          type: "error",
+          title: "No pudimos abrir la orden"
+        });
+      });
+    });
+  });
+
+  container.querySelectorAll(".provider-inline-approve").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      approveOrder(button.dataset.orderId).catch((error) => {
+        showAppFeedback(getErrorMessage(error, "No se pudo aprobar la orden."), {
+          type: "error",
+          title: "Aprobacion no completada"
+        });
+      });
+    });
+  });
+
+  container.querySelectorAll(".provider-inline-confirm").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      confirmOrder(button.dataset.orderId).catch((error) => {
+        showAppFeedback(getErrorMessage(error, "No se pudo confirmar la orden."), {
+          type: "error",
+          title: "Confirmacion no completada"
+        });
+      });
+    });
+  });
+
+  container.querySelectorAll(".provider-order-card").forEach((card) => {
+    card.addEventListener("click", (event) => {
+      if (event.target.closest("button, a, select")) return;
+      openOrderDetail(card.dataset.orderId).catch((error) => {
         showAppFeedback(getErrorMessage(error, "No se pudo abrir el detalle de la orden."), {
           type: "error",
           title: "No pudimos abrir la orden"
@@ -679,45 +969,256 @@ function renderOrdersInto(containerId) {
   });
 }
 
+function sortOrdersBySchedule(orders, direction = "asc") {
+  const factor = direction === "asc" ? 1 : -1;
+
+  return orders.slice().sort((left, right) => {
+    const leftTime = new Date(left.scheduledStartAtUtc || left.createdAtUtc).getTime();
+    const rightTime = new Date(right.scheduledStartAtUtc || right.createdAtUtc).getTime();
+    return ((Number.isNaN(leftTime) ? 0 : leftTime) - (Number.isNaN(rightTime) ? 0 : rightTime)) * factor;
+  });
+}
+
+function matchesOrderSearch(order, searchTerm) {
+  if (!searchTerm) return true;
+
+  const technician = getTechnicianInfo(order.technicianId);
+  const technicianName = technician?.publicProfile?.fullName || technician?.publicProfile?.FullName || "";
+  const haystack = [
+    order.id,
+    getClientDisplayName(order.clientId),
+    technicianName,
+    order.address || "",
+    ...order.items.map((item) => item.serviceName)
+  ].join(" ").toLowerCase();
+
+  return haystack.includes(searchTerm.toLowerCase());
+}
+
+function getFilteredOrders() {
+  return state.orders.filter((order) => {
+    const matchesStatus = !filters.ordersStatus || String(getStatusValue(order.status)) === String(filters.ordersStatus);
+    return matchesStatus && matchesOrderSearch(order, filters.ordersSearch);
+  });
+}
+
+function renderOrdersInto(containerId, { limit = 0, decisionFirst = false, focusMode = false } = {}) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  let orders;
+
+  if (decisionFirst) {
+    orders = sortOrdersBySchedule(state.orders.filter((order) => needsProviderAction(getStatusValue(order.status))), "asc");
+  } else if (focusMode) {
+    // Inicio muestra lo accionable, no lo mas viejo: primero lo que espera
+    // decision y despues las visitas mas proximas.
+    orders = sortOrdersBySchedule(
+      state.orders.filter((order) => isActiveOrderStatus(getStatusValue(order.status))),
+      "asc"
+    ).sort((left, right) => {
+      const leftPending = needsProviderAction(getStatusValue(left.status)) ? 0 : 1;
+      const rightPending = needsProviderAction(getStatusValue(right.status)) ? 0 : 1;
+      return leftPending - rightPending;
+    });
+  } else {
+    orders = sortOrdersBySchedule(getFilteredOrders(), "asc");
+  }
+
+  const visibleOrders = limit > 0 ? orders.slice(0, limit) : orders;
+
+  if (!visibleOrders.length) {
+    container.innerHTML = renderProviderEmptyState(
+      state.orders.length
+        ? {
+            icon: "fa-filter-circle-xmark",
+            title: decisionFirst ? "No hay ordenes esperando decision" : "Sin resultados",
+            message: decisionFirst
+              ? "Todas las ordenes de la entidad ya fueron aprobadas o confirmadas."
+              : "Proba con otro estado o limpia la busqueda para ver el resto de las ordenes."
+          }
+        : {
+            icon: "fa-clipboard-list",
+            title: "Todavia no hay ordenes",
+            message: "Cuando un cliente solicite un servicio a esta entidad, la orden aparece aca para aprobar y confirmar."
+          }
+    );
+    return;
+  }
+
+  container.innerHTML = visibleOrders.map(renderProviderOrderCard).join("");
+  bindProviderOrderCardEvents(container);
+}
+
+function renderProviderEmptyState({ icon = "fa-clipboard-list", title = "", message = "" }) {
+  return `
+    <div class="provider-empty">
+      <span class="provider-empty__icon"><i class="fas ${escapeHtml(icon)}" aria-hidden="true"></i></span>
+      <strong>${escapeHtml(title)}</strong>
+      <p>${escapeHtml(message)}</p>
+    </div>
+  `;
+}
+
+function renderProviderOrdersStats() {
+  const container = document.getElementById("providerOrdersStats");
+  if (!container) return;
+
+  const pending = state.orders.filter((order) => needsProviderAction(getStatusValue(order.status))).length;
+  const active = state.orders.filter((order) => isActiveOrderStatus(getStatusValue(order.status))).length;
+  const lateOrders = state.orders.filter((order) => {
+    const statusValue = getStatusValue(order.status);
+    return isActiveOrderStatus(statusValue) && (getDayOffsetFromToday(order.scheduledStartAtUtc) ?? 0) < 0;
+  }).length;
+  const upcoming = sortOrdersBySchedule(
+    state.orders.filter((order) => isActiveOrderStatus(getStatusValue(order.status)) && (getDayOffsetFromToday(order.scheduledStartAtUtc) ?? -1) >= 0),
+    "asc"
+  )[0];
+
+  const stats = [
+    { icon: "fa-hourglass-half", label: "Esperan decision", value: String(pending), tone: pending > 0 ? "attention" : "" },
+    { icon: "fa-clipboard-check", label: "Ordenes activas", value: String(active) },
+    {
+      icon: "fa-calendar-day",
+      label: "Proxima visita",
+      value: upcoming
+        ? `${formatArgentinaDate(upcoming.scheduledStartAtUtc, { weekday: "short", day: "2-digit", month: "short" })} &middot; ${formatArgentinaTime(upcoming.scheduledStartAtUtc, { hourCycle: "h23" })}`
+        : "Sin visitas agendadas",
+      raw: true
+    },
+    { icon: "fa-user-shield", label: "Tecnicos activos", value: String(state.technicians.filter((technician) => getTechnicianStatusValue(technician.status) === TECHNICIAN_STATUS_VALUES.Active).length) }
+  ];
+
+  if (lateOrders > 0) {
+    stats.push({ icon: "fa-triangle-exclamation", label: lateOrders === 1 ? "Visita vencida" : "Visitas vencidas", value: String(lateOrders), tone: "late" });
+  }
+
+  container.innerHTML = stats.map((stat) => `
+    <div class="provider-stat ${stat.tone ? `is-${escapeHtml(stat.tone)}` : ""}">
+      <i class="fas ${escapeHtml(stat.icon)}" aria-hidden="true"></i>
+      <span>
+        <strong>${stat.raw ? stat.value : escapeHtml(stat.value)}</strong>
+        <small>${escapeHtml(stat.label)}</small>
+      </span>
+    </div>
+  `).join("");
+}
+
+function renderProviderOrdersSection() {
+  renderProviderOrdersStats();
+
+  const decisionGroup = document.getElementById("providerDecisionGroup");
+  const decisionCount = state.orders.filter((order) => needsProviderAction(getStatusValue(order.status))).length;
+
+  if (decisionGroup) {
+    decisionGroup.classList.toggle("hidden", decisionCount === 0);
+    const counter = document.getElementById("providerDecisionCount");
+    if (counter) counter.textContent = decisionCount === 1 ? "1 orden" : `${decisionCount} ordenes`;
+  }
+
+  if (decisionCount > 0) {
+    renderOrdersInto("providerDecisionList", { decisionFirst: true });
+  }
+
+  renderOrdersInto("providerOrdersTray");
+}
+
+function renderTechniciansStats() {
+  const container = document.getElementById("providerTechniciansStats");
+  if (!container) return;
+
+  const countByStatus = (statusValue) => state.technicians.filter((technician) => getTechnicianStatusValue(technician.status) === statusValue).length;
+
+  const stats = [
+    { icon: "fa-users", label: "Tecnicos", value: String(state.technicians.length) },
+    { icon: "fa-user-check", label: "Activos", value: String(countByStatus(TECHNICIAN_STATUS_VALUES.Active)) },
+    { icon: "fa-user-lock", label: "Restringidos", value: String(countByStatus(TECHNICIAN_STATUS_VALUES.Restricted)) },
+    { icon: "fa-user-slash", label: "Inactivos", value: String(countByStatus(TECHNICIAN_STATUS_VALUES.Inactive)) }
+  ];
+
+  container.innerHTML = stats.map((stat) => `
+    <div class="provider-stat">
+      <i class="fas ${escapeHtml(stat.icon)}" aria-hidden="true"></i>
+      <span>
+        <strong>${escapeHtml(stat.value)}</strong>
+        <small>${escapeHtml(stat.label)}</small>
+      </span>
+    </div>
+  `).join("");
+}
+
 function renderTechnicians() {
   const container = document.getElementById("providerTechniciansList");
   if (!container) return;
 
+  renderTechniciansStats();
+
   if (!state.technicians.length) {
-    container.innerHTML = '<p class="request-empty-text">No hay tecnicos registrados para esta entidad.</p>';
+    container.innerHTML = renderProviderEmptyState({
+      icon: "fa-user-plus",
+      title: "Todavia no hay tecnicos",
+      message: "Da de alta al primer tecnico para poder recibir y asignar ordenes en esta entidad."
+    });
     return;
   }
 
-  container.innerHTML = state.technicians.map((technician) => {
+  const searchTerm = filters.techniciansSearch.trim().toLowerCase();
+  const visibleTechnicians = state.technicians.filter((technician) => {
+    const publicProfile = technician.publicProfile;
+    const fullName = publicProfile?.fullName || publicProfile?.FullName || "";
+    const matchesStatus = !filters.techniciansStatus
+      || String(getTechnicianStatusValue(technician.status)) === String(filters.techniciansStatus);
+    const matchesSearch = !searchTerm
+      || `${fullName} ${technician.specialty || ""}`.toLowerCase().includes(searchTerm);
+    return matchesStatus && matchesSearch;
+  });
+
+  if (!visibleTechnicians.length) {
+    container.innerHTML = renderProviderEmptyState({
+      icon: "fa-filter-circle-xmark",
+      title: "Sin resultados",
+      message: "Ningun tecnico coincide con el filtro o la busqueda actual."
+    });
+    return;
+  }
+
+  container.innerHTML = visibleTechnicians.map((technician) => {
     const publicProfile = technician.publicProfile;
     const fullName = publicProfile?.fullName || publicProfile?.FullName || `Tecnico ${technician.id.slice(0, 8)}`;
     const statusValue = getTechnicianStatusValue(technician.status);
     const canActivate = statusValue !== TECHNICIAN_STATUS_VALUES.Active;
     const canRestrict = statusValue === TECHNICIAN_STATUS_VALUES.Active;
     const canInactivate = statusValue !== TECHNICIAN_STATUS_VALUES.Inactive;
+    const assignedActiveOrders = state.orders.filter((order) => {
+      return order.technicianId === technician.id && isActiveOrderStatus(getStatusValue(order.status));
+    }).length;
+
     return `
-      <article class="request-panel-card provider-technician-card">
-        <div class="request-panel-head">
-          <div>
+      <article class="provider-technician-card is-${escapeHtml(getTechnicianStatusBadgeClass(technician.status).replace("is-", ""))}">
+        <div class="provider-technician-card__head">
+          <span class="provider-technician-card__avatar" aria-hidden="true">${escapeHtml(getInitials(fullName))}</span>
+          <div class="provider-technician-card__identity">
             <h4>${escapeHtml(fullName)}</h4>
-            <p>${escapeHtml(technician.specialty)}</p>
+            <p>${escapeHtml(technician.specialty || "Sin especialidad")}</p>
           </div>
           <span class="provider-status-badge ${getTechnicianStatusBadgeClass(technician.status)}">${escapeHtml(getTechnicianStatusLabel(technician.status))}</span>
         </div>
-        <div class="provider-meta-list">
-          <div class="provider-meta-item">
-            <strong>Especialidad</strong>
-            <span>${escapeHtml(technician.specialty)}</span>
+
+        <div class="provider-technician-card__stats">
+          <div>
+            <strong>${escapeHtml(String(assignedActiveOrders))}</strong>
+            <small>Ordenes activas</small>
           </div>
-          <div class="provider-meta-item">
-            <strong>Alta en la entidad</strong>
-            <span>${escapeHtml(technician.createdAtUtc ? formatDateTime(technician.createdAtUtc) : "-")}</span>
+          <div>
+            <strong>${escapeHtml(technician.createdAtUtc ? formatArgentinaDate(technician.createdAtUtc, { weekday: undefined, day: "2-digit", month: "2-digit", year: "2-digit" }) : "-")}</strong>
+            <small>Alta en la entidad</small>
           </div>
-          <div class="provider-meta-item">
-            <strong>Ultima actualizacion</strong>
-            <span>${escapeHtml(technician.updatedAtUtc ? formatDateTime(technician.updatedAtUtc) : "-")}</span>
+          <div>
+            <strong>${escapeHtml(technician.updatedAtUtc ? formatArgentinaDate(technician.updatedAtUtc, { weekday: undefined, day: "2-digit", month: "2-digit", year: "2-digit" }) : "-")}</strong>
+            <small>Ultimo cambio</small>
           </div>
         </div>
+
         <div class="provider-technician-actions">
           ${canActivate ? `
             <button class="btn btn-secondary provider-technician-status-btn" data-technician-id="${escapeHtml(technician.id)}" data-status="${TECHNICIAN_STATUS_VALUES.Active}">
@@ -801,8 +1302,17 @@ function renderPendingCancellationRequests() {
   const container = document.getElementById("providerPendingCancellationRequests");
   if (!container) return;
 
-  if (!state.pendingCancellationRequests.length) {
-    container.innerHTML = '<p class="request-empty-text">No hay cancelaciones justificadas pendientes.</p>';
+  const pendingCount = state.pendingCancellationRequests.length;
+  const wrapper = document.getElementById("providerCancellationsCard");
+  const counter = document.getElementById("providerCancellationsCount");
+
+  // La tarjeta solo existe cuando hay algo que resolver: antes ocupaba el tope
+  // de la bandeja incluso vacia.
+  if (wrapper) wrapper.classList.toggle("hidden", pendingCount === 0);
+  if (counter) counter.textContent = pendingCount === 1 ? "1 solicitud" : `${pendingCount} solicitudes`;
+
+  if (!pendingCount) {
+    container.innerHTML = "";
     return;
   }
 
@@ -810,24 +1320,27 @@ function renderPendingCancellationRequests() {
     const order = state.orders.find((entry) => entry.id === request.serviceOrderId);
     const technician = order ? getTechnicianInfo(order.technicianId) : null;
     const technicianName = technician?.publicProfile?.fullName || technician?.publicProfile?.FullName || "Tecnico asignado";
+    const clientName = order ? getClientDisplayName(order.clientId) : "Cliente";
 
     return `
-      <article class="appointment-item">
-        <div class="appointment-item__header">
-          <div>
-            <h4>Orden ${escapeHtml(request.serviceOrderId.slice(0, 8))}</h4>
-            <p>${escapeHtml(technicianName)} · ${escapeHtml(getCancellationReasonLabel(request.reason))}</p>
+      <article class="provider-cancellation-card">
+        <div class="provider-cancellation-card__head">
+          <span class="provider-cancellation-card__avatar" aria-hidden="true">${escapeHtml(getInitials(technicianName))}</span>
+          <div class="provider-cancellation-card__identity">
+            <strong>${escapeHtml(technicianName)}</strong>
+            <span>pidio cancelar la orden <span class="provider-order-card__ref">#${escapeHtml(request.serviceOrderId.slice(0, 8))}</span> de ${escapeHtml(clientName)}</span>
           </div>
-          <span class="provider-status-badge">${escapeHtml(getRequestStatusLabel(request.status))}</span>
+          <span class="provider-cancellation-card__reason">${escapeHtml(getCancellationReasonLabel(request.reason))}</span>
         </div>
-        <div class="provider-detail-grid">
-          <div class="provider-inline-note"><strong>Solicitada:</strong> ${escapeHtml(formatDateTime(request.requestedAtUtc))}</div>
-          <div class="provider-inline-note"><strong>Nota:</strong> ${escapeHtml(request.note || "-")}</div>
-        </div>
-        <div class="appointment-actions">
-          <button class="btn btn-secondary provider-open-order" data-order-id="${escapeHtml(request.serviceOrderId)}">
-            <i class="fas fa-eye"></i>
-            Revisar orden
+        ${request.note ? `<p class="provider-cancellation-card__note">${escapeHtml(request.note)}</p>` : ""}
+        <div class="provider-cancellation-card__foot">
+          <span class="provider-cancellation-card__time">
+            <i class="fas fa-clock" aria-hidden="true"></i>
+            Solicitada el ${escapeHtml(formatDateTime(request.requestedAtUtc))}
+          </span>
+          <button class="btn btn-primary provider-open-order" data-order-id="${escapeHtml(request.serviceOrderId)}">
+            <i class="fas fa-gavel" aria-hidden="true"></i>
+            Resolver
           </button>
         </div>
       </article>
@@ -852,25 +1365,32 @@ function renderProfile() {
   const providerIsEnabled = state.providerEntity?.isEnabled ?? state.providerEntity?.IsEnabled ?? false;
 
   if (providerCard) {
+    const technicianCount = state.technicians.length;
+    const activeOrders = state.orders.filter((order) => isActiveOrderStatus(getStatusValue(order.status))).length;
+
     providerCard.innerHTML = `
+      <div class="provider-entity-head">
+        <span class="provider-entity-avatar" aria-hidden="true">${escapeHtml(getInitials(state.providerEntity?.name ?? state.providerEntity?.Name ?? "Entidad"))}</span>
+        <div>
+          <strong>${escapeHtml(state.providerEntity?.name ?? state.providerEntity?.Name ?? "Sin nombre")}</strong>
+          <span class="provider-status-badge ${providerIsEnabled ? "is-active" : "is-inactive"}">
+            <i class="fas ${providerIsEnabled ? "fa-circle-check" : "fa-circle-pause"}" aria-hidden="true"></i>
+            ${providerIsEnabled ? "Habilitada" : "Deshabilitada"}
+          </span>
+        </div>
+      </div>
       <div class="provider-meta-list">
         <div class="provider-meta-item">
-          <strong>Nombre</strong>
-          <span>${escapeHtml(state.providerEntity?.name ?? state.providerEntity?.Name ?? "Sin nombre")}</span>
-        </div>
-        <div class="provider-meta-item">
-          <strong>Estado</strong>
-          <span>${providerIsEnabled ? "Habilitado" : "Deshabilitado"}</span>
-        </div>
-        <div class="provider-meta-item">
           <strong>Staff tecnico</strong>
-          <span>${escapeHtml(String(state.technicians.length))} tecnico(s)</span>
+          <span>${escapeHtml(String(technicianCount))} tecnico${technicianCount === 1 ? "" : "s"}</span>
         </div>
         <div class="provider-meta-item">
           <strong>Ordenes activas</strong>
-          <span>${escapeHtml(String(state.orders.filter((order) => {
-            return isActiveOrderStatus(getStatusValue(order.status));
-          }).length))}</span>
+          <span>${escapeHtml(String(activeOrders))}</span>
+        </div>
+        <div class="provider-meta-item">
+          <strong>Ordenes historicas</strong>
+          <span>${escapeHtml(String(state.orders.length))}</span>
         </div>
       </div>
     `;
@@ -1288,8 +1808,8 @@ async function loadOrders() {
   state.pendingCancellationRequests = pendingCancellationRequests.map(normalizeCancellationRequest);
 
   renderSummaryCards();
-  renderOrdersInto("providerOrdersList");
-  renderOrdersInto("providerOrdersTray");
+  renderOrdersInto("providerOrdersList", { limit: 4, focusMode: true });
+  renderProviderOrdersSection();
   renderPendingCancellationRequests();
   renderProfile();
 }
@@ -1522,7 +2042,11 @@ async function createTechnicianForProvider(event) {
   try {
     await FrontGateway.auth.createTechnicianForProvider(payload);
     resetTechnicianForm();
-    setTechnicianFeedback("Tecnico creado. Si el SMTP sigue deshabilitado, el codigo de verificacion quedo logueado en la consola de AuthMS.", "success");
+    setTechnicianModalOpen(false);
+    showAppFeedback("Tecnico creado y asociado a la entidad. Si el SMTP sigue deshabilitado, el codigo de verificacion quedo logueado en la consola de AuthMS.", {
+      type: "success",
+      title: "Tecnico creado"
+    });
     await loadTechnicians();
   } catch (error) {
     setTechnicianFeedback(getErrorMessage(error, "No se pudo crear el tecnico."), "error");
@@ -1567,6 +2091,12 @@ async function loadTechnicians() {
   renderProviderChangeRequests();
   renderSummaryCards();
   renderProfile();
+  // Las ordenes se pintan en paralelo con esta carga: sin este repintado
+  // quedan con el nombre de tecnico de respaldo ("Tecnico aaaaaaaa").
+  renderOrdersInto("providerOrdersList", { limit: 4, focusMode: true });
+  renderProviderOrdersSection();
+  renderPendingCancellationRequests();
+  renderOrderDetail();
 }
 
 async function loadClientProfiles() {
@@ -1574,8 +2104,9 @@ async function loadClientProfiles() {
   const profiles = rawProfiles.map(normalizeClientProfile);
   state.clientProfilesById = new Map(profiles.map((profile) => [profile.id, profile]));
 
-  renderOrdersInto("providerOrdersList");
-  renderOrdersInto("providerOrdersTray");
+  renderOrdersInto("providerOrdersList", { limit: 4, focusMode: true });
+  renderProviderOrdersSection();
+  renderPendingCancellationRequests();
   renderOrderDetail();
 }
 
@@ -1600,6 +2131,43 @@ async function loadContext() {
   };
 
   state.providerEntity = await FrontGateway.directory.getProviderById(state.providerAdminProfile.providerEntityId);
+}
+
+function setTechnicianModalOpen(isOpen) {
+  const modal = document.getElementById("provider-technician-modal");
+  if (!modal) return;
+
+  modal.classList.toggle("hidden", !isOpen);
+  modal.setAttribute("aria-hidden", isOpen ? "false" : "true");
+  document.body.classList.toggle("provider-modal-open", isOpen);
+
+  if (isOpen) {
+    document.getElementById("providerTechnicianFirstName")?.focus();
+    return;
+  }
+
+  resetTechnicianForm();
+}
+
+function setupTechnicianModal() {
+  const modal = document.getElementById("provider-technician-modal");
+  if (!modal) return;
+
+  document.getElementById("providerOpenTechnicianModal")?.addEventListener("click", () => setTechnicianModalOpen(true));
+
+  modal.querySelectorAll("[data-provider-modal-close]").forEach((button) => {
+    button.addEventListener("click", () => setTechnicianModalOpen(false));
+  });
+
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) setTechnicianModalOpen(false);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !modal.classList.contains("hidden")) {
+      setTechnicianModalOpen(false);
+    }
+  });
 }
 
 function setupNavigation() {
@@ -1630,6 +2198,33 @@ function setupNavigation() {
       setTechnicianFeedback(getErrorMessage(error, "No se pudo crear el tecnico."), "error");
     });
   });
+
+  const ordersSearch = document.getElementById("providerOrdersSearch");
+  const ordersStatusFilter = document.getElementById("providerOrdersStatusFilter");
+  const techniciansSearch = document.getElementById("providerTechniciansSearch");
+  const techniciansStatusFilter = document.getElementById("providerTechniciansStatusFilter");
+
+  ordersSearch?.addEventListener("input", () => {
+    filters.ordersSearch = ordersSearch.value;
+    renderProviderOrdersSection();
+  });
+
+  ordersStatusFilter?.addEventListener("change", () => {
+    filters.ordersStatus = ordersStatusFilter.value;
+    renderProviderOrdersSection();
+  });
+
+  techniciansSearch?.addEventListener("input", () => {
+    filters.techniciansSearch = techniciansSearch.value;
+    renderTechnicians();
+  });
+
+  techniciansStatusFilter?.addEventListener("change", () => {
+    filters.techniciansStatus = techniciansStatusFilter.value;
+    renderTechnicians();
+  });
+
+  setupTechnicianModal();
 
   window.addEventListener("hashchange", () => {
     handleProviderRouteChange().catch((error) => {

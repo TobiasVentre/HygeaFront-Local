@@ -282,10 +282,10 @@ function getPageRefs() {
     availabilityViewAbsences: document.getElementById("availabilityViewAbsences"),
     availabilityViewAgendaDay: document.getElementById("availabilityViewAgendaDay"),
     availabilityViewAgendaWeek: document.getElementById("availabilityViewAgendaWeek"),
-    clientsToday: document.getElementById("clients-today"),
-    weeklyAppointments: document.getElementById("weekly-appointments"),
-    activeConsultation: document.getElementById("active-consultation"),
-    prescriptionsToday: document.getElementById("prescriptions-today"),
+    ordersToday: document.getElementById("orders-today"),
+    activeOrders: document.getElementById("active-orders"),
+    inProgressOrders: document.getElementById("in-progress-orders"),
+    nextService: document.getElementById("next-service"),
     profileFirstNameInput: document.getElementById("profileFirstNameInput"),
     profileLastNameInput: document.getElementById("profileLastNameInput"),
     profileEmailInput: document.getElementById("profileEmailInput"),
@@ -339,7 +339,8 @@ function formatDate(dateValue) {
 }
 
 function formatTime(dateValue) {
-  return formatArgentinaTime(dateValue);
+  // 24h en todo el panel, igual que cliente y proveedor (antes "03:00 p. m.").
+  return formatArgentinaTime(dateValue, { hourCycle: "h23" });
 }
 
 function getArgentinaMinutesOfDay(dateValue) {
@@ -768,6 +769,24 @@ function setSection(sectionKey) {
   setActiveNavItems(refs.navItems, sectionKey);
 }
 
+// El panel navegaba solo por click: los href="#seccion" cambiaban la URL pero
+// nadie la leia, asi que refrescar o compartir un link siempre caia en Inicio.
+function parseTechnicianSection() {
+  const hash = window.location.hash.replace(/^#/, "").trim();
+  return SECTION_IDS[hash] ? hash : "inicio";
+}
+
+function navigateToSection(sectionKey) {
+  const target = SECTION_IDS[sectionKey] ? sectionKey : "inicio";
+
+  if (window.location.hash === `#${target}`) {
+    setSection(target);
+    return;
+  }
+
+  window.location.hash = `#${target}`;
+}
+
 function setTechnicianOrdersMode(mode = "list") {
   const refs = getPageRefs();
   refs.technicianOrdersOverview?.classList.toggle("hidden", mode !== "list");
@@ -939,7 +958,7 @@ function renderOrderWeekSummary(target, orders) {
           </span>
           <span>${escapeHtml(formatDate(firstOrder.scheduledStartAtUtc))}</span>
           <span>${escapeHtml(ranges)}</span>
-          <span class="schedule-count-badge">${ordered.length} orden(es)</span>
+          <span class="schedule-count-badge">${ordered.length} orden${ordered.length === 1 ? "" : "es"}</span>
         </div>
       `;
     })
@@ -1016,7 +1035,7 @@ function renderAgendaList() {
               <h3 class="agenda-day-title">${escapeHtml(formatDate(firstStartAtUtc))}</h3>
               <p class="agenda-day-subtitle">Cobertura ${escapeHtml(formatTime(firstStartAtUtc))} - ${escapeHtml(formatTime(lastEndAtUtc))} · ${escapeHtml(slotDurationLabel(firstStartAtUtc, lastEndAtUtc))}</p>
             </div>
-            <span class="agenda-day-count">${ordered.length} orden(es) · ${escapeHtml(formatDurationMinutes(totalMinutes))}</span>
+            <span class="agenda-day-count">${ordered.length} orden${ordered.length === 1 ? "" : "es"} · ${escapeHtml(formatDurationMinutes(totalMinutes))}</span>
           </div>
           <div class="agenda-day-scale">
             ${scaleMarkup}
@@ -1058,30 +1077,71 @@ function renderAgendaList() {
 }
 
 function renderTechnicianOrderCard(order) {
+  const tone = getOrderTone(order.status);
+  const statusValue = getOrderStatusValue(order.status);
+  const timingBadge = getOrderTimingBadge(order);
+  const servicesCount = order.items.length;
   const services = order.items.map((item) => item.serviceName).join(", ") || "Sin items";
+  const hasSchedule = Boolean(order.scheduledStartAtUtc) && !Number.isNaN(new Date(order.scheduledStartAtUtc).getTime());
+  const canStart = statusValue === ORDER_STATUS_VALUES.Confirmed;
+  const canWorkOnIt = statusValue === ORDER_STATUS_VALUES.InProgress;
+
   return `
-    <article class="consultation-item" data-order-id="${escapeHtml(order.id)}">
-      <div class="consultation-header">
-        <div class="consultation-info">
-          <div class="consultation-client">Orden #${escapeHtml(shortenGuid(order.id))}</div>
-          <div class="consultation-meta">
-            <span class="consultation-date"><i class="fas fa-calendar"></i>${escapeHtml(formatDate(order.scheduledStartAtUtc))}</span>
-            <span class="consultation-time"><i class="fas fa-clock"></i>${escapeHtml(formatTime(order.scheduledStartAtUtc))}</span>
-          </div>
+    <article class="technician-order-card is-${escapeHtml(tone)}" data-order-id="${escapeHtml(order.id)}">
+      <header class="technician-order-card__head">
+        <div class="technician-order-card__identity">
+          <h4>${escapeHtml(order.items.map((item) => item.serviceName).join(", ") || "Orden de servicio")}</h4>
+          <p class="technician-order-card__meta">
+            <span class="technician-order-ref">#${escapeHtml(shortenGuid(order.id))}</span>
+            <span>${escapeHtml(`${servicesCount} servicio${servicesCount === 1 ? "" : "s"}`)}</span>
+          </p>
         </div>
-        <span class="appointment-status-badge ${escapeHtml(getOrderStatusClass(order.status))}">${escapeHtml(getOrderStatusLabel(order.status))}</span>
-      </div>
-      <div class="consultation-body">
-        <div class="consultation-reason-wrapper">
-          <div class="consultation-reason-content">
-            <div class="consultation-reason"><strong>Servicios:</strong> ${escapeHtml(services)}</div>
-            <div class="consultation-reason"><strong>Duracion:</strong> ${escapeHtml(orderDurationLabel(order))}</div>
-            <div class="consultation-reason"><strong>Total:</strong> ${escapeHtml(formatCurrency(order.totalAmount))}</div>
-          </div>
+        <div class="technician-order-badges">
+          <span class="technician-order-status">
+            <i class="fas ${escapeHtml(getOrderStatusIcon(order.status))}" aria-hidden="true"></i>
+            ${escapeHtml(getOrderStatusLabel(order.status))}
+          </span>
+          ${timingBadge ? `
+            <span class="technician-order-timing is-${escapeHtml(timingBadge.tone)}">
+              <i class="fas ${escapeHtml(timingBadge.icon)}" aria-hidden="true"></i>
+              ${escapeHtml(timingBadge.label)}
+            </span>` : ""}
+        </div>
+      </header>
+
+      <div class="technician-order-card__grid">
+        <div class="technician-order-field is-primary">
+          <span class="technician-order-label"><i class="fas fa-calendar-day" aria-hidden="true"></i> Visita</span>
+          ${hasSchedule ? `
+            <strong>${escapeHtml(formatArgentinaDate(order.scheduledStartAtUtc, { weekday: "long", day: "2-digit", month: "long" }))}</strong>
+            <span class="technician-order-subvalue">${escapeHtml(formatArgentinaTime(order.scheduledStartAtUtc, { hourCycle: "h23" }))} a ${escapeHtml(formatArgentinaTime(order.scheduledEndAtUtc, { hourCycle: "h23" }))} &middot; ${escapeHtml(orderDurationLabel(order))}</span>`
+            : "<strong>Sin fecha asignada</strong>"}
+        </div>
+        <div class="technician-order-field">
+          <span class="technician-order-label"><i class="fas fa-location-dot" aria-hidden="true"></i> Donde</span>
+          <strong>${escapeHtml(order.address || "Sin direccion registrada")}</strong>
+          ${order.address ? "" : '<span class="technician-order-subvalue">Coordina el acceso con el proveedor.</span>'}
         </div>
       </div>
-      <div class="consultation-actions">
-        <button type="button" class="btn btn-secondary" data-action="open-order" data-order-id="${escapeHtml(order.id)}">Ver detalle</button>
+
+      <div class="technician-order-card__foot">
+        <span class="technician-order-card__services" title="${escapeHtml(services)}">${escapeHtml(services)}</span>
+        <div class="technician-order-card__actions">
+          ${canStart ? `
+            <button type="button" class="btn btn-primary" data-action="start-order" data-order-id="${escapeHtml(order.id)}">
+              <i class="fas fa-play" aria-hidden="true"></i>
+              Iniciar
+            </button>` : ""}
+          ${canWorkOnIt ? `
+            <button type="button" class="btn btn-primary" data-action="open-evidence-modal" data-order-id="${escapeHtml(order.id)}">
+              <i class="fas fa-camera" aria-hidden="true"></i>
+              Evidencia
+            </button>` : ""}
+          <button type="button" class="btn btn-secondary" data-action="open-order" data-order-id="${escapeHtml(order.id)}">
+            <i class="fas fa-eye" aria-hidden="true"></i>
+            Ver detalle
+          </button>
+        </div>
       </div>
     </article>
   `;
@@ -1091,10 +1151,28 @@ function renderDashboardOrders() {
   const refs = getPageRefs();
   if (!refs.consultationsList) return;
 
-  const upcoming = state.orders.slice(0, 4);
+  // Inicio prioriza lo que se puede trabajar ahora: en ejecucion primero y
+  // despues las visitas mas proximas.
+  const actionable = sortOrdersByVisit(
+    state.orders.filter((order) => {
+      const statusValue = getOrderStatusValue(order.status);
+      return statusValue === ORDER_STATUS_VALUES.Confirmed || statusValue === ORDER_STATUS_VALUES.InProgress;
+    })
+  ).sort((left, right) => {
+    const leftRank = getOrderStatusValue(left.status) === ORDER_STATUS_VALUES.InProgress ? 0 : 1;
+    const rightRank = getOrderStatusValue(right.status) === ORDER_STATUS_VALUES.InProgress ? 0 : 1;
+    return leftRank - rightRank;
+  });
+
+  const upcoming = (actionable.length ? actionable : sortOrdersByVisit(state.orders)).slice(0, 4);
+
   refs.consultationsList.innerHTML = upcoming.length
     ? upcoming.map(renderTechnicianOrderCard).join("")
-    : '<div class="agenda-loading">Todavia no hay ordenes asignadas.</div>';
+    : renderTechnicianEmptyState({
+        icon: "fa-clipboard-list",
+        title: "Sin ordenes asignadas",
+        message: "Cuando el proveedor te asigne trabajo, lo vas a ver aca con su horario y direccion."
+      });
 }
 
 function renderExecutionOrders() {
@@ -1107,17 +1185,106 @@ function renderExecutionOrders() {
   });
 
   refs.technicianExecutionList.innerHTML = executionOrders.length
-    ? executionOrders.map(renderTechnicianOrderCard).join("")
-    : '<div class="agenda-loading">No tenes ordenes en ejecucion o listas para cierre.</div>';
+    ? sortOrdersByVisit(executionOrders).map(renderTechnicianOrderCard).join("")
+    : renderTechnicianEmptyState({
+        icon: "fa-spray-can",
+        title: "Nada en ejecucion",
+        message: "Cuando inicies una orden desde la bandeja, la vas a poder trabajar y cerrar desde aca."
+      });
+}
+
+function sortOrdersByVisit(orders) {
+  return orders.slice().sort((left, right) => {
+    const leftTime = new Date(left.scheduledStartAtUtc).getTime();
+    const rightTime = new Date(right.scheduledStartAtUtc).getTime();
+    return (Number.isNaN(leftTime) ? 0 : leftTime) - (Number.isNaN(rightTime) ? 0 : rightTime);
+  });
+}
+
+// La bandeja arranca por lo que viene (mas proximo primero) y deja lo ya
+// pasado al final, de lo mas reciente a lo mas viejo.
+function sortOrdersForTray(orders) {
+  const now = Date.now();
+
+  return orders.slice().sort((left, right) => {
+    const leftTime = new Date(left.scheduledStartAtUtc).getTime() || 0;
+    const rightTime = new Date(right.scheduledStartAtUtc).getTime() || 0;
+    const leftIsPast = leftTime < now ? 1 : 0;
+    const rightIsPast = rightTime < now ? 1 : 0;
+
+    if (leftIsPast !== rightIsPast) return leftIsPast - rightIsPast;
+    return leftIsPast ? rightTime - leftTime : leftTime - rightTime;
+  });
+}
+
+function renderTechnicianOrdersStats() {
+  const container = document.getElementById("technicianOrdersStats");
+  if (!container) return;
+
+  const todayKey = toDateInputValue(new Date());
+  const todayCount = state.orders.filter((order) => toDateInputValue(order.scheduledStartAtUtc) === todayKey).length;
+  const inProgressCount = state.orders.filter((order) => getOrderStatusValue(order.status) === ORDER_STATUS_VALUES.InProgress).length;
+  const pendingStart = state.orders.filter((order) => getOrderStatusValue(order.status) === ORDER_STATUS_VALUES.Confirmed).length;
+  const nextOrder = sortOrdersByVisit(state.orders.filter((order) => new Date(order.scheduledEndAtUtc) > new Date()))[0];
+
+  const stats = [
+    { icon: "fa-calendar-day", label: "Visitas de hoy", value: String(todayCount), tone: todayCount > 0 ? "attention" : "" },
+    { icon: "fa-spray-can", label: "En ejecucion", value: String(inProgressCount) },
+    { icon: "fa-play", label: "Listas para iniciar", value: String(pendingStart) },
+    {
+      icon: "fa-clock",
+      label: "Proxima visita",
+      value: nextOrder
+        ? `${formatArgentinaDate(nextOrder.scheduledStartAtUtc, { weekday: "short", day: "2-digit", month: "short" })} &middot; ${formatArgentinaTime(nextOrder.scheduledStartAtUtc, { hourCycle: "h23" })}`
+        : "Sin pendientes",
+      raw: true
+    }
+  ];
+
+  container.innerHTML = stats.map((stat) => `
+    <div class="technician-stat ${stat.tone ? `is-${escapeHtml(stat.tone)}` : ""}">
+      <i class="fas ${escapeHtml(stat.icon)}" aria-hidden="true"></i>
+      <span>
+        <strong>${stat.raw ? stat.value : escapeHtml(stat.value)}</strong>
+        <small>${escapeHtml(stat.label)}</small>
+      </span>
+    </div>
+  `).join("");
 }
 
 function renderOrdersList() {
   const refs = getPageRefs();
   if (!refs.technicianOrdersList) return;
 
-  refs.technicianOrdersList.innerHTML = state.orders.length
-    ? state.orders.map(renderTechnicianOrderCard).join("")
-    : '<div class="agenda-loading">Todavia no hay ordenes en la bandeja operativa.</div>';
+  renderTechnicianOrdersStats();
+
+  const statusFilter = document.getElementById("technicianOrdersStatusFilter")?.value || "";
+  const visibleOrders = sortOrdersForTray(
+    statusFilter
+      ? state.orders.filter((order) => String(getOrderStatusValue(order.status)) === String(statusFilter))
+      : state.orders
+  );
+
+  if (!visibleOrders.length) {
+    refs.technicianOrdersList.innerHTML = renderTechnicianEmptyState(
+      state.orders.length
+        ? { icon: "fa-filter-circle-xmark", title: "Sin resultados", message: "Ninguna orden coincide con el estado elegido." }
+        : { icon: "fa-clipboard-list", title: "Todavia no hay ordenes", message: "Cuando el proveedor te asigne una orden, aparece aca con su horario y direccion." }
+    );
+    return;
+  }
+
+  refs.technicianOrdersList.innerHTML = visibleOrders.map(renderTechnicianOrderCard).join("");
+}
+
+function renderTechnicianEmptyState({ icon = "fa-clipboard-list", title = "", message = "" }) {
+  return `
+    <div class="technician-empty">
+      <span class="technician-empty__icon"><i class="fas ${escapeHtml(icon)}" aria-hidden="true"></i></span>
+      <strong>${escapeHtml(title)}</strong>
+      <p>${escapeHtml(message)}</p>
+    </div>
+  `;
 }
 
 function renderEvidenceListMarkup(evidenceItems) {
@@ -1543,10 +1710,12 @@ function renderSummaryCards() {
     .filter((order) => new Date(order.scheduledEndAtUtc) > now)
     .sort((left, right) => new Date(left.scheduledStartAtUtc) - new Date(right.scheduledStartAtUtc))[0];
 
-  if (refs.clientsToday) refs.clientsToday.textContent = String(todayCount);
-  if (refs.weeklyAppointments) refs.weeklyAppointments.textContent = String(activeCount);
-  if (refs.activeConsultation) refs.activeConsultation.textContent = String(inProgressCount);
-  if (refs.prescriptionsToday) refs.prescriptionsToday.textContent = nextOrder ? formatTime(nextOrder.scheduledStartAtUtc) : "0";
+  if (refs.ordersToday) refs.ordersToday.textContent = String(todayCount);
+  if (refs.activeOrders) refs.activeOrders.textContent = String(activeCount);
+  if (refs.inProgressOrders) refs.inProgressOrders.textContent = String(inProgressCount);
+  // Es una hora, no un contador: "0" no significaba nada cuando no habia
+  // proximo servicio.
+  if (refs.nextService) refs.nextService.textContent = nextOrder ? formatTime(nextOrder.scheduledStartAtUtc) : "-";
 }
 
 function renderProviderChangeRequests() {
@@ -2248,6 +2417,11 @@ function setupAbsenceActions() {
 function setupOrderActions() {
   const refs = getPageRefs();
   const openOrderFromEvent = async (event) => {
+    // Las tarjetas de la lista ahora traen acciones propias (iniciar, cargar
+    // evidencia): esos clics no deben abrir ademas el detalle.
+    const actionElement = event.target.closest("[data-action]");
+    if (actionElement && actionElement.dataset.action !== "open-order") return;
+
     const button = event.target.closest("[data-order-id]");
     if (!button) return;
 
@@ -2272,6 +2446,7 @@ function setupOrderActions() {
   refs.technicianBackToOrders?.addEventListener("click", () => {
     setTechnicianOrdersMode("list");
   });
+  document.getElementById("technicianOrdersStatusFilter")?.addEventListener("change", renderOrdersList);
   const handleOrderActionClick = async (event) => {
     const actionButton = event.target.closest("[data-action]");
     if (!actionButton) return;
@@ -2354,9 +2529,16 @@ function setupOrderActions() {
   };
 
   // Los formularios de evidencia viven en el modal, fuera del contenedor del
-  // detalle: los mismos handlers se enganchan en ambos lugares.
+  // detalle, y las listas ahora tienen acciones propias: los mismos handlers
+  // se enganchan en todos esos lugares.
   const evidenceModal = document.getElementById("evidence-modal");
-  [refs.technicianOrderDetail, evidenceModal].forEach((container) => {
+  [
+    refs.technicianOrderDetail,
+    evidenceModal,
+    refs.consultationsList,
+    refs.technicianOrdersList,
+    refs.technicianExecutionList
+  ].forEach((container) => {
     container?.addEventListener("click", handleOrderActionClick);
     container?.addEventListener("change", handleEvidenceFileChange);
     container?.addEventListener("submit", handleEvidenceFormSubmit);
@@ -2382,15 +2564,17 @@ function setupNavigation() {
   refs.navItems.forEach((item) => {
     item.addEventListener("click", (event) => {
       event.preventDefault();
-      setSection(item.dataset.section || "inicio");
+      navigateToSection(item.dataset.section || "inicio");
     });
   });
 
-  refs.viewAgendaBtn?.addEventListener("click", (event) => { event.preventDefault(); setSection("agenda"); });
-  refs.manageSchedule?.addEventListener("click", () => setSection("disponibilidad"));
-  refs.viewClients?.addEventListener("click", () => setSection("ordenes"));
+  window.addEventListener("hashchange", () => setSection(parseTechnicianSection()));
+
+  refs.viewAgendaBtn?.addEventListener("click", (event) => { event.preventDefault(); navigateToSection("agenda"); });
+  refs.manageSchedule?.addEventListener("click", () => navigateToSection("disponibilidad"));
+  refs.viewClients?.addEventListener("click", () => navigateToSection("ordenes"));
   refs.emitPrescription?.addEventListener("click", () => {
-    setSection("ordenes");
+    navigateToSection("ordenes");
     if (state.currentOrderDetail) {
       setOrderActionFeedback("Completa la evidencia desde el detalle de la orden seleccionada.", "info");
       renderOrderDetail();
@@ -2658,7 +2842,7 @@ export async function initializeFumigatorPanel() {
   setupProviderChangeActions();
   setupAccessibleDialogs();
   setupProfileEnhancements();
-  setSection("inicio");
+  setSection(parseTechnicianSection());
 
   try {
     await bootstrapTechnicianContext();

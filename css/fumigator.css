@@ -5936,3 +5936,324 @@ body {
         width: 100%;
     }
 }
+
+/* ============================================================
+   TARJETA DE ORDEN EN LISTAS (inicio, bandeja y ejecucion)
+   Reemplaza a `.consultation-item`, heredada de un template de
+   clinica. Comparte variables y badges con la tarjeta del detalle.
+   ============================================================ */
+.technician-order-card {
+    --tech-order-accent: var(--brand);
+    --tech-order-accent-soft: var(--brand-softer);
+    --tech-order-accent-strong: var(--brand-strong);
+
+    container-type: inline-size;
+    position: relative;
+    display: grid;
+    gap: 0.9rem;
+    padding: 1.15rem 1.2rem 1.05rem;
+    padding-left: calc(1.2rem + 5px);
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+    background: var(--surface-card);
+    box-shadow: 0 18px 34px -30px var(--shadow-lg);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.technician-order-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 5px;
+    background: var(--tech-order-accent);
+}
+
+.technician-order-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--tech-order-accent) 45%, var(--border-subtle) 55%);
+    box-shadow: 0 22px 38px -28px var(--shadow-lg);
+}
+
+.technician-order-card.is-created,
+.technician-order-card.is-closed {
+    --tech-order-accent: var(--text-subtle);
+    --tech-order-accent-soft: var(--surface-subtle);
+    --tech-order-accent-strong: var(--text-tertiary);
+}
+
+.technician-order-card.is-approved {
+    --tech-order-accent: var(--info);
+    --tech-order-accent-soft: var(--surface-info);
+    --tech-order-accent-strong: var(--info-strong);
+}
+
+.technician-order-card.is-progress {
+    --tech-order-accent: var(--warning);
+    --tech-order-accent-soft: var(--warning-bg);
+    --tech-order-accent-strong: var(--warning-text);
+}
+
+.technician-order-card.is-finalized {
+    --tech-order-accent: var(--success-bright);
+    --tech-order-accent-soft: var(--success-bg);
+    --tech-order-accent-strong: var(--success-strong);
+}
+
+.technician-order-card.is-exception {
+    --tech-order-accent: var(--danger-bright);
+    --tech-order-accent-soft: var(--danger-bg);
+    --tech-order-accent-strong: var(--danger-strong);
+}
+
+.technician-order-card__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.9rem;
+}
+
+.technician-order-card__identity {
+    min-width: 0;
+}
+
+.technician-order-card__identity h4 {
+    margin: 0 0 0.25rem;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    overflow-wrap: anywhere;
+}
+
+.technician-order-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.86rem;
+}
+
+.technician-order-card__meta > span:not(:last-child)::after {
+    content: "\00b7";
+    margin-left: 0.45rem;
+    color: var(--text-subtle);
+}
+
+.technician-order-card__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.6rem;
+}
+
+@container (min-width: 520px) {
+    .technician-order-card__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@supports not (container-type: inline-size) {
+    @media (min-width: 900px) {
+        .technician-order-card__grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+}
+
+.technician-order-card__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.technician-order-card__services {
+    flex: 1 1 180px;
+    min-width: 0;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.technician-order-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
+.technician-order-card__actions .btn {
+    min-height: 42px;
+}
+
+@container (max-width: 460px) {
+    .technician-order-card__head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .technician-order-card__services {
+        flex: 1 1 100%;
+        white-space: normal;
+    }
+
+    .technician-order-card__actions {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .technician-order-card__actions .btn {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+}
+
+/* --- Barra de resumen y filtro de la bandeja --- */
+.technician-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.1rem;
+}
+
+.technician-toolbar__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    flex: 1 1 380px;
+    min-width: 0;
+}
+
+.technician-toolbar__stats:empty {
+    display: none;
+}
+
+.technician-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.6rem 0.95rem;
+    border-radius: 14px;
+    border: 1px solid var(--border-subtle);
+    background: color-mix(in srgb, var(--surface-card) 88%, var(--surface-soft) 12%);
+}
+
+.technician-stat > i {
+    color: var(--brand);
+    font-size: 0.95rem;
+}
+
+.technician-stat strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 0.98rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.technician-stat small {
+    display: block;
+    margin-top: 0.1rem;
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.technician-stat.is-attention {
+    border-color: var(--warning-border);
+    background: var(--warning-bg);
+}
+
+.technician-stat.is-attention > i,
+.technician-stat.is-attention strong {
+    color: var(--warning-text);
+}
+
+.technician-field {
+    display: grid;
+    gap: 0.35rem;
+    flex: 0 0 auto;
+}
+
+.technician-field > span {
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.technician-field select {
+    min-height: 44px;
+    min-width: 200px;
+    padding: 0.5rem 0.9rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-strong);
+    background-color: var(--surface-card);
+    color: var(--text-body);
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.technician-field select:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-glow-md);
+    outline: none;
+}
+
+.technician-empty {
+    display: grid;
+    justify-items: center;
+    gap: 0.5rem;
+    padding: 2.5rem 1.5rem;
+    border: 1px dashed var(--border-strong);
+    border-radius: 20px;
+    background: color-mix(in srgb, var(--surface-card) 80%, var(--surface-soft) 20%);
+    text-align: center;
+}
+
+.technician-empty__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    margin-bottom: 0.25rem;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--brand-softer) 0%, var(--brand-soft) 100%);
+    color: var(--brand-strong);
+    font-size: 1.2rem;
+}
+
+.technician-empty strong {
+    color: var(--text-primary);
+    font-size: 1.02rem;
+}
+
+.technician-empty p {
+    max-width: 44ch;
+    margin: 0;
+    color: var(--text-muted);
+    line-height: 1.55;
+}
+
+@media (max-width: 640px) {
+    .technician-field,
+    .technician-field select {
+        width: 100%;
+        min-width: 0;
+    }
+}

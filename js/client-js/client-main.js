@@ -219,7 +219,9 @@ function formatDurationMinutes(totalMinutes) {
 
 function formatUtcDateRange(startAtUtc, endAtUtc) {
   if (!startAtUtc || !endAtUtc) return "-";
-  return `${formatArgentinaDate(startAtUtc, { day: "2-digit", month: "short", year: "numeric" })} -> ${formatArgentinaDate(endAtUtc, { day: "2-digit", month: "short", year: "numeric" })}`;
+
+  const compact = (value) => formatArgentinaDate(value, { weekday: undefined, day: "2-digit", month: "short", year: "numeric" });
+  return `${compact(startAtUtc)} a ${compact(endAtUtc)}`;
 }
 
 function formatFileSize(bytes) {
@@ -231,9 +233,14 @@ function formatFileSize(bytes) {
 }
 
 function formatDateTime(value) {
+  // 24h como el resto del producto: `timeStyle: short` en es-AR da "12:00 p. m.".
   return formatArgentinaDateTime(value, {
-    dateStyle: "short",
-    timeStyle: "short"
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23"
   });
 }
 
@@ -890,57 +897,92 @@ function renderClientProfile() {
   }
 
   if (membershipCard) {
-    membershipCard.innerHTML = currentMembership
-      ? `
-        <div class="client-profile-item">
-          <strong>Plan</strong>
-          <span>${escapeHtml(currentMembership.planName)}</span>
+    if (!currentMembership) {
+      membershipCard.innerHTML = `
+        <div class="client-membership-empty">
+          <span class="client-membership-empty__icon"><i class="fas fa-wallet" aria-hidden="true"></i></span>
+          <strong>Sin membresia activa</strong>
+          <p>Operas en modalidad eventual: podes solicitar servicios normalmente y cada orden se factura por separado.</p>
         </div>
-        <div class="client-profile-item">
-          <strong>Modalidad</strong>
-          <span>Membresia con consumo de creditos al finalizar el servicio.</span>
+      `;
+    } else {
+      const usedCredits = Math.max(0, Number(currentMembership.totalCredits || 0) - Number(currentMembership.availableCredits || 0));
+      const usedRatio = currentMembership.totalCredits > 0
+        ? Math.min(1, usedCredits / Number(currentMembership.totalCredits))
+        : 0;
+      const isLowBalance = Number(currentMembership.availableCredits) <= 2;
+      const expiringSoon = isMembershipExpiringSoon(currentMembership);
+      const tone = !currentMembership.isActive ? "inactive" : isLowBalance || expiringSoon ? "warning" : "active";
+
+      membershipCard.innerHTML = `
+        <div class="client-membership is-${escapeHtml(tone)}">
+          <div class="client-membership__head">
+            <div>
+              <span class="client-membership__label">Plan</span>
+              <strong>${escapeHtml(currentMembership.planName)}</strong>
+            </div>
+            <span class="client-membership__badge">
+              <i class="fas ${currentMembership.isActive ? "fa-circle-check" : "fa-circle-pause"}" aria-hidden="true"></i>
+              ${escapeHtml(currentMembership.isActive ? "Activa" : "Inactiva")}
+            </span>
+          </div>
+
+          <div class="client-membership__credits">
+            <div class="client-membership__credits-head">
+              <strong>${escapeHtml(String(currentMembership.availableCredits))}</strong>
+              <span>de ${escapeHtml(String(currentMembership.totalCredits))} creditos disponibles</span>
+            </div>
+            <div class="client-membership__bar" role="img" aria-label="${escapeHtml(`${currentMembership.availableCredits} de ${currentMembership.totalCredits} creditos disponibles`)}">
+              <span style="width: ${(100 - usedRatio * 100).toFixed(1)}%"></span>
+            </div>
+            <span class="client-membership__used">${escapeHtml(String(usedCredits))} consumidos</span>
+          </div>
+
+          <dl class="client-membership__facts">
+            <div>
+              <dt>Vigencia</dt>
+              <dd>${escapeHtml(formatUtcDateRange(currentMembership.validFromUtc, currentMembership.validToUtc))}</dd>
+            </div>
+            <div>
+              <dt>Consumo</dt>
+              <dd>Los creditos se descuentan cuando la orden queda finalizada.</dd>
+            </div>
+          </dl>
+
+          ${expiringSoon || isLowBalance ? `
+            <p class="client-membership__note">
+              <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+              ${escapeHtml(expiringSoon
+                ? "Tu plan vence pronto. Si necesitas renovarlo, pedi gestion administrativa."
+                : "Tu saldo esta bajo. Podes seguir generando ordenes, pero conviene reponer creditos.")}
+            </p>` : ""}
         </div>
-        <div class="client-profile-item">
-          <strong>Estado</strong>
-          <span>${escapeHtml(currentMembership.isActive ? "Activa" : "Inactiva")}</span>
-        </div>
-        <div class="client-profile-item client-profile-item--highlight">
-          <strong>Saldo disponible</strong>
-          <span>${escapeHtml(String(currentMembership.availableCredits))} / ${escapeHtml(String(currentMembership.totalCredits))} creditos</span>
-        </div>
-        <div class="client-profile-item">
-          <strong>Vigencia</strong>
-          <span>${escapeHtml(formatUtcDateRange(currentMembership.validFromUtc, currentMembership.validToUtc))}</span>
-        </div>
-        <div class="client-profile-item">
-          <strong>Gestion</strong>
-          <span>${escapeHtml(
-            isMembershipExpiringSoon(currentMembership)
-              ? "Tu plan vence pronto. Si necesitas renovarlo, puedes pedir gestion administrativa."
-              : currentMembership.availableCredits <= 2
-                ? "Tu saldo esta bajo. Las proximas ordenes podran seguir generandose, pero conviene reponer creditos."
-                : "Tus creditos se actualizaran cuando una orden quede finalizada y cerrada operativamente."
-          )}</span>
-        </div>
-      `
-      : '<p class="request-empty-text">Hoy no tienes una membresia activa. Sigues operando en modalidad eventual y puedes solicitar servicios normalmente.</p>';
+      `;
+    }
   }
 
   if (creditMovementsList) {
     creditMovementsList.innerHTML = currentCreditMovements.length
-      ? currentCreditMovements.slice(0, 8).map((movement) => `
-          <article class="client-credit-movement ${movement.creditsDelta < 0 ? "is-consumption" : "is-credit"}">
-            <div class="client-credit-movement__head">
-              <strong>${escapeHtml(movement.movementType)}</strong>
-              <span>${escapeHtml(movement.creditsDelta > 0 ? `+${movement.creditsDelta}` : String(movement.creditsDelta))} creditos</span>
-            </div>
-            <div class="client-credit-movement__meta">
-              <span>${escapeHtml(formatDateTime(movement.occurredAtUtc))}</span>
-              ${movement.serviceOrderId ? `<span>Orden ${escapeHtml(String(movement.serviceOrderId).slice(0, 8))}</span>` : ""}
-            </div>
-            ${movement.note ? `<p>${escapeHtml(movement.note)}</p>` : ""}
-          </article>
-        `).join("")
+      ? `
+        <ul class="client-movement-list">
+          ${currentCreditMovements.slice(0, 8).map((movement) => `
+            <li class="client-movement ${movement.creditsDelta < 0 ? "is-consumption" : "is-credit"}">
+              <span class="client-movement__icon" aria-hidden="true">
+                <i class="fas ${movement.creditsDelta < 0 ? "fa-arrow-down" : "fa-arrow-up"}"></i>
+              </span>
+              <span class="client-movement__body">
+                <strong>${escapeHtml(movement.movementType)}</strong>
+                <small>
+                  ${escapeHtml(formatDateTime(movement.occurredAtUtc))}
+                  ${movement.serviceOrderId ? ` &middot; orden #${escapeHtml(String(movement.serviceOrderId).slice(0, 8))}` : ""}
+                </small>
+                ${movement.note ? `<small class="client-movement__note">${escapeHtml(movement.note)}</small>` : ""}
+              </span>
+              <span class="client-movement__delta">${escapeHtml(movement.creditsDelta > 0 ? `+${movement.creditsDelta}` : String(movement.creditsDelta))}</span>
+            </li>
+          `).join("")}
+        </ul>
+        ${currentCreditMovements.length > 8 ? `<p class="client-movement-more">Se muestran los 8 movimientos mas recientes de ${escapeHtml(String(currentCreditMovements.length))}.</p>` : ""}`
       : '<p class="request-empty-text">Todavia no hay movimientos de creditos para mostrar.</p>';
   }
 }
@@ -1687,36 +1729,51 @@ function renderOrderDetail(order = currentOrderDetail) {
   });
 
   itemsContainer.innerHTML = order.items.length
-    ? order.items.map((item) => `
-      <div class="order-detail-item">
-        <div>
-          <strong>${escapeHtml(item.serviceName)}</strong>
-          <div class="order-detail-item-meta">Cantidad: ${item.quantity} · Precio unitario: ${escapeHtml(formatCurrency(item.unitPrice))}</div>
-        </div>
-        <div class="order-detail-item-total">${escapeHtml(formatCurrency(item.totalPrice || (item.unitPrice * item.quantity)))}</div>
-      </div>
-    `).join("")
+    ? `
+      <ul class="client-item-list">
+        ${order.items.map((item) => `
+          <li class="client-item-row">
+            <span class="client-item-row__qty">${escapeHtml(String(item.quantity))}x</span>
+            <span class="client-item-row__name">
+              <strong>${escapeHtml(item.serviceName)}</strong>
+              <small>${escapeHtml(formatCurrency(item.unitPrice))} por unidad</small>
+            </span>
+            <span class="client-item-row__amount">${escapeHtml(formatCurrency(item.totalPrice || (item.unitPrice * item.quantity)))}</span>
+          </li>
+        `).join("")}
+      </ul>
+      <div class="client-item-total">
+        <span>Total de la orden</span>
+        <strong>${escapeHtml(formatCurrency(order.totalAmount))}</strong>
+      </div>`
     : '<p class="request-empty-text">Todavia no hay items para mostrar.</p>';
 
   historyContainer.innerHTML = currentOrderDetailHistory.length
-    ? currentOrderDetailHistory.map((entry) => {
-      const previous = entry.previousStatus ?? entry.PreviousStatus;
-      const next = entry.newStatus ?? entry.NewStatus;
-      const note = entry.note ?? entry.Note;
-      const changedAtUtc = entry.changedAtUtc ?? entry.ChangedAtUtc;
-      return `
-        <div class="order-history-item">
-          <div class="order-history-item-head">
-            <strong>${escapeHtml(getStatusLabel(next))}</strong>
-            <span>${escapeHtml(formatDateTime(changedAtUtc))}</span>
-          </div>
-          <div class="order-history-item-body">
-            <span>${escapeHtml(previous ? `${getStatusLabel(previous)} -> ${getStatusLabel(next)}` : `Estado inicial: ${getStatusLabel(next)}`)}</span>
-            ${note ? `<p>${escapeHtml(note)}</p>` : ""}
-          </div>
-        </div>
-      `;
-    }).join("")
+    ? `<ol class="client-timeline">
+        ${currentOrderDetailHistory
+          .slice()
+          .sort((left, right) => new Date(right.changedAtUtc ?? right.ChangedAtUtc) - new Date(left.changedAtUtc ?? left.ChangedAtUtc))
+          .map((entry) => {
+            const previous = entry.previousStatus ?? entry.PreviousStatus;
+            const next = entry.newStatus ?? entry.NewStatus;
+            const note = entry.note ?? entry.Note;
+            const changedAtUtc = entry.changedAtUtc ?? entry.ChangedAtUtc;
+
+            return `
+              <li class="client-timeline__entry is-${escapeHtml(getOrderStatusTone(next))}">
+                <span class="client-timeline__dot" aria-hidden="true"></span>
+                <div class="client-timeline__body">
+                  <div class="client-timeline__head">
+                    <strong>${escapeHtml(getStatusLabel(next))}</strong>
+                    <span>${escapeHtml(formatDateTime(changedAtUtc))}</span>
+                  </div>
+                  <span class="client-timeline__transition">${escapeHtml(previous ? `${getStatusLabel(previous)} → ${getStatusLabel(next)}` : "Estado inicial")}</span>
+                  ${note ? `<p>${escapeHtml(note)}</p>` : ""}
+                </div>
+              </li>
+            `;
+          }).join("")}
+      </ol>`
     : '<p class="request-empty-text">Todavia no hay historial para mostrar.</p>';
 
   evidenceContainer.innerHTML = currentOrderDetailEvidence.length
@@ -2107,18 +2164,65 @@ function renderOrdersStats(activeOrders) {
   `).join("");
 }
 
+function renderHistoryStats(historyOrders) {
+  const container = document.getElementById("clientHistoryStats");
+  if (!container) return;
+
+  const finalizedCount = historyOrders.filter((order) => getOrderStatusTone(order.status) === "finalized").length;
+  const exceptionCount = historyOrders.filter((order) => getOrderStatusTone(order.status) === "exception").length;
+  const totalSpent = historyOrders.reduce((total, order) => total + Number(order.totalAmount || 0), 0);
+  const lastOrder = sortOrdersBySchedule(historyOrders, "desc")[0];
+
+  const stats = [
+    { icon: "fa-clock-rotate-left", label: historyOrders.length === 1 ? "Servicio cerrado" : "Servicios cerrados", value: String(historyOrders.length) },
+    { icon: "fa-flag-checkered", label: "Finalizados", value: String(finalizedCount) },
+    {
+      icon: "fa-calendar-check",
+      label: "Ultimo servicio",
+      value: lastOrder
+        ? formatArgentinaDate(lastOrder.scheduledStartAtUtc, { weekday: "short", day: "2-digit", month: "short" })
+        : "Sin registros",
+      raw: false
+    },
+    { icon: "fa-wallet", label: "Total historico", value: formatCurrency(totalSpent) }
+  ];
+
+  if (exceptionCount > 0) {
+    stats.push({
+      icon: "fa-triangle-exclamation",
+      label: exceptionCount === 1 ? "Con excepcion" : "Con excepciones",
+      value: String(exceptionCount),
+      tone: "late"
+    });
+  }
+
+  container.innerHTML = stats.map((stat) => `
+    <div class="client-orders-stat ${stat.tone ? `is-${escapeHtml(stat.tone)}` : ""}">
+      <i class="fas ${escapeHtml(stat.icon)}" aria-hidden="true"></i>
+      <span>
+        <strong>${escapeHtml(stat.value)}</strong>
+        <small>${escapeHtml(stat.label)}</small>
+      </span>
+    </div>
+  `).join("");
+}
+
 function renderOrders() {
   // Inicio es un resumen de tres items por lista: filtrarlo por estado con un
   // segundo select, ademas confundia porque afectaba a las dos listas a la vez
   // con estados que solo aplican a una. El unico filtro vive en "Mis ordenes".
   const ordersFilter = document.getElementById("orders-status-filter")?.value || "";
+  const historyFilter = document.getElementById("history-status-filter")?.value || "";
 
   const overviewActive = sortOrdersBySchedule(currentOrders.filter((order) => !isClosedOrderStatus(order.status)), "asc");
   const overviewHistory = sortOrdersBySchedule(currentOrders.filter((order) => isClosedOrderStatus(order.status)), "desc");
 
   const routeOrders = filterOrdersByStatus(currentOrders, ordersFilter);
   const routeActive = sortOrdersBySchedule(routeOrders.filter((order) => !isClosedOrderStatus(order.status)), "asc");
-  const routeHistory = sortOrdersBySchedule(currentOrders.filter((order) => isClosedOrderStatus(order.status)), "desc");
+  const routeHistory = sortOrdersBySchedule(
+    filterOrdersByStatus(currentOrders.filter((order) => isClosedOrderStatus(order.status)), historyFilter),
+    "desc"
+  );
 
   const activeEmptyState = {
     icon: "fa-calendar-plus",
@@ -2131,9 +2235,11 @@ function renderOrders() {
   };
 
   const historyEmptyState = {
-    icon: "fa-clock-rotate-left",
-    title: "Todavia no hay servicios cerrados",
-    message: "Aca vas a encontrar las ordenes finalizadas o cerradas, con su evidencia y comprobante."
+    icon: historyFilter ? "fa-filter-circle-xmark" : "fa-clock-rotate-left",
+    title: historyFilter ? "Sin resultados" : "Todavia no hay servicios cerrados",
+    message: historyFilter
+      ? "Ninguna orden de tu historial coincide con ese estado."
+      : "Aca vas a encontrar las ordenes finalizadas o cerradas, con su evidencia y comprobante."
   };
 
   renderOrderCollection("appointments-list", overviewActive.slice(0, 3), activeEmptyState);
@@ -2141,6 +2247,7 @@ function renderOrders() {
   renderOrderCollection("clientOrdersList", routeActive, activeEmptyState);
   renderOrderCollection("clientHistoryList", routeHistory, historyEmptyState);
   renderOrdersStats(currentOrders.filter((order) => !isClosedOrderStatus(order.status)));
+  renderHistoryStats(currentOrders.filter((order) => isClosedOrderStatus(order.status)));
   renderClientProfile();
 }
 
@@ -2305,6 +2412,7 @@ function registerEvents() {
     scheduleSuggestedSlotsRefresh();
   });
   ordersStatusFilter?.addEventListener("change", renderOrders);
+  document.getElementById("history-status-filter")?.addEventListener("change", renderOrders);
   refreshRecentHistoryButton?.addEventListener("click", refreshOrders);
   refreshOrdersSectionButton?.addEventListener("click", refreshOrders);
   refreshHistorySectionButton?.addEventListener("click", refreshOrders);

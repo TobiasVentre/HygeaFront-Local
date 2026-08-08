@@ -244,6 +244,19 @@
                         </button>
                     </div>
                 </div>
+                <div class="orders-toolbar">
+                    <div class="orders-toolbar__stats" id="clientHistoryStats" aria-live="polite"></div>
+                    <label class="orders-toolbar__filter" for="history-status-filter">
+                        <span>Filtrar por estado</span>
+                        <select id="history-status-filter">
+                            <option value="">Todos los estados</option>
+                            <option value="4">Finalizadas</option>
+                            <option value="6">Cerradas</option>
+                            <option value="5">Con excepcion</option>
+                        </select>
+                    </label>
+                </div>
+
                 <div class="history-list route-list-surface" id="clientHistoryList">
                     <div class="loading-spinner">
                         <i class="fas fa-spinner fa-spin"></i>

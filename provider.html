@@ -223,52 +223,52 @@
                 </div>
 
                 <div class="provider-orders-shell">
-                    <div class="provider-toolbar">
-                        <div class="provider-toolbar__stats" id="providerOrdersStats" aria-live="polite"></div>
-                        <div class="provider-toolbar__filters">
-                            <label class="provider-field">
-                                <span>Buscar</span>
-                                <input type="search" id="providerOrdersSearch" placeholder="Cliente, tecnico, servicio o #orden" autocomplete="off">
-                            </label>
-                            <label class="provider-field">
-                                <span>Estado</span>
-                                <select id="providerOrdersStatusFilter">
-                                    <option value="">Todos los estados</option>
-                                    <option value="1">Creada</option>
-                                    <option value="7">Aprobada</option>
-                                    <option value="2">Confirmada</option>
-                                    <option value="3">En ejecucion</option>
-                                    <option value="4">Finalizada</option>
-                                    <option value="5">Excepcion</option>
-                                    <option value="6">Cerrada</option>
-                                </select>
-                            </label>
-                        </div>
-                    </div>
-
-                    <article class="request-panel-card provider-cancellations-card hidden" id="providerCancellationsCard">
-                        <div class="request-panel-head">
-                            <div>
-                                <h4><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Cancelaciones a resolver</h4>
-                                <p>Pedidos elevados por tecnicos que frenan la orden hasta que decidas.</p>
-                            </div>
-                            <span class="provider-count-badge is-danger" id="providerCancellationsCount">0 solicitudes</span>
-                        </div>
-                        <div id="providerPendingCancellationRequests" class="provider-cancellation-list"></div>
-                    </article>
-
-                    <article class="request-panel-card provider-decision-card hidden" id="providerDecisionGroup">
-                        <div class="request-panel-head">
-                            <div>
-                                <h4>Esperan tu decision</h4>
-                                <p>Ordenes creadas o aprobadas que no avanzan hasta que las apruebes o confirmes.</p>
-                            </div>
-                            <span class="provider-count-badge" id="providerDecisionCount">0 ordenes</span>
-                        </div>
-                        <div id="providerDecisionList" class="provider-order-list"></div>
-                    </article>
-
                     <div id="providerOrdersOverview" class="provider-orders-overview">
+                        <div class="provider-toolbar">
+                            <div class="provider-toolbar__stats" id="providerOrdersStats" aria-live="polite"></div>
+                            <div class="provider-toolbar__filters">
+                                <label class="provider-field">
+                                    <span>Buscar</span>
+                                    <input type="search" id="providerOrdersSearch" placeholder="Cliente, tecnico, servicio o #orden" autocomplete="off">
+                                </label>
+                                <label class="provider-field">
+                                    <span>Estado</span>
+                                    <select id="providerOrdersStatusFilter">
+                                        <option value="">Todos los estados</option>
+                                        <option value="1">Creada</option>
+                                        <option value="7">Aprobada</option>
+                                        <option value="2">Confirmada</option>
+                                        <option value="3">En ejecucion</option>
+                                        <option value="4">Finalizada</option>
+                                        <option value="5">Excepcion</option>
+                                        <option value="6">Cerrada</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </div>
+    
+                        <article class="request-panel-card provider-cancellations-card hidden" id="providerCancellationsCard">
+                            <div class="request-panel-head">
+                                <div>
+                                    <h4><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Cancelaciones a resolver</h4>
+                                    <p>Pedidos elevados por tecnicos que frenan la orden hasta que decidas.</p>
+                                </div>
+                                <span class="provider-count-badge is-danger" id="providerCancellationsCount">0 solicitudes</span>
+                            </div>
+                            <div id="providerPendingCancellationRequests" class="provider-cancellation-list"></div>
+                        </article>
+    
+                        <article class="request-panel-card provider-decision-card hidden" id="providerDecisionGroup">
+                            <div class="request-panel-head">
+                                <div>
+                                    <h4>Esperan tu decision</h4>
+                                    <p>Ordenes creadas o aprobadas que no avanzan hasta que las apruebes o confirmes.</p>
+                                </div>
+                                <span class="provider-count-badge" id="providerDecisionCount">0 ordenes</span>
+                            </div>
+                            <div id="providerDecisionList" class="provider-order-list"></div>
+                        </article>
+
                         <article class="request-panel-card">
                             <div class="request-panel-head">
                                 <div>

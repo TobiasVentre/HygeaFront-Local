@@ -219,9 +219,14 @@ function formatCurrency(amount) {
 }
 
 function formatDateTime(value) {
+  // 24h como el resto del panel: `timeStyle: short` en es-AR da "12:00 p. m.".
   return formatArgentinaDateTime(value, {
-    dateStyle: "short",
-    timeStyle: "short"
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23"
   });
 }
 
@@ -1427,12 +1432,11 @@ function renderOrderDetail() {
   if (!hero || !itemsContainer || !historyContainer || !evidenceContainer || !cancellationContainer) return;
 
   if (!order) {
-    hero.innerHTML = `
-      <div class="loading-spinner">
-        <i class="fas fa-clipboard-list"></i>
-        <p>Selecciona una orden para ver el detalle.</p>
-      </div>
-    `;
+    hero.innerHTML = renderProviderEmptyState({
+      icon: "fa-clipboard-list",
+      title: "Ninguna orden seleccionada",
+      message: "Elegi una orden de la bandeja para ver su trazabilidad, evidencia y acciones."
+    });
     itemsContainer.innerHTML = '<p class="request-empty-text">Todavia no hay items para mostrar.</p>';
     historyContainer.innerHTML = '<p class="request-empty-text">Todavia no hay historial para mostrar.</p>';
     evidenceContainer.innerHTML = '<p class="request-empty-text">Todavia no hay evidencia para mostrar.</p>';
@@ -1458,75 +1462,123 @@ function renderOrderDetail() {
       ? "No hay otros tecnicos activos de esta entidad para reasignar la orden."
       : "La reasignacion impacta sobre la reserva y la orden en conjunto.";
 
+  const tone = getOrderStatusTone(order.status);
+  const timingBadge = getOrderTimingBadge(order);
+  const durationMinutes = getOrderDurationMinutes(order);
+  const servicesCount = order.items.length;
+  const hasSchedule = Boolean(order.scheduledStartAtUtc) && !Number.isNaN(new Date(order.scheduledStartAtUtc).getTime());
+  const hasPrimaryAction = canApprove || canConfirm || canDownloadReceipt;
+
   hero.innerHTML = `
-    <div class="request-panel-head">
-      <div>
-        <h4>Orden ${escapeHtml(order.id)}</h4>
-        <p>Creada ${escapeHtml(formatDateTime(order.createdAtUtc))}</p>
+    <article class="provider-detail-hero is-${escapeHtml(tone)}">
+      <header class="provider-detail-hero__head">
+        <div class="provider-detail-hero__identity">
+          <p class="provider-order-card__meta">
+            <span class="provider-order-card__ref">#${escapeHtml(String(order.id).slice(0, 8))}</span>
+            <span>${escapeHtml(`${servicesCount} servicio${servicesCount === 1 ? "" : "s"}`)}</span>
+            ${order.createdAtUtc ? `<span>Creada el ${escapeHtml(formatDateTime(order.createdAtUtc))}</span>` : ""}
+          </p>
+          <h3>${escapeHtml(order.items.map((item) => item.serviceName).join(", ") || "Orden de servicio")}</h3>
+        </div>
+        <div class="provider-order-card__badges">
+          <span class="provider-order-card__status">
+            <i class="fas ${escapeHtml(getOrderStatusIcon(order.status))}" aria-hidden="true"></i>
+            ${escapeHtml(getStatusLabel(order.status))}
+          </span>
+          ${timingBadge ? `
+            <span class="provider-order-card__timing is-${escapeHtml(timingBadge.tone)}">
+              <i class="fas ${escapeHtml(timingBadge.icon)}" aria-hidden="true"></i>
+              ${escapeHtml(timingBadge.label)}
+            </span>` : ""}
+        </div>
+      </header>
+
+      <div class="provider-order-card__grid">
+        <div class="provider-order-card__item is-primary">
+          <span class="provider-order-card__label"><i class="fas fa-calendar-day" aria-hidden="true"></i> Visita programada</span>
+          ${hasSchedule ? `
+            <strong>${escapeHtml(formatArgentinaDate(order.scheduledStartAtUtc, { weekday: "long", day: "2-digit", month: "long" }))}</strong>
+            <span class="provider-order-card__value-sub">
+              ${escapeHtml(formatArgentinaTime(order.scheduledStartAtUtc, { hourCycle: "h23" }))} a ${escapeHtml(formatArgentinaTime(order.scheduledEndAtUtc, { hourCycle: "h23" }))}
+              ${durationMinutes ? ` &middot; ${escapeHtml(formatCompactDuration(durationMinutes))}` : ""}
+            </span>` : "<strong>Sin fecha asignada</strong>"}
+        </div>
+        <div class="provider-order-card__item">
+          <span class="provider-order-card__label"><i class="fas fa-user" aria-hidden="true"></i> Cliente</span>
+          <strong>${escapeHtml(clientName)}</strong>
+          <span class="provider-order-card__value-sub">${escapeHtml(order.address || "Sin direccion registrada")}</span>
+        </div>
+        <div class="provider-order-card__item">
+          <span class="provider-order-card__label"><i class="fas fa-user-gear" aria-hidden="true"></i> Tecnico asignado</span>
+          <div class="provider-order-card__technician">
+            <span class="provider-order-card__avatar" aria-hidden="true">${escapeHtml(getInitials(technicianName))}</span>
+            <span>
+              <strong>${escapeHtml(technicianName)}</strong>
+              <span class="provider-order-card__value-sub">${escapeHtml(technician?.specialty || "Sin especialidad")}</span>
+            </span>
+          </div>
+        </div>
+        <div class="provider-order-card__item is-amount">
+          <span class="provider-order-card__label"><i class="fas fa-receipt" aria-hidden="true"></i> Total</span>
+          <strong>${escapeHtml(formatCurrency(order.totalAmount))}</strong>
+        </div>
       </div>
-      <span class="provider-status-badge">${escapeHtml(getStatusLabel(order.status))}</span>
-    </div>
-    <div class="provider-detail-grid">
-      <div class="provider-meta-item">
-        <strong>Horario</strong>
-        <span>${escapeHtml(formatDateTime(order.scheduledStartAtUtc))} - ${escapeHtml(formatArgentinaTime(order.scheduledEndAtUtc))}</span>
+
+      ${renderOrderProgressTrack(order)}
+
+      ${order.exceptionReason ? `
+        <div class="provider-order-card__exception">
+          <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+          <div>
+            <strong>Motivo de la excepcion</strong>
+            <p>${escapeHtml(order.exceptionReason)}</p>
+          </div>
+        </div>` : ""}
+
+      ${hasPrimaryAction ? `
+        <div class="provider-detail-hero__actions">
+          ${canApprove ? `
+            <button class="btn btn-primary" id="providerApproveOrderBtn">
+              <i class="fas fa-thumbs-up"></i>
+              Aprobar orden
+            </button>` : ""}
+          ${canConfirm ? `
+            <button class="btn btn-primary" id="providerConfirmOrderBtn">
+              <i class="fas fa-check"></i>
+              Confirmar orden
+            </button>` : ""}
+          ${canDownloadReceipt ? `
+            <button class="btn btn-secondary" id="providerDownloadReceiptBtn">
+              <i class="fas fa-file-pdf"></i>
+              Descargar comprobante
+            </button>` : ""}
+        </div>` : ""}
+
+      <div class="provider-reassign ${canReassign && assignableTechnicians.length ? "" : "is-disabled"}">
+        <div class="provider-reassign__head">
+          <i class="fas fa-right-left" aria-hidden="true"></i>
+          <div>
+            <strong>Reasignar tecnico</strong>
+            <p>${escapeHtml(reassignNote)}</p>
+          </div>
+        </div>
+        ${canReassign && assignableTechnicians.length ? `
+          <div class="provider-reassign__controls">
+            <select id="providerReassignTechnicianSelect" class="provider-technician-select" aria-label="Tecnico para reasignar">
+              <option value="">Seleccionar tecnico</option>
+              ${assignableTechnicians.map((assignableTechnician) => {
+                const publicProfile = assignableTechnician.publicProfile;
+                const fullName = publicProfile?.fullName || publicProfile?.FullName || `Tecnico ${assignableTechnician.id.slice(0, 8)}`;
+                return `<option value="${escapeHtml(assignableTechnician.id)}">${escapeHtml(fullName)} - ${escapeHtml(assignableTechnician.specialty)}</option>`;
+              }).join("")}
+            </select>
+            <button class="btn btn-secondary" id="providerReassignOrderBtn">
+              <i class="fas fa-random"></i>
+              Reasignar
+            </button>
+          </div>` : ""}
       </div>
-      <div class="provider-meta-item">
-        <strong>Cliente</strong>
-        <span>${escapeHtml(clientName)}</span>
-      </div>
-      <div class="provider-meta-item">
-        <strong>Tecnico</strong>
-        <span>${escapeHtml(technicianName)}</span>
-      </div>
-      <div class="provider-meta-item">
-        <strong>Especialidad</strong>
-        <span>${escapeHtml(technician?.specialty || "Sin especialidad")}</span>
-      </div>
-      <div class="provider-meta-item">
-        <strong>Total</strong>
-        <span>${escapeHtml(formatCurrency(order.totalAmount))}</span>
-      </div>
-      <div class="provider-meta-item">
-        <strong>Direccion</strong>
-        <span>${escapeHtml(order.address || "-")}</span>
-      </div>
-      <div class="provider-meta-item">
-        <strong>Excepcion</strong>
-        <span>${escapeHtml(order.exceptionReason || "-")}</span>
-      </div>
-    </div>
-    <div class="provider-order-actions">
-      ${canApprove ? `
-        <button class="btn btn-primary" id="providerApproveOrderBtn">
-          <i class="fas fa-thumbs-up"></i>
-          Aprobar orden
-        </button>` : ""}
-      ${canConfirm ? `
-        <button class="btn btn-primary" id="providerConfirmOrderBtn">
-          <i class="fas fa-check"></i>
-          Confirmar orden
-        </button>` : ""}
-      ${canDownloadReceipt ? `
-        <button class="btn btn-secondary" id="providerDownloadReceiptBtn">
-          <i class="fas fa-file-pdf"></i>
-          Descargar comprobante
-        </button>` : ""}
-      ${canReassign ? `
-        <select id="providerReassignTechnicianSelect" class="provider-technician-select">
-          <option value="">${assignableTechnicians.length ? "Seleccionar tecnico" : "No hay tecnicos alternativos"}</option>
-          ${assignableTechnicians.map((assignableTechnician) => {
-            const publicProfile = assignableTechnician.publicProfile;
-            const fullName = publicProfile?.fullName || publicProfile?.FullName || `Tecnico ${assignableTechnician.id.slice(0, 8)}`;
-            return `<option value="${escapeHtml(assignableTechnician.id)}">${escapeHtml(fullName)} - ${escapeHtml(assignableTechnician.specialty)}</option>`;
-          }).join("")}
-        </select>
-        <button class="btn btn-secondary" id="providerReassignOrderBtn" ${assignableTechnicians.length ? "" : "disabled"}>
-          <i class="fas fa-random"></i>
-          Reasignar tecnico
-        </button>` : ""}
-      <span class="provider-inline-note">${reassignNote}</span>
-    </div>
+    </article>
   `;
 
   if (canApprove) {
@@ -1583,52 +1635,82 @@ function renderOrderDetail() {
   }
 
   itemsContainer.innerHTML = order.items.length
-    ? order.items.map((item) => `
-        <div class="order-detail-item">
-          <div>
-            <strong>${escapeHtml(item.serviceName)}</strong>
-            <p>Cantidad: ${item.quantity}</p>
-          </div>
-          <div>
-            <strong>${escapeHtml(formatCurrency(item.totalPrice))}</strong>
-            <p>${escapeHtml(formatCurrency(item.unitPrice))} por unidad</p>
-          </div>
-        </div>
-      `).join("")
+    ? `
+      <ul class="provider-item-list">
+        ${order.items.map((item) => `
+          <li class="provider-item-row">
+            <span class="provider-item-row__qty">${escapeHtml(String(item.quantity))}x</span>
+            <span class="provider-item-row__name">
+              <strong>${escapeHtml(item.serviceName)}</strong>
+              <small>${escapeHtml(formatCurrency(item.unitPrice))} por unidad</small>
+            </span>
+            <span class="provider-item-row__amount">${escapeHtml(formatCurrency(item.totalPrice))}</span>
+          </li>
+        `).join("")}
+      </ul>
+      <div class="provider-item-total">
+        <span>Total de la orden</span>
+        <strong>${escapeHtml(formatCurrency(order.totalAmount))}</strong>
+      </div>`
     : '<p class="request-empty-text">Todavia no hay items para mostrar.</p>';
 
   historyContainer.innerHTML = state.currentOrderHistory.length
-    ? state.currentOrderHistory.map((entry) => `
-        <div class="history-entry">
-          <div class="history-entry__header">
-            <strong>${escapeHtml(getStatusLabel(entry.newStatus))}</strong>
-            <span>${escapeHtml(formatDateTime(entry.changedAtUtc))}</span>
-          </div>
-          <p>${escapeHtml(entry.note || "Sin observaciones.")}</p>
-        </div>
-      `).join("")
+    ? `<ol class="provider-timeline">
+        ${state.currentOrderHistory
+          .slice()
+          .sort((left, right) => new Date(right.changedAtUtc) - new Date(left.changedAtUtc))
+          .map((entry) => `
+            <li class="provider-timeline__entry is-${escapeHtml(getOrderStatusTone(entry.newStatus))}">
+              <span class="provider-timeline__dot" aria-hidden="true"></span>
+              <div class="provider-timeline__body">
+                <div class="provider-timeline__head">
+                  <strong>${escapeHtml(getStatusLabel(entry.newStatus))}</strong>
+                  <span>${escapeHtml(formatDateTime(entry.changedAtUtc))}</span>
+                </div>
+                ${entry.previousStatus ? `<span class="provider-timeline__transition">${escapeHtml(getStatusLabel(entry.previousStatus))} &rarr; ${escapeHtml(getStatusLabel(entry.newStatus))}</span>` : ""}
+                ${entry.note ? `<p>${escapeHtml(entry.note)}</p>` : ""}
+              </div>
+            </li>
+          `).join("")}
+      </ol>`
     : '<p class="request-empty-text">Todavia no hay historial para mostrar.</p>';
 
   cancellationContainer.innerHTML = state.currentOrderCancellationRequests.length
     ? state.currentOrderCancellationRequests
         .slice()
         .sort((left, right) => new Date(right.requestedAtUtc) - new Date(left.requestedAtUtc))
-        .map((entry) => `
-          <article class="history-entry">
-            <div class="history-entry__header">
-              <strong>${escapeHtml(getCancellationReasonLabel(entry.reason))}</strong>
-              <span>${escapeHtml(formatDateTime(entry.requestedAtUtc))}</span>
+        .map((entry) => {
+          const isPending = String(entry.status) === "1" || entry.status === "Pending";
+
+          return `
+          <article class="provider-cancellation-card ${isPending ? "is-pending" : "is-resolved"}">
+            <div class="provider-cancellation-card__head">
+              <span class="provider-cancellation-card__avatar" aria-hidden="true">${escapeHtml(getInitials(technicianName))}</span>
+              <div class="provider-cancellation-card__identity">
+                <strong>${escapeHtml(technicianName)}</strong>
+                <span>Solicitada el ${escapeHtml(formatDateTime(entry.requestedAtUtc))}</span>
+              </div>
+              <span class="provider-cancellation-card__reason">${escapeHtml(getCancellationReasonLabel(entry.reason))}</span>
             </div>
-            <p><strong>Estado:</strong> ${escapeHtml(getRequestStatusLabel(entry.status))}</p>
-            <p>${escapeHtml(entry.note || "Sin observaciones del tecnico.")}</p>
-            ${entry.reviewedAtUtc ? `<p><strong>Resolucion:</strong> ${escapeHtml(formatDateTime(entry.reviewedAtUtc))}</p>` : ""}
-            ${entry.resolutionNote ? `<p>${escapeHtml(entry.resolutionNote)}</p>` : ""}
-            ${String(entry.status) === "1" || entry.status === "Pending"
-              ? `<div class="provider-order-actions">
-                  <button type="button" class="btn btn-primary provider-approve-cancellation" data-request-id="${escapeHtml(entry.id)}">Aprobar cancelacion</button>
-                  <button type="button" class="btn btn-secondary provider-reject-cancellation" data-request-id="${escapeHtml(entry.id)}">Rechazar</button>
-                  ${assignableTechnicians.length ? `
-                    <select class="provider-technician-select" data-cancellation-reassign-select="${escapeHtml(entry.id)}">
+
+            <p class="provider-cancellation-card__note">${escapeHtml(entry.note || "Sin observaciones del tecnico.")}</p>
+
+            ${isPending ? `
+              <div class="provider-cancellation-card__resolution">
+                <p class="provider-cancellation-card__prompt">Aprobar cancela la orden. Rechazar la mantiene viva, y podes reasignarla a otro tecnico en el mismo paso.</p>
+                <div class="provider-cancellation-card__buttons">
+                  <button type="button" class="btn btn-primary provider-approve-cancellation" data-request-id="${escapeHtml(entry.id)}">
+                    <i class="fas fa-check" aria-hidden="true"></i>
+                    Aprobar cancelacion
+                  </button>
+                  <button type="button" class="btn btn-secondary provider-reject-cancellation" data-request-id="${escapeHtml(entry.id)}">
+                    <i class="fas fa-xmark" aria-hidden="true"></i>
+                    Rechazar
+                  </button>
+                </div>
+                ${assignableTechnicians.length ? `
+                  <div class="provider-cancellation-card__reassign">
+                    <select class="provider-technician-select" data-cancellation-reassign-select="${escapeHtml(entry.id)}" aria-label="Tecnico para reasignar">
                       <option value="">Seleccionar tecnico para reasignar</option>
                       ${assignableTechnicians.map((assignableTechnician) => {
                         const publicProfile = assignableTechnician.publicProfile;
@@ -1636,12 +1718,22 @@ function renderOrderDetail() {
                         return `<option value="${escapeHtml(assignableTechnician.id)}">${escapeHtml(fullName)} - ${escapeHtml(assignableTechnician.specialty)}</option>`;
                       }).join("")}
                     </select>
-                    <button type="button" class="btn btn-secondary provider-reject-reassign-cancellation" data-request-id="${escapeHtml(entry.id)}">Rechazar y reasignar</button>`
-                    : `<span class="provider-inline-note">No hay tecnicos alternativos activos para rechazar y reasignar.</span>`}
-                </div>`
-              : ""}
+                    <button type="button" class="btn btn-secondary provider-reject-reassign-cancellation" data-request-id="${escapeHtml(entry.id)}">
+                      <i class="fas fa-random" aria-hidden="true"></i>
+                      Rechazar y reasignar
+                    </button>
+                  </div>`
+                  : '<p class="provider-inline-note">No hay tecnicos alternativos activos para rechazar y reasignar.</p>'}
+              </div>`
+              : `
+              <div class="provider-cancellation-card__foot">
+                <span class="provider-count-badge ${String(entry.status) === "2" || entry.status === "Approved" ? "is-danger" : ""}">${escapeHtml(getRequestStatusLabel(entry.status))}</span>
+                ${entry.reviewedAtUtc ? `<span class="provider-cancellation-card__time"><i class="fas fa-gavel" aria-hidden="true"></i> Resuelta el ${escapeHtml(formatDateTime(entry.reviewedAtUtc))}</span>` : ""}
+              </div>
+              ${entry.resolutionNote ? `<p class="provider-cancellation-card__note">${escapeHtml(entry.resolutionNote)}</p>` : ""}`}
           </article>
-        `).join("")
+        `;
+        }).join("")
     : '<p class="request-empty-text">Todavia no hay solicitudes de cancelacion para esta orden.</p>';
 
   evidenceContainer.innerHTML = state.currentOrderEvidence.length

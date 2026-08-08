@@ -37,11 +37,11 @@ body {
 
 .login-card {
     background: var(--surface-card);
-    padding: 4rem 5rem;
-    border-radius: 20px;
+    padding: 2.75rem 2.5rem;
+    border-radius: 24px;
     box-shadow: 0 25px 60px var(--shadow-md);
     width: 100%;
-    max-width: 450px;
+    max-width: 430px;
     position: relative;
     z-index: 2;
     box-sizing: border-box;
@@ -51,18 +51,8 @@ body {
     justify-content: center;
 }
 
-.login-card::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 95%;
-    height: 95%;
-    border-radius: 24px;
-    background: linear-gradient(135deg, var(--brand-glow-xs), var(--success-soft));
-    z-index: -1;
-}
+/* Antes habia un pseudo-elemento al 95% con degrade azul a verde que se veia
+   como una tarjeta dentro de otra y sacaba el verde de la paleta. */
 
 .login-illustration {
     display: flex;
@@ -135,7 +125,7 @@ body {
     font-weight: bold;
     color: var(--brand);
     margin-bottom: 1rem;
-    background: linear-gradient(135deg, var(--brand-strong) 0%, var(--brand-ink) 100%);
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-strong) 100%);
     border-radius: 33px;
 }
 
@@ -234,10 +224,11 @@ body {
     box-sizing: border-box;
 }
 
+/* El hover viraba a verde, fuera del lenguaje de botones del producto. */
 .login-button:hover {
-    background: var(--success);
+    background: var(--brand-hover);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px var(--success-glow);
+    box-shadow: 0 8px 20px var(--brand-glow-lg);
 }
 
 .login-button:active {

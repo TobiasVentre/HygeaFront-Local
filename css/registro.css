@@ -64,7 +64,7 @@
             font-weight: bold;
             color: var(--brand);
             margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--brand-strong) 0%, var(--brand-ink) 100%);
+            background: linear-gradient(135deg, var(--brand) 0%, var(--brand-strong) 100%);
             border-radius: 33px;
         }
 
@@ -442,10 +442,11 @@
             gap: 0.5rem;
         }
 
+        /* El hover viraba a verde, fuera del lenguaje de botones del producto. */
         .register-button:hover {
-            background: var(--success);
+            background: var(--brand-hover);
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px var(--success-glow);
+            box-shadow: 0 8px 20px var(--brand-glow-lg);
         }
 
         .register-button:active {

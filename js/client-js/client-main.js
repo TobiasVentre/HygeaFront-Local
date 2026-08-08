@@ -999,8 +999,8 @@ function renderOrderItems() {
   if (!container) return;
 
   if (currentOrderItems.length === 0) {
-    container.innerHTML = '<p class="request-empty-text">Todavia no agregaste items.</p>';
-    updateDurationSummary();
+    container.innerHTML = '<p class="request-empty-text">Todavia no agregaste servicios.</p>';
+    updateRequestSummary();
     return;
   }
 
@@ -1008,7 +1008,7 @@ function renderOrderItems() {
     <div class="request-order-item">
       <div>
         <strong>${escapeHtml(item.serviceName)}</strong><br>
-        <span class="request-order-item__meta">${formatCurrency(item.unitPrice)} c/u · ${formatDurationMinutes(item.durationMinutes)} c/u</span>
+        <span class="request-order-item__meta">${formatCurrency(item.unitPrice)} c/u · ${formatCompactDuration(item.durationMinutes)} c/u</span>
       </div>
       <div class="request-order-item__totals">
         <div class="request-qty-control">
@@ -1017,7 +1017,7 @@ function renderOrderItems() {
           <button type="button" class="request-qty-btn qty-plus" data-index="${index}" ${item.quantity >= 5 ? "disabled" : ""} aria-label="Aumentar cantidad">+</button>
         </div>
         <span class="request-order-item__amount">${formatCurrency(item.unitPrice * item.quantity)}</span>
-        <span class="request-order-item__meta">${formatDurationMinutes(item.durationMinutes * item.quantity)}</span>
+        <span class="request-order-item__meta">${formatCompactDuration(item.durationMinutes * item.quantity)}</span>
         <button type="button" data-index="${index}" class="remove-order-item request-order-item__remove">
           Quitar
         </button>
@@ -1056,7 +1056,7 @@ function renderOrderItems() {
     });
   });
 
-  updateDurationSummary();
+  updateRequestSummary();
 }
 
 function addSelectedItem() {
@@ -1091,6 +1091,34 @@ function addSelectedItem() {
   const durationMinutes = Number(selectedOption.dataset.durationMinutes || 0);
   if (!Number.isInteger(durationMinutes) || durationMinutes <= 0) {
     showRequestFeedback("El servicio seleccionado no tiene una duracion valida en el catalogo.", "error");
+    return;
+  }
+
+  // Si el servicio ya esta en la orden se acumula en la misma linea: dos
+  // lineas separadas dejaban pasar mas de 5 unidades del mismo servicio.
+  const existingItem = currentOrderItems.find((item) => item.serviceId === serviceId);
+
+  if (existingItem) {
+    if (existingItem.quantity >= 5) {
+      showRequestFeedback(`Ya tenes ${existingItem.quantity} unidades de ${existingItem.serviceName}, que es el maximo por servicio.`, "error");
+      return;
+    }
+
+    const mergedQuantity = Math.min(5, existingItem.quantity + quantity);
+    const addedQuantity = mergedQuantity - existingItem.quantity;
+    existingItem.quantity = mergedQuantity;
+
+    renderOrderItems();
+    select.value = "";
+    quantityInput.value = "1";
+    select.dispatchEvent(new Event("change"));
+    showRequestFeedback(
+      addedQuantity < quantity
+        ? `Sumamos ${addedQuantity} unidad(es) a ${existingItem.serviceName}: el maximo por servicio es 5.`
+        : `Actualizamos ${existingItem.serviceName}: ahora son ${mergedQuantity} unidad(es).`,
+      addedQuantity < quantity ? "error" : "success"
+    );
+    refreshSuggestedSlots().catch((error) => showRequestFeedback(error.message, "error"));
     return;
   }
 
@@ -1136,23 +1164,87 @@ function getPendingSelectionDurationMinutes() {
   return durationMinutes * quantity;
 }
 
-function updateDurationSummary() {
-  const summary = document.getElementById("requestDurationSummary");
-  if (!summary) return;
+function updateRequestStepper() {
+  const hasItems = currentOrderItems.length > 0;
+  const hasSlot = Boolean(currentSelectedSlot);
 
-  if (currentOrderItems.length === 0) {
-    summary.textContent = "Duracion estimada total: agrega items para calcularla segun el catalogo.";
-    return;
-  }
+  const stateByStep = {
+    1: hasItems ? "done" : "current",
+    2: !hasItems ? "pending" : hasSlot ? "done" : "current",
+    3: hasItems && hasSlot ? "current" : "pending"
+  };
+
+  document.querySelectorAll(".request-stepper__step").forEach((step) => {
+    const state = stateByStep[step.dataset.step] || "pending";
+    step.classList.toggle("is-done", state === "done");
+    step.classList.toggle("is-current", state === "current");
+  });
+
+  // El paso 2 depende del 1: se atenua hasta que haya al menos un servicio.
+  document.getElementById("requestStepSchedule")?.classList.toggle("is-blocked", !hasItems);
+}
+
+function updateRequestSummary() {
+  updateRequestStepper();
+
+  const itemsContainer = document.getElementById("requestSummaryItems");
+  const countElement = document.getElementById("requestSummaryCount");
+  const durationElement = document.getElementById("requestSummaryDuration");
+  const slotElement = document.getElementById("requestSummarySlot");
+  const totalElement = document.getElementById("requestSummaryTotal");
+  const checklistElement = document.getElementById("requestSummaryChecklist");
+  const submitButton = document.getElementById("submitRequestOrder");
 
   const totalDurationMinutes = getRequestedDurationMinutes();
   const totalPrice = currentOrderItems.reduce((sum, item) => sum + (Number(item.unitPrice || 0) * Number(item.quantity || 0)), 0);
+  const unitsCount = currentOrderItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
 
-  summary.innerHTML = `
-    <strong>Duracion estimada total:</strong> ${escapeHtml(formatDurationMinutes(totalDurationMinutes))}
-    <br>
-    <span class="request-summary-muted">Total estimado de la orden: ${escapeHtml(formatCurrency(totalPrice))}</span>
-  `;
+  if (itemsContainer) {
+    itemsContainer.innerHTML = currentOrderItems.length
+      ? `<ul class="request-summary__list">${currentOrderItems.map((item) => `
+          <li>
+            <span>
+              ${escapeHtml(item.serviceName)}
+              <small>x${escapeHtml(String(item.quantity))} &middot; ${escapeHtml(formatCompactDuration(item.durationMinutes * item.quantity))}</small>
+            </span>
+            <strong>${escapeHtml(formatCurrency(item.unitPrice * item.quantity))}</strong>
+          </li>
+        `).join("")}</ul>`
+      : '<p class="request-empty-text">Todavia no agregaste servicios.</p>';
+  }
+
+  if (countElement) {
+    countElement.textContent = `${unitsCount} servicio${unitsCount === 1 ? "" : "s"}`;
+  }
+
+  if (durationElement) {
+    durationElement.textContent = totalDurationMinutes > 0 ? formatCompactDuration(totalDurationMinutes) : "-";
+  }
+
+  if (slotElement) {
+    slotElement.textContent = currentSelectedSlot
+      ? `${formatArgentinaDate(currentSelectedSlot.startAtUtc, { weekday: "short", day: "2-digit", month: "short" })} · ${formatArgentinaTime(currentSelectedSlot.startAtUtc, { hourCycle: "h23" })} a ${formatArgentinaTime(currentSelectedSlot.endAtUtc, { hourCycle: "h23" })}`
+      : "Sin elegir";
+  }
+
+  if (totalElement) {
+    totalElement.textContent = formatCurrency(totalPrice);
+  }
+
+  const missingSteps = [
+    currentOrderItems.length === 0 ? "Agrega al menos un servicio" : "",
+    !currentSelectedSlot ? "Elegi un horario disponible" : ""
+  ].filter(Boolean);
+
+  if (checklistElement) {
+    checklistElement.innerHTML = missingSteps.length
+      ? missingSteps.map((step) => `<li class="is-pending"><i class="fas fa-circle" aria-hidden="true"></i>${escapeHtml(step)}</li>`).join("")
+      : '<li class="is-ready"><i class="fas fa-circle-check" aria-hidden="true"></i>Todo listo para crear la orden</li>';
+  }
+
+  if (submitButton) {
+    submitButton.disabled = missingSteps.length > 0;
+  }
 }
 
 function getRequestedDateValue() {
@@ -1161,8 +1253,15 @@ function getRequestedDateValue() {
 
 function ensureRequestDateValue() {
   const input = document.getElementById("request-date");
-  if (input && !input.value) {
-    input.value = getArgentinaDateInputValue();
+  if (!input) return;
+
+  // Sin `min` el navegador deja elegir fechas pasadas, que siempre devuelven
+  // cero horarios porque las franjas vencidas se descartan.
+  const today = getArgentinaDateInputValue();
+  input.min = today;
+
+  if (!input.value || input.value < today) {
+    input.value = today;
   }
 }
 
@@ -1240,16 +1339,20 @@ function updateSelectedSlotSummary() {
 
   if (!currentSelectedSlot) {
     summary.textContent = "Aun no seleccionaste un horario.";
+    summary.classList.remove("is-selected");
+    updateRequestSummary();
     return;
   }
 
+  summary.classList.add("is-selected");
   summary.innerHTML = `
     <strong>Horario elegido:</strong>
     ${escapeHtml(formatDayLabel(currentSelectedSlot.startAtUtc))},
-    ${escapeHtml(formatArgentinaTime(currentSelectedSlot.startAtUtc))} a ${escapeHtml(formatArgentinaTime(currentSelectedSlot.endAtUtc))}
+    ${escapeHtml(formatArgentinaTime(currentSelectedSlot.startAtUtc, { hourCycle: "h23" }))} a ${escapeHtml(formatArgentinaTime(currentSelectedSlot.endAtUtc, { hourCycle: "h23" }))}
     <br>
     <span class="request-slot-muted">Tecnicos disponibles en esa franja: ${currentSelectedSlot.availableTechnicianCount}</span>
   `;
+  updateRequestSummary();
 }
 
 function renderSuggestedSlots() {
@@ -1262,7 +1365,7 @@ function renderSuggestedSlots() {
     container.innerHTML = `
       <div class="loading-spinner">
         <i class="fas fa-calendar-alt"></i>
-        <p>Selecciona un tipo de servicio para ver dias y horarios disponibles.</p>
+        <p>Elegi un servicio en el paso 1 para ver los dias y horarios disponibles.</p>
       </div>
     `;
     return;
@@ -1283,21 +1386,33 @@ function renderSuggestedSlots() {
       <header class="suggested-day-header">
         <div>
           <h5>${escapeHtml(requestedDate ? formatDayLabel(`${requestedDate}T12:00:00Z`) : "Horarios disponibles")}</h5>
-          <span>${currentSuggestedSlots.length} horario(s) sugerido(s)</span>
+          <span>${currentSuggestedSlots.length} horario${currentSuggestedSlots.length === 1 ? "" : "s"} disponible${currentSuggestedSlots.length === 1 ? "" : "s"}</span>
         </div>
       </header>
       <div class="suggested-slot-grid">
         ${currentSuggestedSlots.map((slot) => {
           const isActive = currentSelectedSlot?.startAtUtc === slot.startAtUtc && currentSelectedSlot?.endAtUtc === slot.endAtUtc;
+          const startLabel = formatArgentinaTime(slot.startAtUtc, { hourCycle: "h23" });
+          const endLabel = formatArgentinaTime(slot.endAtUtc, { hourCycle: "h23" });
+          const techniciansLabel = `${slot.availableTechnicianCount} tecnico${slot.availableTechnicianCount === 1 ? "" : "s"} disponible${slot.availableTechnicianCount === 1 ? "" : "s"}`;
+
           return `
             <button
               type="button"
               class="suggested-slot-btn${isActive ? " active" : ""}"
               data-start-at-utc="${escapeHtml(slot.startAtUtc)}"
               data-end-at-utc="${escapeHtml(slot.endAtUtc)}"
-              data-available-count="${slot.availableTechnicianCount}">
-              <span class="suggested-slot-time">${escapeHtml(formatArgentinaTime(slot.startAtUtc))} - ${escapeHtml(formatArgentinaTime(slot.endAtUtc))}</span>
-              <span class="suggested-slot-meta">${slot.availableTechnicianCount} tecnico(s) disponible(s)</span>
+              data-available-count="${slot.availableTechnicianCount}"
+              aria-pressed="${isActive ? "true" : "false"}"
+              aria-label="${escapeHtml(`Horario de ${startLabel} a ${endLabel}, ${techniciansLabel}`)}">
+              <span class="suggested-slot-time">
+                ${escapeHtml(startLabel)}<span class="suggested-slot-end"> a ${escapeHtml(endLabel)}</span>
+              </span>
+              <span class="suggested-slot-meta" title="${escapeHtml(techniciansLabel)}">
+                <i class="fas fa-user-gear" aria-hidden="true"></i>
+                <span class="suggested-slot-count-text">${slot.availableTechnicianCount} tecnico${slot.availableTechnicianCount === 1 ? "" : "s"}</span>
+                <span class="suggested-slot-count-short" aria-hidden="true">${slot.availableTechnicianCount}</span>
+              </span>
             </button>
           `;
         }).join("")}
@@ -1329,6 +1444,9 @@ async function refreshSuggestedSlots() {
     currentOrderItems
   });
 
+  // Recalcular la agenda invalida el horario elegido: la franja se calcula
+  // sobre la duracion total, que acaba de cambiar.
+  const hadSelectedSlot = Boolean(currentSelectedSlot);
   resetOrderSelection();
   updateSelectedSlotSummary();
 
@@ -1415,12 +1533,20 @@ async function refreshSuggestedSlots() {
 
   logClientAvailability("Snapshots by technician", snapshotsByTechnician);
 
-  currentSuggestedSlots = buildSuggestedSlots(activeTechnicians, snapshotsByTechnician, requestedDurationMinutes);
+  // El encabezado de la lista rotula los horarios con la fecha pedida, asi que
+  // se descarta cualquier franja de otro dia que pueda venir en la respuesta.
+  currentSuggestedSlots = buildSuggestedSlots(activeTechnicians, snapshotsByTechnician, requestedDurationMinutes)
+    .filter((slot) => getArgentinaDateInputValue(new Date(slot.startAtUtc)) === requestedDate);
   logClientAvailability("Suggested slots", currentSuggestedSlots);
   renderSuggestedSlots();
 
   if (currentSuggestedSlots.length === 0) {
-    showRequestFeedback(`No encontramos horarios disponibles para esa fecha y una duracion total de ${formatDurationMinutes(requestedDurationMinutes)}.`, "error");
+    showRequestFeedback(`No encontramos horarios disponibles para esa fecha con una duracion total de ${formatCompactDuration(requestedDurationMinutes)}. Proba con otro dia.`, "error");
+    return;
+  }
+
+  if (hadSelectedSlot) {
+    showRequestFeedback("Cambiaron los servicios de la orden: volve a elegir un horario para la nueva duracion.", "info");
   }
 }
 

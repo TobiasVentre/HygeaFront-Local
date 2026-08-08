@@ -5374,3 +5374,420 @@ body {
         box-shadow: 4px 0 32px rgba(15, 23, 42, 0.18);
     }
 }
+
+/* ============================================================
+   SOLICITAR SERVICIO — stepper vertical + resumen fijo
+   Los pasos van 1-2-3 en una sola columna (antes 1,2,3 a la
+   izquierda y 4 a la derecha, con el orden de lectura roto).
+   La columna derecha no es un paso: es el resumen de la orden.
+   ============================================================ */
+
+.request-screen-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+}
+
+/* --- Barra de pasos --- */
+.request-stepper {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0 0 1.35rem;
+    padding: 0;
+    list-style: none;
+}
+
+.request-stepper__step {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--surface-card) 88%, var(--surface-soft) 12%);
+    min-width: 0;
+}
+
+.request-stepper__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--border-strong);
+    background: var(--surface-card);
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.request-stepper__text {
+    min-width: 0;
+}
+
+.request-stepper__text strong {
+    display: block;
+    color: var(--text-tertiary);
+    font-size: 0.96rem;
+    line-height: 1.2;
+}
+
+.request-stepper__text small {
+    display: block;
+    margin-top: 0.1rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    line-height: 1.25;
+}
+
+.request-stepper__step.is-current {
+    border-color: var(--brand-soft);
+    background: var(--brand-faint);
+}
+
+.request-stepper__step.is-current .request-stepper__badge {
+    border-color: var(--brand);
+    background: var(--brand);
+    color: var(--surface-card);
+}
+
+.request-stepper__step.is-current .request-stepper__text strong {
+    color: var(--brand-strong);
+}
+
+.request-stepper__step.is-done .request-stepper__badge {
+    border-color: var(--success);
+    background: var(--success-bg);
+    color: var(--success-strong);
+    font-size: 0;
+}
+
+.request-stepper__step.is-done .request-stepper__badge::before {
+    content: "\f00c";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 0.8rem;
+}
+
+.request-stepper__step.is-done .request-stepper__text strong {
+    color: var(--success-strong);
+}
+
+/* --- Encabezado de cada paso --- */
+.request-step__title {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    min-width: 0;
+}
+
+.request-step__number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--brand-softer);
+    color: var(--brand-strong);
+    font-size: 0.95rem;
+    font-weight: 800;
+}
+
+.request-step__optional {
+    align-self: flex-start;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    background: var(--surface-subtle);
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+/* El paso 2 depende del 1: hasta que no haya servicios queda atenuado. */
+.request-step.is-blocked {
+    opacity: 0.62;
+}
+
+.request-step.is-blocked .request-step__number {
+    background: var(--surface-subtle);
+    color: var(--text-subtle);
+}
+
+.request-selection-summary.is-selected {
+    border-color: var(--success-border);
+    background: var(--success-bg);
+    color: var(--success-strong);
+}
+
+/* Los horarios eran una pila de botones anchos: en mobile una lista de 15
+   franjas empujaba el paso 3 y el resumen muy abajo. */
+.suggested-slot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(152px, 1fr));
+    gap: 0.6rem;
+}
+
+.suggested-slot-btn {
+    min-width: 0;
+    padding: 0.65rem 0.8rem;
+}
+
+.suggested-slot-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.suggested-slot-count-short {
+    display: none;
+}
+
+@media (max-width: 640px) {
+    /* En mobile el boton se reduce a la hora de inicio y la cantidad de
+       tecnicos, para que entren dos columnas en vez de una. */
+    .suggested-slot-grid {
+        grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+        padding: 0.85rem;
+        gap: 0.5rem;
+    }
+
+    .suggested-slot-btn {
+        padding: 0.6rem 0.55rem;
+        text-align: center;
+    }
+
+    .suggested-slot-time {
+        font-size: 0.95rem;
+    }
+
+    .suggested-slot-end,
+    .suggested-slot-count-text {
+        display: none;
+    }
+
+    .suggested-slot-meta {
+        justify-content: center;
+        font-size: 0.76rem;
+    }
+
+    .suggested-slot-count-short {
+        display: inline;
+    }
+}
+
+/* --- Resumen --- */
+.request-summary-panel {
+    display: grid;
+    gap: 1.5rem;
+    position: sticky;
+    top: 5.5rem;
+}
+
+.request-summary {
+    display: grid;
+    gap: 1rem;
+}
+
+.request-summary__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.request-summary__head h4 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.12rem;
+}
+
+.request-summary__count {
+    color: var(--text-muted);
+    font-size: 0.86rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.request-summary__list {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.request-summary__list li {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.request-summary__list span {
+    color: var(--text-secondary);
+    min-width: 0;
+}
+
+.request-summary__list small {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+}
+
+.request-summary__list strong {
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.request-summary__totals {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.request-summary__totals > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.request-summary__totals dt {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+
+.request-summary__totals dd {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 0.92rem;
+    font-weight: 600;
+    text-align: right;
+}
+
+.request-summary__totals .is-total {
+    padding-top: 0.5rem;
+    border-top: 1px dashed var(--border-subtle);
+}
+
+.request-summary__totals .is-total dt {
+    color: var(--text-secondary);
+    font-weight: 700;
+}
+
+.request-summary__totals .is-total dd {
+    color: var(--brand-strong);
+    font-size: 1.25rem;
+    font-weight: 800;
+}
+
+.request-summary__checklist {
+    display: grid;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.request-summary__checklist li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.88rem;
+}
+
+.request-summary__checklist i {
+    font-size: 0.7rem;
+}
+
+.request-summary__checklist .is-pending,
+.request-summary__checklist li.is-pending {
+    color: var(--text-muted);
+}
+
+.request-summary__checklist li.is-ready {
+    color: var(--success-strong);
+    font-weight: 600;
+}
+
+.request-summary__checklist li.is-ready i {
+    font-size: 0.9rem;
+}
+
+.request-summary__actions {
+    display: grid;
+    gap: 0.6rem;
+}
+
+.request-summary__actions .btn {
+    width: 100%;
+    min-height: 46px;
+    justify-content: center;
+}
+
+.request-summary__actions .btn[disabled] {
+    opacity: 0.55;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+@media (max-width: 1024px) {
+    .request-screen-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .request-summary-panel {
+        position: static;
+    }
+
+    .request-stepper {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .request-stepper__step {
+        padding: 0.65rem 0.85rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .request-stepper__text small {
+        display: none;
+    }
+
+    .request-step__title {
+        gap: 0.6rem;
+    }
+
+    .request-panel-head .request-step__optional {
+        align-self: flex-start;
+    }
+
+    /* La fila de cantidad/total/duracion se apretaba y partia "2 h" en dos
+       lineas: en mobile se deja envolver. */
+    .request-order-item__totals {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: 0.5rem 0.75rem;
+        width: 100%;
+    }
+
+    .request-order-item__totals .request-order-item__meta {
+        order: 1;
+    }
+
+    .request-order-item__remove {
+        margin-left: auto;
+    }
+}

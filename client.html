@@ -319,7 +319,7 @@
                 <div class="section-header">
                     <div>
                         <h3>Solicitar orden de servicio</h3>
-                        <p>Elegi el servicio y la fecha para ver los horarios disponibles antes de agregarlo a la orden.</p>
+                        <p>Tres pasos: elegis los servicios, reservas un horario real de la agenda y confirmas la orden.</p>
                     </div>
                     <div class="section-header-actions">
                         <button type="button" id="backToDashboard" class="btn btn-secondary">
@@ -329,13 +329,40 @@
                     </div>
                 </div>
 
+                <ol class="request-stepper" id="requestStepper" aria-label="Pasos para solicitar el servicio">
+                    <li class="request-stepper__step is-current" data-step="1">
+                        <span class="request-stepper__badge">1</span>
+                        <span class="request-stepper__text">
+                            <strong>Servicios</strong>
+                            <small>Que necesitas y cuantas veces</small>
+                        </span>
+                    </li>
+                    <li class="request-stepper__step" data-step="2">
+                        <span class="request-stepper__badge">2</span>
+                        <span class="request-stepper__text">
+                            <strong>Fecha y horario</strong>
+                            <small>Sobre la agenda real del equipo</small>
+                        </span>
+                    </li>
+                    <li class="request-stepper__step" data-step="3">
+                        <span class="request-stepper__badge">3</span>
+                        <span class="request-stepper__text">
+                            <strong>Confirmacion</strong>
+                            <small>Direccion y creacion de la orden</small>
+                        </span>
+                    </li>
+                </ol>
+
                 <form id="appointment-form" class="request-screen-layout">
                     <div class="request-builder-panel">
-                        <article class="request-panel-card">
+                        <article class="request-panel-card request-step" id="requestStepServices" data-step="1">
                             <div class="request-panel-head">
-                                <div>
-                                    <h4>1. Elegi el servicio</h4>
-                                    <p>Al seleccionar el servicio y la cantidad ya podes ver los horarios disponibles, antes de agregarlo a la orden.</p>
+                                <div class="request-step__title">
+                                    <span class="request-step__number" aria-hidden="true">1</span>
+                                    <div>
+                                        <h4>Elegi los servicios</h4>
+                                        <p>Sumalos de a uno. Al elegir servicio y cantidad ya podes ver horarios, incluso antes de agregarlo.</p>
+                                    </div>
                                 </div>
                             </div>
 
@@ -361,52 +388,25 @@
                             </div>
 
                             <div class="request-form-actions">
-                                <button type="button" id="add-service-item" class="btn btn-secondary">
+                                <button type="button" id="add-service-item" class="btn btn-primary">
                                     <i class="fas fa-plus"></i>
-                                    Agregar item
+                                    Agregar a la orden
                                 </button>
                             </div>
 
-                            <div id="requestDurationSummary" class="request-info-box">
-                                Duracion estimada total: agrega items para calcularla segun el catalogo.
-                            </div>
-
-                            <div class="request-info-box">
-                                El sistema te muestra solo franjas con al menos un tecnico activo y disponible para tu entidad proveedora.
-                            </div>
-                        </article>
-
-                        <article class="request-panel-card">
-                            <div class="request-panel-head">
-                                <div>
-                                    <h4>2. Revisa los items</h4>
-                                    <p>La agenda sugerida se recalcula automaticamente cuando cambias los items de la orden.</p>
-                                </div>
-                            </div>
                             <div id="order-items-list" class="request-items-list">
-                                <p class="request-empty-text">Todavia no agregaste items.</p>
+                                <p class="request-empty-text">Todavia no agregaste servicios.</p>
                             </div>
                         </article>
 
-                        <article class="request-panel-card">
+                        <article class="request-panel-card request-step" id="requestStepSchedule" data-step="2">
                             <div class="request-panel-head">
-                                <div>
-                                    <h4>3. Direccion del servicio</h4>
-                                    <p>Indica donde se va a realizar el servicio (opcional).</p>
-                                </div>
-                            </div>
-                            <label>Direccion
-                                <textarea id="request-address" rows="2" maxlength="500" placeholder="Calle, numero, piso/depto, localidad..."></textarea>
-                            </label>
-                        </article>
-                    </div>
-
-                    <div class="request-availability-panel">
-                        <article class="request-panel-card">
-                            <div class="request-panel-head">
-                                <div>
-                                    <h4>4. Elige un horario disponible</h4>
-                                    <p>Primero elegi la fecha. Despues te mostramos horarios que cubren la duracion real de los servicios elegidos.</p>
+                                <div class="request-step__title">
+                                    <span class="request-step__number" aria-hidden="true">2</span>
+                                    <div>
+                                        <h4>Elegi fecha y horario</h4>
+                                        <p>Solo mostramos franjas que cubren la duracion total y tienen un tecnico disponible en tu entidad.</p>
+                                    </div>
                                 </div>
                                 <button type="button" id="refreshSuggestedSlots" class="btn btn-secondary">
                                     <i class="fas fa-rotate"></i>
@@ -427,16 +427,65 @@
                             <div id="suggested-slots-list" class="suggested-slots-list">
                                 <div class="loading-spinner">
                                     <i class="fas fa-calendar-alt"></i>
-                                    <p>Selecciona un tipo de servicio para ver dias y horarios disponibles.</p>
+                                    <p>Elegi un servicio para ver los dias y horarios disponibles.</p>
                                 </div>
                             </div>
                         </article>
 
-                        <div class="request-submit-actions">
-                            <button type="button" id="cancel-request-section" class="btn btn-secondary">Cancelar</button>
-                            <button type="submit" class="btn btn-primary">Crear orden</button>
-                        </div>
+                        <article class="request-panel-card request-step" id="requestStepAddress" data-step="3">
+                            <div class="request-panel-head">
+                                <div class="request-step__title">
+                                    <span class="request-step__number" aria-hidden="true">3</span>
+                                    <div>
+                                        <h4>Direccion del servicio</h4>
+                                        <p>Donde se realiza la visita. Es opcional: si no la cargas, la coordina tu entidad proveedora.</p>
+                                    </div>
+                                </div>
+                                <span class="request-step__optional">Opcional</span>
+                            </div>
+                            <label>Direccion
+                                <textarea id="request-address" rows="2" maxlength="500" placeholder="Calle, numero, piso/depto, localidad..."></textarea>
+                            </label>
+                        </article>
                     </div>
+
+                    <aside class="request-summary-panel">
+                        <article class="request-panel-card request-summary" id="requestSummary">
+                            <div class="request-summary__head">
+                                <h4>Tu orden</h4>
+                                <span id="requestSummaryCount" class="request-summary__count">0 servicios</span>
+                            </div>
+
+                            <div id="requestSummaryItems" class="request-summary__items">
+                                <p class="request-empty-text">Todavia no agregaste servicios.</p>
+                            </div>
+
+                            <dl class="request-summary__totals">
+                                <div>
+                                    <dt>Duracion estimada</dt>
+                                    <dd id="requestSummaryDuration">-</dd>
+                                </div>
+                                <div>
+                                    <dt>Horario elegido</dt>
+                                    <dd id="requestSummarySlot">Sin elegir</dd>
+                                </div>
+                                <div class="is-total">
+                                    <dt>Total estimado</dt>
+                                    <dd id="requestSummaryTotal">$ 0</dd>
+                                </div>
+                            </dl>
+
+                            <ul id="requestSummaryChecklist" class="request-summary__checklist"></ul>
+
+                            <div class="request-summary__actions">
+                                <button type="submit" id="submitRequestOrder" class="btn btn-primary" disabled>
+                                    <i class="fas fa-circle-check"></i>
+                                    Crear orden
+                                </button>
+                                <button type="button" id="cancel-request-section" class="btn btn-secondary">Cancelar</button>
+                            </div>
+                        </article>
+                    </aside>
                 </form>
             </section>
 

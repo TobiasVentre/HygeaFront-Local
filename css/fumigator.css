@@ -1564,24 +1564,25 @@ body {
     margin: 0.25rem 0 0 0;
 }
 
+/* Usaba un degrade a negro con sombra verde, fuera del lenguaje de botones
+   del producto. Se alinea con `.btn-primary`. */
 #editFumigatorProfile {
-    background: linear-gradient(135deg, var(--brand-ink) 0%, var(--brand-strong) 100%);
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-strong) 100%);
     color: var(--surface-card);
     border: none;
     border-radius: 12px;
     font-weight: 600;
     font-size: 0.95rem;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px var(--success-glow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 8px var(--brand-glow-lg);
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
 }
 
 #editFumigatorProfile:hover {
-    background: linear-gradient(135deg, var(--brand-strong) 0%, var(--brand-ink) 100%);
-    box-shadow: 0 6px 20px var(--success-glow-lg);
+    box-shadow: 0 6px 18px var(--brand-glow-lg);
     transform: translateY(-2px);
 }
 
@@ -6255,5 +6256,102 @@ body {
     .technician-field select {
         width: 100%;
         min-width: 0;
+    }
+}
+
+/* --- Agenda: mismo lenguaje que la bandeja --- */
+.agenda-stats {
+    margin-bottom: 1.1rem;
+}
+
+.agenda-day-card {
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+    background: var(--surface-card);
+    box-shadow: 0 18px 34px -30px var(--shadow-lg);
+    overflow: hidden;
+}
+
+.agenda-day-card + .agenda-day-card {
+    margin-top: 1rem;
+}
+
+.agenda-day-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem 1.25rem 0.9rem;
+    background: transparent;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.agenda-day-title {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.08rem;
+    letter-spacing: -0.01em;
+}
+
+.agenda-day-title::first-letter {
+    text-transform: uppercase;
+}
+
+.agenda-day-subtitle {
+    margin: 0.2rem 0 0;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+
+.agenda-day-count {
+    flex: 0 0 auto;
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    background: var(--brand-softer);
+    color: var(--brand-strong);
+    font-size: 0.82rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.agenda-order-where {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.2rem;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+}
+
+.agenda-order-where i {
+    color: var(--brand);
+    font-size: 0.75rem;
+}
+
+/* --- Perfil --- */
+.profile-location {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.8rem;
+    border-radius: 999px;
+    background: var(--surface-subtle);
+    color: var(--text-tertiary);
+    font-size: 0.88rem;
+}
+
+.profile-location i {
+    color: var(--brand);
+}
+
+@media (max-width: 640px) {
+    .agenda-day-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.6rem;
+    }
+
+    .agenda-day-count {
+        align-self: flex-start;
     }
 }

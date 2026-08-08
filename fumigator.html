@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hygea - Panel TÃ©cnico</title>
+    <title>Hygea - Panel Técnico</title>
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/dashboard-shell.css">
     <link rel="stylesheet" href="css/fumigator.css?v=20260808-1">
@@ -52,7 +52,7 @@
                     <i class="fas fa-chevron-down user-btn__chevron" aria-hidden="true"></i>
                 </button>
                 <div class="user-dropdown" id="userDropdown" role="menu" aria-label="Opciones de cuenta">
-                    <a href="#" id="logoutBtn" role="menuitem"><i class="fas fa-sign-out-alt" aria-hidden="true"></i> Cerrar sesiÃ³n</a>
+                    <a href="#" id="logoutBtn" role="menuitem"><i class="fas fa-sign-out-alt" aria-hidden="true"></i> Cerrar sesión</a>
                 </div>
             </div>
         </div>
@@ -429,12 +429,12 @@
                 <div class="profile-content-wrapper">
                     <section class="profile-content">
                         <form id="fumigatorProfileForm" class="profile-form" novalidate>
-                            <!-- InformaciÃ³n de contacto -->
+                            <!-- Información de contacto -->
                             <div class="profile-card profile-card--content">
                                 <header class="profile-card-header">
                                     <h3 class="profile-card-title">
                                         <i class="fas fa-user-circle" aria-hidden="true"></i>
-                                        InformaciÃ³n de contacto
+                                        Información de contacto
                                     </h3>
                                 </header>
                                 <div class="profile-card-body">
@@ -474,12 +474,12 @@
                                 </div>
                             </div>
 
-                            <!-- InformaciÃ³n profesional -->
+                            <!-- Información profesional -->
                             <div class="profile-card profile-card--content">
                                 <header class="profile-card-header">
                                     <h3 class="profile-card-title">
-                                        <i class="fas fa-stethoscope" aria-hidden="true"></i>
-                                        InformaciÃ³n profesional
+                                        <i class="fas fa-user-gear" aria-hidden="true"></i>
+                                        Información profesional
                                     </h3>
                                 </header>
                                 <div class="profile-card-body">
@@ -493,39 +493,38 @@
                                                    disabled
                                                    aria-label="Especialidad">
                                                 <option value="">Seleccionar especialidad</option>
-                                                <option value="Neurologo">Neurologo</option>
-                                                <option value="Pediatra">Pediatra</option>
-                                                <option value="Clinico">Clinico</option>
-                                                <option value="Cardiologo">Cardiologo</option>
-                                                <option value="Cirujano">Cirujano</option>
-                                                <option value="Dermatologo">Dermatologo</option>
-                                                <option value="Psiquiatra">Psiquiatra</option>
+                                                <option value="Fumigacion">Fumigacion</option>
+                                                <option value="Control de roedores">Control de roedores</option>
+                                                <option value="Desinfeccion">Desinfeccion</option>
+                                                <option value="Control de plagas urbanas">Control de plagas urbanas</option>
+                                                <option value="Manejo integrado de plagas">Manejo integrado de plagas</option>
+                                                <option value="Sanitizacion de ambientes">Sanitizacion de ambientes</option>
                                             </select>
                                             <span class="profile-specialty-chip" id="specialtyChip" aria-hidden="true"></span>
                                         </div>
                                     </div>
-                                    <div class="profile-professional-extras" aria-label="InformaciÃ³n profesional adicional">
+                                    <div class="profile-professional-extras" aria-label="Información profesional adicional">
                                         <div class="profile-chips-container" id="professionalChips" role="list">
                                         </div>
-                                        <div class="profile-location" role="group" aria-label="UbicaciÃ³n del consultorio">
-                                            <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
-                                            <span>Consultorio Onsari</span>
+                                        <div class="profile-location" role="group" aria-label="Entidad proveedora">
+                                            <i class="fas fa-building" aria-hidden="true"></i>
+                                            <span id="profileProviderName">Entidad proveedora</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- BiografÃ­a -->
+                            <!-- Biografía -->
                             <div class="profile-card profile-card--content">
                                 <header class="profile-card-header">
                                     <h3 class="profile-card-title">
                                         <i class="fas fa-file-alt" aria-hidden="true"></i>
-                                        BiografÃ­a
+                                        Biografía
                                     </h3>
                                 </header>
                                 <div class="profile-card-body">
                                     <div class="profile-field">
-                                        <label class="profile-label" for="profileBioInput">DescripciÃ³n profesional</label>
+                                        <label class="profile-label" for="profileBioInput">Descripción profesional</label>
                                         <div class="profile-biography-wrapper">
                                             <textarea id="profileBioInput" 
                                                       name="biography" 
@@ -533,13 +532,13 @@
                                                       rows="6" 
                                                       placeholder="Comparte tu experiencia y enfoque profesional." 
                                                       disabled
-                                                      aria-label="BiografÃ­a profesional"></textarea>
+                                                      aria-label="Biografía profesional"></textarea>
                                             <button type="button" 
                                                     class="profile-biography-toggle hidden" 
                                                     id="bioToggle"
                                                     aria-expanded="false"
                                                     aria-controls="profileBioInput">
-                                                <span class="bio-toggle-text">Ver mÃ¡s</span>
+                                                <span class="bio-toggle-text">Ver más</span>
                                                 <i class="fas fa-chevron-down" aria-hidden="true"></i>
                                             </button>
                                         </div>
@@ -592,7 +591,7 @@
                                 <button type="button" 
                                         class="btn btn-secondary" 
                                         id="cancelProfileEdit"
-                                        aria-label="Cancelar ediciÃ³n">
+                                        aria-label="Cancelar edición">
                                     <i class="fas fa-times" aria-hidden="true"></i>
                                     Cancelar
                                 </button>
@@ -655,13 +654,13 @@
                     <input id="rescheduleClient" disabled>
                 </div>
                 <div class="form-group">
-                    <label>MÃ©dico</label>
+                    <label>Tecnico</label>
                     <input id="rescheduleFumigator" disabled>
                 </div>
 
                 <!-- ðŸ”¹ Igual que el cliente: date oculto + calendario custom -->
                 <div class="form-group">
-                    <label>Nuevo dÃ­a</label>
+                    <label>Nuevo día</label>
                     <div class="custom-date-picker-wrapper">
                         <input 
                             type="date" 
@@ -784,60 +783,6 @@
             </div>
         </div>
     </div>
-<!-- TEMPLATE: Tarjeta de orden -->
-<template id="template-appointment-card">
-    <div class="appointment-card">
-
-        <!-- HEADER dinÃ¡mico segÃºn estado -->
-        <div class="appointment-header status-bg">
-            <div class="appointment-header-left">
-                <h4 class="appointment-client"></h4>
-            </div>
-
-            <!-- Badge solo para estados finales -->
-            <span class="appointment-status-badge hidden"></span>
-
-            <!-- Select para editar estado -->
-            <select class="appointment-status-select hidden"></select>
-        </div>
-
-        <div class="appointment-info">
-            <div class="info-row">
-                <i class="fas fa-clock icon"></i>
-                <span class="appointment-time"></span>
-            </div>
-
-            <div class="info-row">
-                <i class="fas fa-user icon"></i>
-                <span class="appointment-dni"></span>
-            </div>
-
-            <div class="info-row">
-                <i class="fas fa-stethoscope icon"></i>
-                <span class="appointment-reason"></span>
-            </div>
-        </div>
-
-        <div class="appointment-actions"></div>
-    </div>
-</template>
-
-
-<template id="template-day-card">
-    <div class="agenda-day-card">
-        
-        <div class="agenda-day-header">
-            <div>
-                <h3 class="agenda-day-title"></h3>
-                <p class="agenda-day-subtitle"></p>
-            </div>
-
-            <span class="agenda-day-count"></span>
-        </div>
-
-        <div class="appointments-grid"></div>
-    </div>
-</template>
 
 
 
@@ -911,7 +856,7 @@
                 observer.observe(headerTrigger);
             }
 
-            // Toggle de biografÃ­a expandible
+            // Toggle de biografía expandible
             const bioTextarea = document.getElementById('profileBioInput');
             const bioToggle = document.getElementById('bioToggle');
             
@@ -926,7 +871,7 @@
                     bioToggle.classList.remove('hidden');
                     bioTextarea.setAttribute('data-expanded', 'false');
                     bioToggle.setAttribute('aria-expanded', 'false');
-                    bioToggle.querySelector('.bio-toggle-text').textContent = 'Ver mÃ¡s';
+                    bioToggle.querySelector('.bio-toggle-text').textContent = 'Ver más';
                 } else {
                     bioToggle.classList.add('hidden');
                 }
@@ -942,7 +887,7 @@
                     if (isExpanded) {
                         bioTextarea.setAttribute('data-expanded', 'false');
                         bioToggle.setAttribute('aria-expanded', 'false');
-                        bioToggle.querySelector('.bio-toggle-text').textContent = 'Ver mÃ¡s';
+                        bioToggle.querySelector('.bio-toggle-text').textContent = 'Ver más';
                     } else {
                         bioTextarea.setAttribute('data-expanded', 'true');
                         bioToggle.setAttribute('aria-expanded', 'true');
@@ -973,7 +918,7 @@
                 setTimeout(updateSpecialtyChip, 500);
             }
 
-            // NavegaciÃ³n del breadcrumb
+            // Navegación del breadcrumb
             const breadcrumbLink = document.querySelector('.breadcrumb-link');
             if (breadcrumbLink) {
                 breadcrumbLink.addEventListener('click', function(e) {

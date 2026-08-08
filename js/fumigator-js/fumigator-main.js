@@ -1015,8 +1015,12 @@ function renderAgendaList() {
         return `
           <button type="button" class="agenda-visual-row" data-order-id="${escapeHtml(order.id)}">
             <div class="agenda-visual-row__meta">
-              <div class="agenda-order-time">${escapeHtml(formatTime(order.scheduledStartAtUtc))} - ${escapeHtml(formatTime(order.scheduledEndAtUtc))}</div>
+              <div class="agenda-order-time">${escapeHtml(formatTime(order.scheduledStartAtUtc))} a ${escapeHtml(formatTime(order.scheduledEndAtUtc))}</div>
               <div class="agenda-order-services">${escapeHtml(services)}</div>
+              <div class="agenda-order-where">
+                <i class="fas fa-location-dot" aria-hidden="true"></i>
+                ${escapeHtml(order.address || "Sin direccion")} &middot; ${escapeHtml(getClientDisplayName(order.clientId))}
+              </div>
             </div>
             <div class="agenda-visual-track">
               <div class="agenda-visual-track__grid">${scaleMarkup}</div>
@@ -1058,21 +1062,30 @@ function renderAgendaList() {
     return sum + Math.max(0, Math.round((end - start) / 60000));
   }, 0);
 
+  const agendaStats = [
+    { icon: "fa-calendar-days", label: orderedDays.length === 1 ? "Dia con agenda" : "Dias con agenda", value: String(orderedDays.length) },
+    { icon: "fa-hourglass-half", label: "Carga total", value: formatDurationMinutes(totalDurationMinutes) },
+    {
+      icon: "fa-clock",
+      label: "Proximo servicio",
+      value: nextOrder
+        ? `${formatArgentinaDate(nextOrder.scheduledStartAtUtc, { weekday: "short", day: "2-digit", month: "short" })} · ${formatTime(nextOrder.scheduledStartAtUtc)}`
+        : "Sin pendientes"
+    }
+  ];
+
   refs.technicianAgendaList.innerHTML = `
-    <section class="agenda-visual-summary">
-      <article class="agenda-visual-metric">
-        <span class="agenda-visual-metric__label">Dias con agenda</span>
-        <strong class="agenda-visual-metric__value">${orderedDays.length}</strong>
-      </article>
-      <article class="agenda-visual-metric">
-        <span class="agenda-visual-metric__label">Carga total</span>
-        <strong class="agenda-visual-metric__value">${escapeHtml(formatDurationMinutes(totalDurationMinutes))}</strong>
-      </article>
-      <article class="agenda-visual-metric">
-        <span class="agenda-visual-metric__label">Proximo servicio</span>
-        <strong class="agenda-visual-metric__value">${nextOrder ? escapeHtml(`${formatDate(nextOrder.scheduledStartAtUtc)} · ${formatTime(nextOrder.scheduledStartAtUtc)}`) : "Sin pendientes"}</strong>
-      </article>
-    </section>
+    <div class="technician-toolbar__stats agenda-stats">
+      ${agendaStats.map((stat) => `
+        <div class="technician-stat">
+          <i class="fas ${escapeHtml(stat.icon)}" aria-hidden="true"></i>
+          <span>
+            <strong>${escapeHtml(stat.value)}</strong>
+            <small>${escapeHtml(stat.label)}</small>
+          </span>
+        </div>
+      `).join("")}
+    </div>
     ${orderedDays.join("")}
   `;
 }
@@ -1779,6 +1792,12 @@ function populateProfile() {
   if (refs.profileBioInput) {
     refs.profileBioInput.value = "Perfil sincronizado desde AuthMS/DirectoryMS. La edicion avanzada queda pendiente.";
   }
+  // El perfil mostraba "Consultorio Onsari" fijo, heredado del template.
+  const profileProviderName = document.getElementById("profileProviderName");
+  if (profileProviderName && state.technicianProfile) {
+    profileProviderName.textContent = getProviderName(state.technicianProfile.providerEntityId);
+  }
+
   if (refs.technicianCurrentProviderName) {
     refs.technicianCurrentProviderName.textContent = getProviderName(state.technicianProfile.providerEntityId);
   }

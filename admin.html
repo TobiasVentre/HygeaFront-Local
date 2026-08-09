@@ -6,7 +6,7 @@
     <title>Hygea - Panel Administrador Global</title>
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/dashboard-shell.css">
-    <link rel="stylesheet" href="css/admin.css?v=20260808-1">
+    <link rel="stylesheet" href="css/admin.css?v=20260809-1">
     <link rel="stylesheet" href="css/dashboard-topnav.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -134,7 +134,7 @@
                                     <div>
                                         <span class="overview-panel__eyebrow">Prioridad</span>
                                         <h3 class="overview-panel__title">Solicitudes pendientes recientes</h3>
-                                        <p class="overview-panel__copy">Vista rapida para `RF-T11` / `RF-AG5` y seguimiento de incorporaciones entre entidades.</p>
+                                        <p class="overview-panel__copy">Cambios de entidad que esperan tu resolucion, con el detalle para decidir.</p>
                                     </div>
                                     <button class="btn btn-secondary" id="refreshAdminDashboard">
                                         <i class="fas fa-rotate"></i>
@@ -474,15 +474,17 @@
                     </div>
                 </div>
 
+                <div class="admin-stats-row" id="adminUsersStats" aria-live="polite"></div>
+
                 <div class="admin-users-toolbar">
                     <label>
                         <span>Filtrar por rol</span>
                         <select id="adminUsersRoleFilter">
                             <option value="">Todos</option>
-                            <option value="Admin">Admin</option>
-                            <option value="ProviderAdmin">ProviderAdmin</option>
-                            <option value="Technician">Technician</option>
-                            <option value="Client">Client</option>
+                            <option value="Admin">Admin global</option>
+                            <option value="ProviderAdmin">Admin de entidad</option>
+                            <option value="Technician">Tecnico</option>
+                            <option value="Client">Cliente</option>
                         </select>
                     </label>
                     <label>
@@ -611,6 +613,6 @@
         </div>
     </div>
 
-    <script type="module" src="js/admin-js/admin-main.js?v=20260808-1"></script>
+    <script type="module" src="js/admin-js/admin-main.js?v=20260809-1"></script>
 </body>
 </html>

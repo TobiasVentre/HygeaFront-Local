@@ -1,4 +1,5 @@
 import { FrontGateway } from "../api.js";
+import { getInitials } from "../utils/order-presentation.js";
 import {
   argentinaDateTimeToUtcIso,
   formatArgentinaDate,
@@ -167,6 +168,9 @@ function normalizeUser(user) {
     email: user.email ?? user.Email ?? "",
     phoneNumber: user.phoneNumber ?? user.PhoneNumber ?? "",
     role: user.role ?? user.Role ?? "User",
+    // El snapshot lo trae y la vista lo ignoraba: para auditoria importa saber
+    // si la cuenta esta activa.
+    isActive: user.isActive ?? user.IsActive ?? null,
     createdAtUtc: user.createdAtUtc ?? user.CreatedAtUtc,
     updatedAtUtc: user.updatedAtUtc ?? user.UpdatedAtUtc
   };
@@ -308,12 +312,13 @@ function getOperationStatusLabel(status) {
   return OPERATION_STATUS_LABELS[status] || String(status || "Sin estado");
 }
 
+// La vista mostraba el valor crudo del backend ("ProviderAdmin", "Technician").
 function getUserRoleLabel(role) {
   switch (String(role || "").toLowerCase()) {
-    case "admin": return "Admin";
-    case "provideradmin": return "ProviderAdmin";
-    case "technician": return "Technician";
-    case "client": return "Client";
+    case "admin": return "Admin global";
+    case "provideradmin": return "Admin de entidad";
+    case "technician": return "Tecnico";
+    case "client": return "Cliente";
     default: return String(role || "Usuario");
   }
 }
@@ -679,9 +684,15 @@ function renderRequestsList() {
 }
 
 function renderChangeRequestCard(request) {
+  // Si la solicitud no trae el usuario que la creo, se resuelve por el perfil
+  // tecnico en vez de mostrarle un hash al admin.
+  const technicianProfile = state.technicians.find((technician) => technician.id === request.technicianProfileId);
+  const fallbackName = technicianProfile?.fullName
+    || (technicianProfile?.authUserId ? getUserName(technicianProfile.authUserId, "") : "")
+    || `Tecnico ${String(request.technicianProfileId).slice(0, 8)}`;
   const technicianName = request.requestedByAuthUserId
-    ? getUserName(request.requestedByAuthUserId, `Tecnico ${String(request.technicianProfileId).slice(0, 8)}`)
-    : `Tecnico ${String(request.technicianProfileId).slice(0, 8)}`;
+    ? getUserName(request.requestedByAuthUserId, fallbackName)
+    : fallbackName;
   const currentProvider = getProviderName(request.currentProviderEntityId);
   const requestedProvider = getProviderName(request.requestedProviderEntityId);
   const isPending = Number(request.status) === 1 || request.status === "Pending";
@@ -691,7 +702,7 @@ function renderChangeRequestCard(request) {
       <div class="admin-request-head">
         <div>
           <h4>${escapeHtml(technicianName)}</h4>
-          <p>${escapeHtml(currentProvider)} -> ${escapeHtml(requestedProvider)}</p>
+          <p>${escapeHtml(currentProvider)} &rarr; ${escapeHtml(requestedProvider)}</p>
         </div>
         <span class="admin-status-badge ${getRequestStatusClass(request.status)}">${escapeHtml(getRequestStatusLabel(request.status))}</span>
       </div>
@@ -707,10 +718,6 @@ function renderChangeRequestCard(request) {
         <div class="admin-meta-item">
           <strong>Entidad actual</strong>
           <span>${escapeHtml(currentProvider)}</span>
-        </div>
-        <div class="admin-meta-item">
-          <strong>Estado</strong>
-          <span>${escapeHtml(getRequestStatusLabel(request.status))}</span>
         </div>
       </div>
       ${request.note ? `<p>${escapeHtml(request.note)}</p>` : ""}
@@ -1002,21 +1009,55 @@ function renderUsersList() {
     return;
   }
 
-  container.innerHTML = users.map((user) => `
-    <article class="admin-user-card">
+  container.innerHTML = users.map((user) => {
+    const fullName = `${user.firstName} ${user.lastName}`.trim() || user.email;
+
+    return `
+    <article class="admin-user-card ${user.isActive === false ? "is-inactive" : ""}">
       <div class="admin-user-card__head">
-        <div>
-          <strong>${escapeHtml(`${user.firstName} ${user.lastName}`.trim() || user.email)}</strong>
+        <span class="admin-user-avatar" aria-hidden="true">${escapeHtml(getInitials(fullName))}</span>
+        <div class="admin-user-card__identity">
+          <strong>${escapeHtml(fullName)}</strong>
           <p>${escapeHtml(user.email)}</p>
         </div>
         <span class="admin-user-role-badge ${getUserRoleBadgeClass(user.role)}">${escapeHtml(getUserRoleLabel(user.role))}</span>
       </div>
       <div class="admin-user-card__meta">
-        <span>Telefono: ${escapeHtml(user.phoneNumber || "-")}</span>
-        <span>Alta: ${escapeHtml(formatDateTime(user.createdAtUtc))}</span>
-        <span>Actualizacion: ${escapeHtml(formatDateTime(user.updatedAtUtc))}</span>
+        ${user.isActive === false ? '<span class="admin-user-flag">Cuenta inactiva</span>' : ""}
+        ${user.phoneNumber ? `<span>${escapeHtml(user.phoneNumber)}</span>` : ""}
+        <span>Alta ${escapeHtml(formatDateTime(user.createdAtUtc))}</span>
       </div>
     </article>
+  `;
+  }).join("");
+}
+
+function renderUsersStats() {
+  const container = document.getElementById("adminUsersStats");
+  if (!container) return;
+
+  const countByRole = (role) => state.users.filter((user) => String(user.role || "").toLowerCase() === role).length;
+
+  const stats = [
+    { icon: "fa-users", label: "Usuarios", value: String(state.users.length) },
+    { icon: "fa-user", label: "Clientes", value: String(countByRole("client")) },
+    { icon: "fa-user-gear", label: "Tecnicos", value: String(countByRole("technician")) },
+    { icon: "fa-user-shield", label: "Admins de entidad", value: String(countByRole("provideradmin")) }
+  ];
+
+  const inactive = state.users.filter((user) => user.isActive === false).length;
+  if (inactive > 0) {
+    stats.push({ icon: "fa-user-slash", label: inactive === 1 ? "Cuenta inactiva" : "Cuentas inactivas", value: String(inactive), tone: "late" });
+  }
+
+  container.innerHTML = stats.map((stat) => `
+    <div class="admin-stat ${stat.tone ? `is-${escapeHtml(stat.tone)}` : ""}">
+      <i class="fas ${escapeHtml(stat.icon)}" aria-hidden="true"></i>
+      <span>
+        <strong>${escapeHtml(stat.value)}</strong>
+        <small>${escapeHtml(stat.label)}</small>
+      </span>
+    </div>
   `).join("");
 }
 
@@ -1473,6 +1514,7 @@ function renderAll() {
   renderOrdersList();
   renderReservationsList();
   renderProvidersList();
+  renderUsersStats();
   renderUsersList();
 }
 

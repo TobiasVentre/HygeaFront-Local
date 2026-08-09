@@ -595,3 +595,129 @@ body.admin-modal-open {
         border-radius: 22px 22px 0 0;
     }
 }
+
+/* --- Barra de resumen (mismos chips que el resto del producto) --- */
+.admin-stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1.1rem;
+}
+
+.admin-stats-row:empty {
+  display: none;
+}
+
+.admin-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.95rem;
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--surface-card) 88%, var(--surface-soft) 12%);
+}
+
+.admin-stat > i {
+  color: var(--brand);
+  font-size: 0.95rem;
+}
+
+.admin-stat strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.admin-stat small {
+  display: block;
+  margin-top: 0.1rem;
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.admin-stat.is-late {
+  border-color: var(--danger-border);
+  background: var(--danger-bg);
+}
+
+.admin-stat.is-late > i,
+.admin-stat.is-late strong {
+  color: var(--danger);
+}
+
+/* --- Tarjeta de usuario --- */
+.admin-user-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+}
+
+.admin-user-card__identity {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.admin-user-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--brand-softer) 0%, var(--brand-soft) 100%);
+  color: var(--brand-strong);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+/* El snapshot trae el estado de la cuenta y la vista lo ignoraba */
+.admin-user-card.is-inactive {
+  border-color: var(--border-strong);
+  background: color-mix(in srgb, var(--surface-card) 82%, var(--surface-subtle) 18%);
+}
+
+.admin-user-card.is-inactive .admin-user-avatar {
+  background: var(--surface-subtle);
+  color: var(--text-tertiary);
+}
+
+.admin-user-flag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: var(--danger-bg);
+  color: var(--danger-strong);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+/* El badge de rol se partia en dos lineas y se salia de la tarjeta */
+.admin-user-card .admin-user-role-badge {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  white-space: nowrap;
+}
+
+.admin-user-card__head {
+  flex-wrap: wrap;
+}
+
+.admin-user-card__identity {
+  flex: 1 1 140px;
+}
+
+.admin-user-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.75rem;
+}
+

@@ -74,9 +74,21 @@ const state = {
   providerAdminsByProviderId: new Map(),
   providerChangeRequests: [],
   selectedProviderId: null,
-  selectedClientId: null,
-  selectedClientMembership: null,
-  selectedClientMovements: [],
+  membership: {
+    // Panorama por entidad: el backend solo expone la membresia activa de un
+    // cliente puntual, asi que la vista arma el listado pidiendo cliente por
+    // cliente y cachea el resultado en byClientId.
+    byClientId: new Map(),
+    loadedProviderId: null,
+    isLoading: false,
+    needsManualLoad: false,
+    filter: "todos",
+    search: "",
+    openClientId: null,
+    movements: [],
+    formProviderId: null,
+    formClientId: null
+  },
   operations: {
     filters: {
       providerEntityId: "",
@@ -363,10 +375,68 @@ function canAdminReassignOrder(order) {
   return ![4, 6, "Finalized", "Closed"].includes(order.status) && isGuid(order.reservationId);
 }
 
-function isMembershipExpiringSoon(membership) {
-  if (!membership?.validToUtc) return false;
+function getMembershipDaysLeft(membership) {
+  if (!membership?.validToUtc) return null;
   const diffMs = new Date(membership.validToUtc).getTime() - Date.now();
-  return diffMs <= 1000 * 60 * 60 * 24 * 7;
+  return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+}
+
+function isMembershipExpiringSoon(membership) {
+  const daysLeft = getMembershipDaysLeft(membership);
+  return daysLeft !== null && daysLeft <= 7;
+}
+
+/**
+ * Estado operativo de un cliente frente a su membresia. Es lo que decide el tono
+ * de la tarjeta y el contador del filtro, asi que vive en un solo lugar.
+ */
+function getMembershipStatus(membership) {
+  if (membership?.failed) return "error";
+  if (!membership) return "sin-membresia";
+
+  const daysLeft = getMembershipDaysLeft(membership);
+  if (!membership.isActive || (daysLeft !== null && daysLeft < 0)) return "vencida";
+  if (Number(membership.availableCredits) <= 0) return "sin-credito";
+  if (daysLeft !== null && daysLeft <= 30) return "por-vencer";
+  return "vigente";
+}
+
+const MEMBERSHIP_STATUS_META = {
+  vigente: { label: "Vigente", tone: "is-active", icon: "fa-circle-check" },
+  "por-vencer": { label: "Por vencer", tone: "is-warning", icon: "fa-hourglass-half" },
+  "sin-credito": { label: "Sin credito", tone: "is-empty", icon: "fa-battery-empty" },
+  vencida: { label: "Vencida", tone: "is-expired", icon: "fa-circle-xmark" },
+  "sin-membresia": { label: "Sin membresia", tone: "is-none", icon: "fa-minus" },
+  error: { label: "No se pudo consultar", tone: "is-expired", icon: "fa-triangle-exclamation" }
+};
+
+const MEMBERSHIP_FILTERS = {
+  todos: () => true,
+  vigentes: (status) => status === "vigente" || status === "por-vencer",
+  "por-vencer": (status) => status === "por-vencer",
+  "sin-credito": (status) => status === "sin-credito",
+  "sin-membresia": (status) => status === "sin-membresia" || status === "vencida"
+};
+
+/** Arriba de este numero de clientes el panorama no se carga solo: son N pedidos. */
+const MEMBERSHIP_AUTOLOAD_LIMIT = 30;
+
+function getMembershipRows() {
+  return getClientsForSelectedProvider().map((client) => {
+    const membership = state.membership.byClientId.get(client.id) ?? null;
+    return { client, membership, status: getMembershipStatus(membership) };
+  });
+}
+
+function getVisibleMembershipRows() {
+  const search = state.membership.search.trim().toLowerCase();
+  const matchesFilter = MEMBERSHIP_FILTERS[state.membership.filter] ?? MEMBERSHIP_FILTERS.todos;
+
+  return getMembershipRows().filter(({ client, membership, status }) => {
+    if (!matchesFilter(status)) return false;
+    if (!search) return true;
+    return `${client.fullName} ${membership?.planName ?? ""}`.toLowerCase().includes(search);
+  });
 }
 
 function getUserName(authUserId, fallback = "Usuario") {
@@ -381,8 +451,13 @@ function getClientsForSelectedProvider() {
   return state.clientsByProviderId.get(state.selectedProviderId) || [];
 }
 
-function getSelectedClient() {
-  return state.clients.find((client) => client.id === state.selectedClientId) || null;
+function getClientById(clientId) {
+  return state.clients.find((client) => client.id === clientId) || null;
+}
+
+function getClientsForMembershipForm() {
+  if (!isGuid(state.membership.formProviderId)) return [];
+  return state.clientsByProviderId.get(state.membership.formProviderId) || [];
 }
 
 function parseAdminRoute() {
@@ -414,7 +489,16 @@ function setSection(section) {
 
 async function handleAdminRouteChange() {
   if (!isAdminBootstrapComplete) return;
-  setSection(parseAdminRoute());
+
+  const section = parseAdminRoute();
+  setSection(section);
+
+  // El panorama de membresias cuesta un pedido por cliente: se arma recien
+  // cuando la seccion se abre, no en el arranque del panel.
+  if (section === "membresias") {
+    await loadMembershipOverview();
+    renderMembershipSection();
+  }
 }
 
 function setupUserMenu() {
@@ -470,7 +554,8 @@ function setAdminModalOpen(modalId, isOpen) {
 function setupAdminModals() {
   const triggers = [
     ["adminOpenProviderModal", "admin-provider-modal"],
-    ["adminOpenProviderAdminModal", "admin-provider-admin-modal"]
+    ["adminOpenProviderAdminModal", "admin-provider-admin-modal"],
+    [null, "admin-membership-modal"]
   ];
 
   triggers.forEach(([triggerId, modalId]) => {
@@ -575,38 +660,90 @@ async function loadAdminSnapshot() {
     state.selectedProviderId = state.providers[0]?.id ?? null;
   }
 
-  const availableClients = getClientsForSelectedProvider();
-  if (!isGuid(state.selectedClientId) || !availableClients.some((client) => client.id === state.selectedClientId)) {
-    state.selectedClientId = availableClients[0]?.id ?? null;
+  if (!isGuid(state.membership.formProviderId) || !state.providers.some((provider) => provider.id === state.membership.formProviderId)) {
+    state.membership.formProviderId = state.selectedProviderId;
   }
 }
 
-async function loadSelectedClientMembership() {
-  if (!isGuid(state.selectedClientId)) {
-    state.selectedClientMembership = null;
-    state.selectedClientMovements = [];
+/** Marca el panorama como viejo sin pedir nada: se recarga al abrir la seccion. */
+function invalidateMembershipOverview() {
+  state.membership.byClientId.clear();
+  state.membership.loadedProviderId = null;
+  state.membership.needsManualLoad = false;
+}
+
+async function fetchClientMembership(clientId) {
+  try {
+    return normalizeMembership(await FrontGateway.order.getActiveMembershipByClient(clientId));
+  } catch (error) {
+    // 404 es la respuesta normal para un cliente sin plan; cualquier otra cosa
+    // se marca como fallida para no mostrarla como "sin membresia".
+    if (error?.status === 404) return null;
+    console.error("No se pudo consultar la membresia del cliente", clientId, error);
+    return { failed: true };
+  }
+}
+
+/**
+ * Consulta la membresia de cada cliente de la entidad elegida, de a tandas para
+ * no disparar decenas de pedidos simultaneos.
+ */
+async function loadMembershipOverview({ force = false } = {}) {
+  const providerId = state.selectedProviderId;
+  const clients = getClientsForSelectedProvider();
+
+  if (!isGuid(providerId) || !clients.length) {
+    state.membership.loadedProviderId = providerId;
+    state.membership.needsManualLoad = false;
+    return;
+  }
+
+  if (!force && state.membership.loadedProviderId === providerId) return;
+
+  if (!force && clients.length > MEMBERSHIP_AUTOLOAD_LIMIT) {
+    state.membership.needsManualLoad = true;
+    return;
+  }
+
+  state.membership.isLoading = true;
+  state.membership.needsManualLoad = false;
+  renderMembershipOverview();
+
+  const pending = [...clients];
+  const workers = Array.from({ length: Math.min(6, pending.length) }, async () => {
+    while (pending.length) {
+      const client = pending.shift();
+      const membership = await fetchClientMembership(client.id);
+      // La entidad pudo cambiar mientras cargabamos: descartamos lo viejo.
+      if (state.selectedProviderId !== providerId) return;
+      state.membership.byClientId.set(client.id, membership);
+    }
+  });
+
+  try {
+    await Promise.all(workers);
+  } finally {
+    state.membership.isLoading = false;
+  }
+
+  if (state.selectedProviderId !== providerId) return;
+  state.membership.loadedProviderId = providerId;
+}
+
+async function loadClientMovements(clientId) {
+  if (!isGuid(clientId)) {
+    state.membership.movements = [];
     return;
   }
 
   try {
-    const membership = await FrontGateway.order.getActiveMembershipByClient(state.selectedClientId);
-    state.selectedClientMembership = normalizeMembership(membership);
-  } catch (error) {
-    if (error?.status === 404) {
-      state.selectedClientMembership = null;
-    } else {
-      throw error;
-    }
-  }
-
-  try {
-    const movements = await FrontGateway.order.getCreditMovementsByClient(state.selectedClientId);
-    state.selectedClientMovements = movements
+    const movements = await FrontGateway.order.getCreditMovementsByClient(clientId);
+    state.membership.movements = movements
       .map(normalizeCreditMovement)
       .sort((left, right) => new Date(right.occurredAtUtc) - new Date(left.occurredAtUtc));
   } catch (error) {
     if (error?.status === 404) {
-      state.selectedClientMovements = [];
+      state.membership.movements = [];
     } else {
       throw error;
     }
@@ -756,108 +893,265 @@ function bindChangeRequestActions(container) {
 }
 
 function renderMembershipSelectors() {
-  const providerSelect = document.getElementById("adminMembershipProviderSelect");
+  const providerOptions = (selectedId) => (state.providers.length
+    ? state.providers.map((provider) => `<option value="${escapeHtml(provider.id)}" ${provider.id === selectedId ? "selected" : ""}>${escapeHtml(provider.name)}</option>`).join("")
+    : '<option value="">Sin entidades</option>');
+
+  const browseSelect = document.getElementById("adminMembershipProviderSelect");
+  if (browseSelect) browseSelect.innerHTML = providerOptions(state.selectedProviderId);
+
+  const formProviderSelect = document.getElementById("adminMembershipFormProviderSelect");
+  if (formProviderSelect) formProviderSelect.innerHTML = providerOptions(state.membership.formProviderId);
+
   const clientSelect = document.getElementById("adminMembershipClientSelect");
-
-  if (providerSelect) {
-    providerSelect.innerHTML = state.providers.length
-      ? state.providers.map((provider) => `<option value="${escapeHtml(provider.id)}" ${provider.id === state.selectedProviderId ? "selected" : ""}>${escapeHtml(provider.name)}</option>`).join("")
-      : '<option value="">Sin entidades</option>';
-  }
-
-  const clients = getClientsForSelectedProvider();
   if (clientSelect) {
+    const clients = getClientsForMembershipForm();
     clientSelect.innerHTML = clients.length
-      ? clients.map((client) => `<option value="${escapeHtml(client.id)}" ${client.id === state.selectedClientId ? "selected" : ""}>${escapeHtml(client.fullName)}</option>`).join("")
+      ? clients.map((client) => `<option value="${escapeHtml(client.id)}" ${client.id === state.membership.formClientId ? "selected" : ""}>${escapeHtml(client.fullName)}</option>`).join("")
       : '<option value="">Sin clientes para la entidad seleccionada</option>';
+
+    if (clients.length && !clients.some((client) => client.id === state.membership.formClientId)) {
+      state.membership.formClientId = clients[0].id;
+      clientSelect.value = clients[0].id;
+    }
   }
+
+  renderMembershipFormWarning();
 }
 
-function renderSelectedClientSummary() {
-  const container = document.getElementById("adminMembershipClientSummary");
-  if (!container) return;
+/** Avisa si el cliente elegido en el formulario ya tiene un plan vigente. */
+function renderMembershipFormWarning() {
+  const warning = document.getElementById("adminMembershipFormWarning");
+  if (!warning) return;
 
-  const client = getSelectedClient();
-  if (!client) {
-    container.innerHTML = '<p class="request-empty-text">Selecciona una entidad y un cliente para revisar o crear membresias.</p>';
+  const current = state.membership.byClientId.get(state.membership.formClientId);
+  if (!current || current.failed || getMembershipStatus(current) === "vencida") {
+    warning.classList.add("hidden");
+    warning.textContent = "";
     return;
   }
 
-  const owner = getUserName(client.authUserId, client.fullName);
-  container.innerHTML = `
-    <div class="admin-meta-item">
-      <strong>Cliente</strong>
-      <span>${escapeHtml(client.fullName)}</span>
-    </div>
-    <div class="admin-meta-item">
-      <strong>Usuario</strong>
-      <span>${escapeHtml(owner)}</span>
-    </div>
-    <div class="admin-meta-item">
-      <strong>Entidad</strong>
-      <span>${escapeHtml(getProviderName(client.providerEntityId))}</span>
-    </div>
-    <div class="admin-meta-item">
-      <strong>Alta de perfil</strong>
-      <span>${escapeHtml(formatDateTime(client.createdAtUtc))}</span>
-    </div>
+  const daysLeft = getMembershipDaysLeft(current);
+  warning.classList.remove("hidden");
+  warning.innerHTML = `
+    <i class="fas fa-circle-info"></i>
+    <span>Este cliente ya tiene <strong>${escapeHtml(current.planName)}</strong> con ${escapeHtml(String(current.availableCredits))} creditos disponibles${daysLeft !== null && daysLeft >= 0 ? ` y ${escapeHtml(String(daysLeft))} dias de vigencia` : ""}. La nueva membresia se suma a la existente.</span>
   `;
 }
 
-function renderMembershipDetail() {
-  const container = document.getElementById("adminMembershipDetail");
+function renderMembershipStats() {
+  const container = document.getElementById("adminMembershipStats");
   if (!container) return;
 
-  if (!state.selectedClientMembership) {
-    container.innerHTML = '<p class="request-empty-text">El cliente seleccionado no tiene una membresia activa cargada.</p>';
+  const rows = getMembershipRows();
+  if (!rows.length || state.membership.loadedProviderId !== state.selectedProviderId) {
+    container.innerHTML = "";
     return;
   }
 
-  const membership = state.selectedClientMembership;
-  container.innerHTML = `
-    <div class="admin-meta-item">
-      <strong>Plan</strong>
-      <span>${escapeHtml(membership.planName)}</span>
-    </div>
-    <div class="admin-meta-item">
-      <strong>Estado</strong>
-      <span>${escapeHtml(membership.isActive ? "Activa" : "Inactiva")}</span>
-    </div>
-    <div class="admin-meta-item">
-      <strong>Creditos disponibles</strong>
-      <span>${escapeHtml(String(membership.availableCredits))} / ${escapeHtml(String(membership.totalCredits))}</span>
-    </div>
-    <div class="admin-meta-item">
-      <strong>Vigencia</strong>
-      <span>${escapeHtml(`${formatArgentinaDate(membership.validFromUtc, { day: "2-digit", month: "short", year: "numeric" })} -> ${formatArgentinaDate(membership.validToUtc, { day: "2-digit", month: "short", year: "numeric" })}`)}</span>
-    </div>
-    <div class="admin-meta-item">
-      <strong>Creada</strong>
-      <span>${escapeHtml(formatDateTime(membership.createdAtUtc))}</span>
-    </div>
-    <div class="admin-provider-edit-actions">
-      <button type="button" class="btn btn-secondary" id="adminMembershipRenewBtn">Usar como base para renovacion</button>
-      ${isMembershipExpiringSoon(membership)
-        ? '<span class="admin-operations-summary-pill">Vence pronto</span>'
-        : '<span class="admin-provider-pill is-provideradmin">Membresia vigente</span>'}
-    </div>
-  `;
+  const counts = rows.reduce((accumulator, row) => {
+    accumulator[row.status] = (accumulator[row.status] ?? 0) + 1;
+    return accumulator;
+  }, {});
+  const availableCredits = rows.reduce((total, row) => total + (row.membership?.failed ? 0 : Number(row.membership?.availableCredits ?? 0)), 0);
+  const withoutPlan = (counts["sin-membresia"] ?? 0) + (counts.vencida ?? 0);
 
-  document.getElementById("adminMembershipRenewBtn")?.addEventListener("click", () => {
-    prefillMembershipRenewal(membership);
+  const tiles = [
+    { icon: "fa-users", value: rows.length, label: "Clientes" },
+    { icon: "fa-circle-check", value: counts.vigente ?? 0, label: "Con plan vigente" },
+    { icon: "fa-hourglass-half", value: counts["por-vencer"] ?? 0, label: "Vencen en 30 dias", tone: (counts["por-vencer"] ?? 0) > 0 ? "is-late" : "" },
+    { icon: "fa-battery-empty", value: counts["sin-credito"] ?? 0, label: "Sin credito", tone: (counts["sin-credito"] ?? 0) > 0 ? "is-late" : "" },
+    { icon: "fa-user-slash", value: withoutPlan, label: "Sin plan vigente" },
+    { icon: "fa-coins", value: availableCredits, label: "Creditos disponibles" }
+  ];
+
+  container.innerHTML = tiles.map((tile) => `
+    <div class="admin-stat ${tile.tone || ""}">
+      <i class="fas ${tile.icon}"></i>
+      <div>
+        <strong>${escapeHtml(String(tile.value))}</strong>
+        <small>${escapeHtml(tile.label)}</small>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderMembershipFilters() {
+  const container = document.getElementById("adminMembershipFilters");
+  if (!container) return;
+
+  container.querySelectorAll("[data-membership-filter]").forEach((chip) => {
+    const isActive = chip.dataset.membershipFilter === state.membership.filter;
+    chip.classList.toggle("is-active", isActive);
+    chip.setAttribute("aria-pressed", isActive ? "true" : "false");
   });
 }
 
-function renderMembershipMovements() {
-  const container = document.getElementById("adminMembershipMovements");
+function renderMembershipCard({ client, membership, status }) {
+  const meta = MEMBERSHIP_STATUS_META[status] ?? MEMBERSHIP_STATUS_META["sin-membresia"];
+  // La entidad no se repite en cada tarjeta: el listado ya esta filtrado por ella.
+  const head = `
+    <div class="admin-membership-card__head">
+      <span class="admin-user-avatar" aria-hidden="true">${escapeHtml(getInitials(client.fullName))}</span>
+      <div class="admin-membership-card__identity">
+        <strong>${escapeHtml(client.fullName)}</strong>
+      </div>
+      <span class="admin-membership-badge">
+        <i class="fas ${meta.icon}" aria-hidden="true"></i>
+        ${escapeHtml(meta.label)}
+      </span>
+    </div>
+  `;
+
+  if (status === "error") {
+    return `
+      <article class="admin-membership-card ${meta.tone}">
+        ${head}
+        <p class="admin-membership-card__empty">No pudimos leer la membresia de este cliente. Proba con Actualizar.</p>
+      </article>
+    `;
+  }
+
+  if (!membership) {
+    return `
+      <article class="admin-membership-card ${meta.tone}">
+        ${head}
+        <p class="admin-membership-card__empty">Todavia no tiene creditos para reservar servicios.</p>
+        <div class="admin-membership-card__actions">
+          <button type="button" class="btn btn-primary" data-membership-create="${escapeHtml(client.id)}">
+            <i class="fas fa-plus-circle"></i>
+            Crear membresia
+          </button>
+          <button type="button" class="btn btn-secondary" data-membership-movements="${escapeHtml(client.id)}">
+            Ver movimientos
+          </button>
+        </div>
+      </article>
+    `;
+  }
+
+  const total = Math.max(Number(membership.totalCredits) || 0, 0);
+  const available = Math.max(Number(membership.availableCredits) || 0, 0);
+  const used = Math.max(total - available, 0);
+  const percentage = total > 0 ? Math.min(Math.round((available / total) * 100), 100) : 0;
+  const daysLeft = getMembershipDaysLeft(membership);
+  // formatArgentinaDate agrega el dia de la semana por defecto: en una tarjeta
+  // densa el rango se lee mejor en formato corto.
+  const shortDate = (value) => formatArgentinaDate(value, { weekday: undefined, day: "2-digit", month: "2-digit", year: "2-digit" });
+  const validity = `${shortDate(membership.validFromUtc)} a ${shortDate(membership.validToUtc)}`;
+
+  let validityNote = "";
+  if (daysLeft !== null && daysLeft < 0) validityNote = `Vencio hace ${Math.abs(daysLeft)} dias`;
+  else if (daysLeft === 0) validityNote = "Vence hoy";
+  else if (daysLeft !== null) validityNote = `Vence en ${daysLeft} dias`;
+
+  return `
+    <article class="admin-membership-card ${meta.tone}">
+      ${head}
+      <p class="admin-membership-card__plan">${escapeHtml(membership.planName)}</p>
+      <div class="admin-membership-card__credits">
+        <div class="admin-membership-card__credits-head">
+          <strong>${escapeHtml(String(available))}</strong>
+          <span>de ${escapeHtml(String(total))} creditos</span>
+        </div>
+        <div class="admin-membership-card__bar" role="img" aria-label="${escapeHtml(`${available} de ${total} creditos disponibles`)}">
+          <span style="width: ${percentage}%"></span>
+        </div>
+        <small>${escapeHtml(used === 1 ? "1 credito consumido" : `${used} creditos consumidos`)}</small>
+      </div>
+      <dl class="admin-membership-card__facts">
+        <div>
+          <dt>Vigencia</dt>
+          <dd>${escapeHtml(validity)}</dd>
+        </div>
+        <div>
+          <dt>Estado</dt>
+          <dd>${escapeHtml(validityNote || (membership.isActive ? "Activa" : "Inactiva"))}</dd>
+        </div>
+      </dl>
+      <div class="admin-membership-card__actions">
+        <button type="button" class="btn btn-secondary" data-membership-movements="${escapeHtml(client.id)}">
+          <i class="fas fa-list-ul"></i>
+          Ver movimientos
+        </button>
+        <button type="button" class="btn btn-secondary" data-membership-renew="${escapeHtml(client.id)}">
+          Renovar
+        </button>
+      </div>
+    </article>
+  `;
+}
+
+function renderMembershipOverview() {
+  const container = document.getElementById("adminMembershipOverview");
   if (!container) return;
 
-  if (!state.selectedClientMovements.length) {
+  if (!state.providers.length) {
+    container.innerHTML = '<p class="request-empty-text">Todavia no hay entidades proveedoras cargadas.</p>';
+    return;
+  }
+
+  const clients = getClientsForSelectedProvider();
+  if (!clients.length) {
+    container.innerHTML = '<p class="request-empty-text">Esta entidad no tiene clientes asociados.</p>';
+    return;
+  }
+
+  // Sin panorama cargado la cache esta vacia: mostrar tarjetas ahora diria
+  // "sin membresia" para todos, que es justo lo contrario de lo que sabemos.
+  const isStale = state.membership.loadedProviderId !== state.selectedProviderId && !state.membership.needsManualLoad;
+  if (state.membership.isLoading || isStale) {
+    container.innerHTML = `
+      <div class="loading-spinner">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Consultando membresias de ${escapeHtml(String(clients.length))} clientes...</p>
+      </div>
+    `;
+    return;
+  }
+
+  if (state.membership.needsManualLoad) {
+    container.innerHTML = `
+      <div class="admin-membership-prompt">
+        <i class="fas fa-layer-group" aria-hidden="true"></i>
+        <strong>${escapeHtml(String(clients.length))} clientes en esta entidad</strong>
+        <p>El saldo se consulta cliente por cliente, asi que para listas grandes lo pedimos a mano.</p>
+        <button type="button" class="btn btn-primary" id="adminMembershipLoadOverview">
+          <i class="fas fa-cloud-arrow-down"></i>
+          Cargar panorama
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  const rows = getVisibleMembershipRows();
+  if (!rows.length) {
+    container.innerHTML = '<p class="request-empty-text">Ningun cliente coincide con el filtro o la busqueda.</p>';
+    return;
+  }
+
+  container.innerHTML = rows.map(renderMembershipCard).join("");
+}
+
+function renderMembershipMovements() {
+  const panel = document.getElementById("adminMembershipMovementsPanel");
+  const container = document.getElementById("adminMembershipMovements");
+  const subtitle = document.getElementById("adminMembershipMovementsSubtitle");
+  if (!panel || !container) return;
+
+  const client = getClientById(state.membership.openClientId);
+  panel.classList.toggle("hidden", !client);
+  if (!client) return;
+
+  if (subtitle) subtitle.textContent = `Consumos y recargas de ${client.fullName}.`;
+
+  if (!state.membership.movements.length) {
     container.innerHTML = '<p class="request-empty-text">Todavia no hay movimientos de creditos para este cliente.</p>';
     return;
   }
 
-  container.innerHTML = state.selectedClientMovements.map((movement) => `
+  container.innerHTML = state.membership.movements.map((movement) => `
     <article class="admin-credit-movement ${movement.creditsDelta < 0 ? "is-consumption" : "is-credit"}">
       <div class="admin-credit-movement__head">
         <strong>${escapeHtml(movement.movementType)}</strong>
@@ -1228,15 +1522,15 @@ function setProviderAdminFeedback(message, type = "") {
 function prefillMembershipRenewal(membership) {
   if (!membership) return;
 
-  const validTo = new Date(membership.validToUtc);
-  const nextStart = new Date(validTo.getTime() + 1000 * 60 * 60 * 24);
-  const nextEnd = new Date(nextStart.getTime() + 1000 * 60 * 60 * 24 * 30);
+  // Las fechas de los inputs son dias de Argentina: convertir con toISOString()
+  // corre un dia cuando la vigencia termina de noche.
+  const nextStart = shiftArgentinaDate(getArgentinaDateInputValue(membership.validToUtc), 1);
 
   document.getElementById("adminMembershipPlanName").value = membership.planName || "";
   document.getElementById("adminMembershipTotalCredits").value = String(membership.totalCredits || 1);
-  document.getElementById("adminMembershipValidFrom").value = nextStart.toISOString().slice(0, 10);
-  document.getElementById("adminMembershipValidTo").value = nextEnd.toISOString().slice(0, 10);
-  setMembershipFeedback("Formulario preparado para renovar la membresia con base en el plan actual.", "success");
+  document.getElementById("adminMembershipValidFrom").value = nextStart;
+  document.getElementById("adminMembershipValidTo").value = shiftArgentinaDate(nextStart, 30);
+  setMembershipFeedback("Formulario listo para renovar con el mismo plan.", "success");
 }
 
 async function createProvider(event) {
@@ -1414,9 +1708,10 @@ async function resolveChangeRequest(requestId, status) {
   });
 
   await loadAdminSnapshot();
-  await loadSelectedClientMembership();
+  invalidateMembershipOverview();
   await loadOperationsSnapshot();
   renderAll();
+  await refreshMembershipIfVisible();
 
   showAppFeedback(
     status === 2 ? "La solicitud fue aprobada y la entidad del tecnico quedo actualizada." : "La solicitud fue rechazada.",
@@ -1430,36 +1725,87 @@ async function resolveChangeRequest(requestId, status) {
 async function refreshAdminData() {
   clearAppFeedback();
   await loadAdminSnapshot();
-  await loadSelectedClientMembership();
+  invalidateMembershipOverview();
   await loadOperationsSnapshot();
   renderAll();
+  await refreshMembershipIfVisible();
 }
 
-async function handleProviderSelectionChange() {
+function renderMembershipSection() {
+  renderMembershipStats();
+  renderMembershipFilters();
+  renderMembershipOverview();
+  renderMembershipMovements();
+}
+
+/** Tras invalidar la cache hay que rearmar el panorama si el admin lo esta mirando. */
+async function refreshMembershipIfVisible() {
+  if (parseAdminRoute() !== "membresias") return;
+  await loadMembershipOverview();
+  renderMembershipSection();
+}
+
+async function handleMembershipProviderChange() {
   state.selectedProviderId = document.getElementById("adminMembershipProviderSelect")?.value || null;
-  const clients = getClientsForSelectedProvider();
-  state.selectedClientId = clients[0]?.id ?? null;
-  await loadSelectedClientMembership();
-  renderMembershipSelectors();
-  renderSelectedClientSummary();
-  renderMembershipDetail();
-  renderMembershipMovements();
-  setMembershipFeedback("Cliente listo para revisar o crear una membresia.");
+  state.membership.openClientId = null;
+  state.membership.movements = [];
+  state.membership.needsManualLoad = false;
+
+  renderMembershipSection();
+  await loadMembershipOverview();
+  renderMembershipSection();
 }
 
-async function handleClientSelectionChange() {
-  state.selectedClientId = document.getElementById("adminMembershipClientSelect")?.value || null;
-  await loadSelectedClientMembership();
-  renderSelectedClientSummary();
-  renderMembershipDetail();
+function handleMembershipFormProviderChange() {
+  state.membership.formProviderId = document.getElementById("adminMembershipFormProviderSelect")?.value || null;
+  state.membership.formClientId = getClientsForMembershipForm()[0]?.id ?? null;
+  renderMembershipSelectors();
+}
+
+function handleMembershipFormClientChange() {
+  state.membership.formClientId = document.getElementById("adminMembershipClientSelect")?.value || null;
+  renderMembershipFormWarning();
+}
+
+function openMembershipModal({ clientId = null, renew = false } = {}) {
+  const client = getClientById(clientId);
+  if (client) {
+    state.membership.formProviderId = client.providerEntityId;
+    state.membership.formClientId = client.id;
+  } else if (!isGuid(state.membership.formProviderId)) {
+    state.membership.formProviderId = state.selectedProviderId;
+    state.membership.formClientId = getClientsForMembershipForm()[0]?.id ?? null;
+  }
+
+  renderMembershipSelectors();
+
+  const current = clientId ? state.membership.byClientId.get(clientId) : null;
+  if (renew && current && !current.failed) {
+    prefillMembershipRenewal(current);
+  } else {
+    setMembershipFeedback(client ? `Nueva membresia para ${client.fullName}.` : "Elegi el cliente y completa el plan.");
+  }
+
+  setAdminModalOpen("admin-membership-modal", true);
+}
+
+async function openMembershipMovements(clientId) {
+  state.membership.openClientId = clientId;
+  state.membership.movements = [];
   renderMembershipMovements();
-  setMembershipFeedback("Detalle de membresia actualizado.");
+
+  await loadClientMovements(clientId);
+  if (state.membership.openClientId !== clientId) return;
+
+  renderMembershipMovements();
+  document.getElementById("adminMembershipMovementsPanel")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
 async function handleCreateMembership(event) {
   event.preventDefault();
 
-  if (!isGuid(state.selectedClientId)) {
+  const clientId = state.membership.formClientId;
+  if (!isGuid(clientId)) {
     throw new Error("Selecciona un cliente valido antes de crear la membresia.");
   }
 
@@ -1479,18 +1825,26 @@ async function handleCreateMembership(event) {
 
   try {
     await FrontGateway.order.createMembership({
-      clientId: state.selectedClientId,
+      clientId,
       planName,
       totalCredits,
       validFromUtc: argentinaDateTimeToUtcIso(validFrom, "00:00"),
       validToUtc: argentinaDateTimeToUtcIso(validTo, "23:59")
     });
 
-    await loadSelectedClientMembership();
-    renderSelectedClientSummary();
-    renderMembershipDetail();
-    renderMembershipMovements();
+    state.membership.byClientId.set(clientId, await fetchClientMembership(clientId));
+    renderMembershipSection();
+    renderMembershipFormWarning();
+
+    // El modal se reutiliza: sin limpiar, la proxima alta arranca con el plan anterior.
+    document.getElementById("adminMembershipPlanName").value = "";
+    document.getElementById("adminMembershipTotalCredits").value = "12";
+    document.getElementById("adminMembershipValidFrom").value = "";
+    document.getElementById("adminMembershipValidTo").value = "";
+    setDefaultMembershipDates();
+
     setMembershipFeedback("Membresia creada correctamente.", "success");
+    setAdminModalOpen("admin-membership-modal", false);
     showAppFeedback("La membresia quedo registrada y ya puede consultarse desde cliente/admin.", {
       type: "success",
       title: "Membresia creada"
@@ -1507,9 +1861,7 @@ function renderAll() {
   renderRequestsList();
   renderMembershipSelectors();
   renderProviderSelectors();
-  renderSelectedClientSummary();
-  renderMembershipDetail();
-  renderMembershipMovements();
+  renderMembershipSection();
   renderOperationsSummary();
   renderOrdersList();
   renderReservationsList();
@@ -1546,7 +1898,7 @@ function registerEvents() {
 
   document.getElementById("refreshAdminMemberships")?.addEventListener("click", () => {
     loadAdminSnapshot()
-      .then(loadSelectedClientMembership)
+      .then(() => loadMembershipOverview({ force: true }))
       .then(loadOperationsSnapshot)
       .then(renderAll)
       .catch((error) => {
@@ -1591,15 +1943,67 @@ function registerEvents() {
   });
 
   document.getElementById("adminMembershipProviderSelect")?.addEventListener("change", () => {
-    handleProviderSelectionChange().catch((error) => {
-      setMembershipFeedback(getErrorMessage(error, "No se pudo actualizar la entidad seleccionada."), "error");
+    handleMembershipProviderChange().catch((error) => {
+      showAppFeedback(getErrorMessage(error, "No se pudo cargar el panorama de la entidad."), {
+        type: "error",
+        title: "Membresias"
+      });
     });
   });
 
-  document.getElementById("adminMembershipClientSelect")?.addEventListener("change", () => {
-    handleClientSelectionChange().catch((error) => {
-      setMembershipFeedback(getErrorMessage(error, "No se pudo actualizar el cliente seleccionado."), "error");
-    });
+  document.getElementById("adminMembershipFormProviderSelect")?.addEventListener("change", handleMembershipFormProviderChange);
+  document.getElementById("adminMembershipClientSelect")?.addEventListener("change", handleMembershipFormClientChange);
+
+  document.getElementById("adminMembershipSearch")?.addEventListener("input", (event) => {
+    state.membership.search = event.target.value || "";
+    renderMembershipOverview();
+  });
+
+  document.getElementById("adminMembershipFilters")?.addEventListener("click", (event) => {
+    const chip = event.target.closest("[data-membership-filter]");
+    if (!chip) return;
+    state.membership.filter = chip.dataset.membershipFilter;
+    renderMembershipFilters();
+    renderMembershipOverview();
+  });
+
+  document.getElementById("adminOpenMembershipModal")?.addEventListener("click", () => openMembershipModal());
+
+  document.getElementById("adminMembershipMovementsClose")?.addEventListener("click", () => {
+    state.membership.openClientId = null;
+    state.membership.movements = [];
+    renderMembershipMovements();
+  });
+
+  document.getElementById("adminMembershipOverview")?.addEventListener("click", (event) => {
+    const loadButton = event.target.closest("#adminMembershipLoadOverview");
+    if (loadButton) {
+      loadMembershipOverview({ force: true })
+        .then(renderMembershipSection)
+        .catch((error) => {
+          showAppFeedback(getErrorMessage(error, "No se pudo cargar el panorama."), { type: "error", title: "Membresias" });
+        });
+      return;
+    }
+
+    const createButton = event.target.closest("[data-membership-create]");
+    if (createButton) {
+      openMembershipModal({ clientId: createButton.dataset.membershipCreate });
+      return;
+    }
+
+    const renewButton = event.target.closest("[data-membership-renew]");
+    if (renewButton) {
+      openMembershipModal({ clientId: renewButton.dataset.membershipRenew, renew: true });
+      return;
+    }
+
+    const movementsButton = event.target.closest("[data-membership-movements]");
+    if (movementsButton) {
+      openMembershipMovements(movementsButton.dataset.membershipMovements).catch((error) => {
+        showAppFeedback(getErrorMessage(error, "No se pudieron cargar los movimientos."), { type: "error", title: "Membresias" });
+      });
+    }
   });
 
   document.getElementById("adminMembershipForm")?.addEventListener("submit", (event) => {
@@ -1679,7 +2083,7 @@ async function bootstrap() {
   registerEvents();
 
   await loadAdminSnapshot();
-  await loadSelectedClientMembership();
+  invalidateMembershipOverview();
   await loadOperationsSnapshot();
   renderAll();
 

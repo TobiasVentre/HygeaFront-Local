@@ -225,97 +225,60 @@
                 <div class="section-header">
                     <div>
                         <h3>Membresias y creditos</h3>
-                        <p>Consulta clientes por entidad, revisa saldo actual y crea membresias con credito operativo.</p>
+                        <p>Panorama de los clientes de cada entidad: quien tiene plan vigente, cuanto credito le queda y que esta por vencer.</p>
                     </div>
                     <div class="section-header-actions">
                         <button type="button" class="btn btn-secondary" id="refreshAdminMemberships">
                             <i class="fas fa-rotate"></i>
                             Actualizar
                         </button>
+                        <button type="button" class="btn btn-primary" id="adminOpenMembershipModal">
+                            <i class="fas fa-plus-circle"></i>
+                            Crear membresia
+                        </button>
                     </div>
                 </div>
 
-                <div class="admin-membership-layout">
-                    <article class="request-panel-card">
-                        <div class="request-panel-head">
-                            <div>
-                                <h4>Crear membresia</h4>
-                                <p>Primero elige entidad y cliente. Luego define plan, creditos y vigencia.</p>
-                            </div>
+                <div class="admin-stats-row" id="adminMembershipStats" aria-live="polite"></div>
+
+                <div class="admin-membership-toolbar">
+                    <label>
+                        <span>Entidad proveedora</span>
+                        <select id="adminMembershipProviderSelect"></select>
+                    </label>
+                    <label>
+                        <span>Buscar cliente</span>
+                        <input type="search" id="adminMembershipSearch" placeholder="Nombre del cliente" autocomplete="off">
+                    </label>
+                </div>
+
+                <div class="admin-filter-chips" id="adminMembershipFilters" role="group" aria-label="Filtrar clientes por estado de membresia">
+                    <button type="button" class="admin-filter-chip is-active" data-membership-filter="todos" aria-pressed="true">Todos</button>
+                    <button type="button" class="admin-filter-chip" data-membership-filter="vigentes" aria-pressed="false">Vigentes</button>
+                    <button type="button" class="admin-filter-chip" data-membership-filter="por-vencer" aria-pressed="false">Por vencer</button>
+                    <button type="button" class="admin-filter-chip" data-membership-filter="sin-credito" aria-pressed="false">Sin credito</button>
+                    <button type="button" class="admin-filter-chip" data-membership-filter="sin-membresia" aria-pressed="false">Sin membresia</button>
+                </div>
+
+                <div id="adminMembershipOverview" class="admin-membership-grid route-list-surface">
+                    <p class="request-empty-text">Elegi una entidad proveedora para ver a sus clientes.</p>
+                </div>
+
+                <article id="adminMembershipMovementsPanel" class="request-panel-card admin-membership-movements hidden">
+                    <div class="request-panel-head">
+                        <div>
+                            <h4>Movimientos de creditos</h4>
+                            <p id="adminMembershipMovementsSubtitle">Consumos y recargas del cliente seleccionado.</p>
                         </div>
-                        <form id="adminMembershipForm" class="admin-form-grid">
-                            <label>
-                                <span>Entidad proveedora</span>
-                                <select id="adminMembershipProviderSelect" required></select>
-                            </label>
-                            <label>
-                                <span>Cliente</span>
-                                <select id="adminMembershipClientSelect" required></select>
-                            </label>
-                            <label>
-                                <span>Plan</span>
-                                <input type="text" id="adminMembershipPlanName" maxlength="120" required placeholder="Plan Corporativo 12M">
-                            </label>
-                            <label>
-                                <span>Creditos totales</span>
-                                <input type="number" id="adminMembershipTotalCredits" min="1" step="1" required value="12">
-                            </label>
-                            <label>
-                                <span>Vigencia desde</span>
-                                <input type="date" id="adminMembershipValidFrom" required>
-                            </label>
-                            <label>
-                                <span>Vigencia hasta</span>
-                                <input type="date" id="adminMembershipValidTo" required>
-                            </label>
-                            <div class="admin-form-actions">
-                                <button type="submit" class="btn btn-primary" id="adminMembershipSubmitBtn">
-                                    <i class="fas fa-plus-circle"></i>
-                                    Crear membresia
-                                </button>
-                                <span id="adminMembershipFeedback" class="admin-inline-feedback">Selecciona un cliente para ver su situacion actual.</span>
-                            </div>
-                        </form>
-                    </article>
-
-                    <div class="admin-membership-side">
-                        <article class="request-panel-card">
-                            <div class="request-panel-head">
-                                <div>
-                                    <h4>Cliente seleccionado</h4>
-                                    <p>Resumen base para evitar altas sobre perfiles equivocados.</p>
-                                </div>
-                            </div>
-                            <div id="adminMembershipClientSummary" class="admin-meta-list">
-                                <p class="request-empty-text">Selecciona una entidad y un cliente.</p>
-                            </div>
-                        </article>
-
-                        <article class="request-panel-card">
-                            <div class="request-panel-head">
-                                <div>
-                                    <h4>Membresia activa</h4>
-                                    <p>Plan actual, saldo y vigencia del cliente.</p>
-                                </div>
-                            </div>
-                            <div id="adminMembershipDetail" class="admin-meta-list">
-                                <p class="request-empty-text">Cargando detalle de membresia...</p>
-                            </div>
-                        </article>
-
-                        <article class="request-panel-card">
-                            <div class="request-panel-head">
-                                <div>
-                                    <h4>Movimientos de creditos</h4>
-                                    <p>Consumos y variaciones asociadas a la membresia del cliente.</p>
-                                </div>
-                            </div>
-                            <div id="adminMembershipMovements" class="appointments-list">
-                                <p class="request-empty-text">Todavia no hay movimientos para mostrar.</p>
-                            </div>
-                        </article>
+                        <button type="button" class="btn btn-secondary" id="adminMembershipMovementsClose">
+                            <i class="fas fa-xmark"></i>
+                            Cerrar
+                        </button>
                     </div>
-                </div>
+                    <div id="adminMembershipMovements" class="appointments-list">
+                        <p class="request-empty-text">Todavia no hay movimientos para mostrar.</p>
+                    </div>
+                </article>
             </section>
 
             <section id="adminProvidersSection" class="dashboard-section route-section hidden">
@@ -530,6 +493,54 @@
         </nav>
     </div>
 
+
+    <div id="admin-membership-modal" class="admin-modal hidden" role="dialog" aria-modal="true" aria-labelledby="admin-membership-modalTitle" aria-hidden="true">
+        <div class="admin-modal__content">
+            <div class="admin-modal__header">
+                <div>
+                    <h3 id="admin-membership-modalTitle">Crear membresia</h3>
+                    <p>Define el plan, los creditos y la vigencia del cliente.</p>
+                </div>
+                <button type="button" class="admin-modal__close" data-admin-modal-close aria-label="Cerrar">&times;</button>
+            </div>
+            <div class="admin-modal__body">
+                <form id="adminMembershipForm" class="admin-form-grid">
+                    <label>
+                        <span>Entidad proveedora</span>
+                        <select id="adminMembershipFormProviderSelect" required></select>
+                    </label>
+                    <label>
+                        <span>Cliente</span>
+                        <select id="adminMembershipClientSelect" required></select>
+                    </label>
+                    <p id="adminMembershipFormWarning" class="admin-membership-warning hidden"></p>
+                    <label>
+                        <span>Plan</span>
+                        <input type="text" id="adminMembershipPlanName" maxlength="120" required placeholder="Plan Corporativo 12M">
+                    </label>
+                    <label>
+                        <span>Creditos totales</span>
+                        <input type="number" id="adminMembershipTotalCredits" min="1" step="1" required value="12">
+                    </label>
+                    <label>
+                        <span>Vigencia desde</span>
+                        <input type="date" id="adminMembershipValidFrom" required>
+                    </label>
+                    <label>
+                        <span>Vigencia hasta</span>
+                        <input type="date" id="adminMembershipValidTo" required>
+                    </label>
+                    <div class="admin-form-actions">
+                        <button type="submit" class="btn btn-primary" id="adminMembershipSubmitBtn">
+                            <i class="fas fa-plus-circle"></i>
+                            Crear membresia
+                        </button>
+                        <span id="adminMembershipFeedback" class="admin-inline-feedback">Elegi el cliente y completa el plan.</span>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <div id="admin-provider-modal" class="admin-modal hidden" role="dialog" aria-modal="true" aria-labelledby="admin-provider-modalTitle" aria-hidden="true">
         <div class="admin-modal__content">

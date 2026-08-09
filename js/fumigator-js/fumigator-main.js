@@ -19,6 +19,18 @@ import {
   syncMenuExpandedState
 } from "../utils/app-shell-ui.js";
 import { ensureAuthorizedPage, isAuthRedirectError } from "../utils/session-guard.js";
+import {
+  ORDER_PROGRESS_STEPS,
+  getOrderProgressRank,
+  getOrderStatusIcon,
+  getOrderStatusTone as getOrderTone,
+  getOrderTimingBadge as getSharedOrderTimingBadge
+} from "../utils/order-presentation.js";
+
+// El tecnico usa etiquetas cortas: el contexto de la tarjeta ya es una visita.
+function getOrderTimingBadge(order) {
+  return getSharedOrderTimingBadge(order, { compact: true });
+}
 
 const SECTION_IDS = {
   inicio: "mainDashboardSection",
@@ -77,51 +89,6 @@ const REQUEST_STATUS_LABELS = {
   1: "Pendiente",
   2: "Aprobada",
   3: "Rechazada"
-};
-
-const ORDER_STATUS_TONES = {
-  Created: "created",
-  Approved: "approved",
-  Confirmed: "confirmed",
-  InProgress: "progress",
-  Finalized: "finalized",
-  Exception: "exception",
-  Closed: "closed",
-  1: "created",
-  2: "confirmed",
-  3: "progress",
-  4: "finalized",
-  5: "exception",
-  6: "closed",
-  7: "approved"
-};
-
-const ORDER_STATUS_ICONS = {
-  created: "fa-file-circle-plus",
-  approved: "fa-circle-check",
-  confirmed: "fa-calendar-check",
-  progress: "fa-spray-can",
-  finalized: "fa-flag-checkered",
-  exception: "fa-triangle-exclamation",
-  closed: "fa-lock"
-};
-
-const ORDER_PROGRESS_STEPS = [
-  { tone: "created", label: "Creada" },
-  { tone: "approved", label: "Aprobada" },
-  { tone: "confirmed", label: "Confirmada" },
-  { tone: "progress", label: "En ejecucion" },
-  { tone: "finalized", label: "Finalizada" }
-];
-
-const ORDER_PROGRESS_RANKS = {
-  created: 0,
-  approved: 1,
-  confirmed: 2,
-  progress: 3,
-  finalized: 4,
-  closed: 5,
-  exception: -1
 };
 
 const state = {
@@ -549,63 +516,6 @@ function getOrderStatusClass(status) {
     .replace(/\s+/g, "-")
     .toLowerCase();
   return `status-${label}`;
-}
-
-function getOrderTone(status) {
-  return ORDER_STATUS_TONES[status] ?? "created";
-}
-
-function getOrderStatusIcon(status) {
-  return ORDER_STATUS_ICONS[getOrderTone(status)] ?? "fa-circle-info";
-}
-
-function getOrderProgressRank(status) {
-  const rank = ORDER_PROGRESS_RANKS[getOrderTone(status)];
-  return Number.isInteger(rank) ? rank : 0;
-}
-
-function getDayOffsetFromToday(dateValue) {
-  if (!dateValue) return null;
-
-  const date = new Date(dateValue);
-  if (Number.isNaN(date.getTime())) return null;
-
-  const [targetYear, targetMonth, targetDay] = getArgentinaDateInputValue(date).split("-").map(Number);
-  const [todayYear, todayMonth, todayDay] = getArgentinaDateInputValue().split("-").map(Number);
-
-  return Math.round((Date.UTC(targetYear, targetMonth - 1, targetDay) - Date.UTC(todayYear, todayMonth - 1, todayDay)) / 86400000);
-}
-
-function getOrderTimingBadge(order) {
-  const dayOffset = getDayOffsetFromToday(order?.scheduledStartAtUtc);
-  if (dayOffset === null) return null;
-
-  const tone = getOrderTone(order?.status);
-
-  if (tone === "finalized" || tone === "closed" || tone === "exception") {
-    if (dayOffset > 0) return { tone: "neutral", icon: "fa-calendar-day", label: `Agendada en ${dayOffset} dias` };
-    if (dayOffset === 0) return { tone: "neutral", icon: "fa-clock-rotate-left", label: "Visita de hoy" };
-    if (dayOffset === -1) return { tone: "neutral", icon: "fa-clock-rotate-left", label: "Visita de ayer" };
-    return { tone: "neutral", icon: "fa-clock-rotate-left", label: `Hace ${Math.abs(dayOffset)} dias` };
-  }
-
-  if (dayOffset < 0) {
-    return {
-      tone: "late",
-      icon: "fa-triangle-exclamation",
-      label: dayOffset === -1 ? "Vencida ayer" : `Vencida hace ${Math.abs(dayOffset)} dias`
-    };
-  }
-
-  if (dayOffset === 0) {
-    return { tone: "today", icon: "fa-bolt", label: `Hoy ${formatArgentinaTime(order.scheduledStartAtUtc, { hourCycle: "h23" })}` };
-  }
-
-  if (dayOffset === 1) {
-    return { tone: "soon", icon: "fa-hourglass-half", label: `Visita el ${formatArgentinaDate(order.scheduledStartAtUtc, { weekday: "long", day: undefined, month: undefined })}` };
-  }
-
-  return { tone: dayOffset <= 7 ? "soon" : "neutral", icon: "fa-calendar-day", label: `En ${dayOffset} dias` };
 }
 
 function getEvidenceKindLabel(kind) {

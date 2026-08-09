@@ -12,6 +12,17 @@ import {
   syncMenuExpandedState
 } from "../utils/app-shell-ui.js";
 import { ensureAuthorizedPage, isAuthRedirectError } from "../utils/session-guard.js";
+import {
+  ORDER_PROGRESS_STEPS,
+  formatCompactDuration,
+  getDayOffsetFromToday,
+  getInitials,
+  getOrderDurationMinutes,
+  getOrderStatusIcon,
+  getOrderStatusTone,
+  getOrderTimingBadge,
+  renderOrderProgressTrack as renderSharedProgressTrack
+} from "../utils/order-presentation.js";
 
 const ORDER_STATUS_LABELS = {
   Created: "Creada",
@@ -61,51 +72,6 @@ const REQUEST_STATUS_LABELS = {
   1: "Pendiente",
   2: "Aprobada",
   3: "Rechazada"
-};
-
-const ORDER_STATUS_TONES = {
-  Created: "created",
-  Approved: "approved",
-  Confirmed: "confirmed",
-  InProgress: "progress",
-  Finalized: "finalized",
-  Exception: "exception",
-  Closed: "closed",
-  1: "created",
-  2: "confirmed",
-  3: "progress",
-  4: "finalized",
-  5: "exception",
-  6: "closed",
-  7: "approved"
-};
-
-const ORDER_STATUS_ICONS = {
-  created: "fa-file-circle-plus",
-  approved: "fa-circle-check",
-  confirmed: "fa-calendar-check",
-  progress: "fa-spray-can",
-  finalized: "fa-flag-checkered",
-  exception: "fa-triangle-exclamation",
-  closed: "fa-lock"
-};
-
-const ORDER_PROGRESS_STEPS = [
-  { tone: "created", label: "Creada" },
-  { tone: "approved", label: "Aprobada" },
-  { tone: "confirmed", label: "Confirmada" },
-  { tone: "progress", label: "En ejecucion" },
-  { tone: "finalized", label: "Finalizada" }
-];
-
-const ORDER_PROGRESS_RANKS = {
-  created: 0,
-  approved: 1,
-  confirmed: 2,
-  progress: 3,
-  finalized: 4,
-  closed: 5,
-  exception: -1
 };
 
 const ACTIVE_TECHNICIAN_STATUS_VALUES = new Set([1, "1", "active", "Active"]);
@@ -244,88 +210,6 @@ function formatTimeRange(startAtUtc, endAtUtc) {
 
 function getStatusLabel(status) {
   return ORDER_STATUS_LABELS[status] || String(status || "Sin estado");
-}
-
-function getOrderStatusTone(status) {
-  return ORDER_STATUS_TONES[status] || "created";
-}
-
-function getOrderStatusIcon(status) {
-  return ORDER_STATUS_ICONS[getOrderStatusTone(status)] || "fa-circle-info";
-}
-
-function getOrderProgressRank(status) {
-  const rank = ORDER_PROGRESS_RANKS[getOrderStatusTone(status)];
-  return Number.isInteger(rank) ? rank : 0;
-}
-
-function formatCompactDuration(totalMinutes) {
-  const normalizedMinutes = Math.max(0, Math.round(Number(totalMinutes || 0)));
-  if (normalizedMinutes <= 0) return "Sin duracion";
-
-  const hours = Math.floor(normalizedMinutes / 60);
-  const minutes = normalizedMinutes % 60;
-
-  if (hours === 0) return `${minutes} min`;
-  if (minutes === 0) return `${hours} h`;
-  return `${hours} h ${minutes} min`;
-}
-
-function getOrderDurationMinutes(order) {
-  const start = new Date(order?.scheduledStartAtUtc);
-  const end = new Date(order?.scheduledEndAtUtc);
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 0;
-  return Math.max(0, Math.round((end - start) / 60000));
-}
-
-function getDayOffsetFromToday(value) {
-  if (!value) return null;
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-
-  const [targetYear, targetMonth, targetDay] = getArgentinaDateInputValue(date).split("-").map(Number);
-  const [todayYear, todayMonth, todayDay] = getArgentinaDateInputValue().split("-").map(Number);
-
-  return Math.round((Date.UTC(targetYear, targetMonth - 1, targetDay) - Date.UTC(todayYear, todayMonth - 1, todayDay)) / 86400000);
-}
-
-function getOrderTimingBadge(order) {
-  const dayOffset = getDayOffsetFromToday(order?.scheduledStartAtUtc);
-  if (dayOffset === null) return null;
-
-  const tone = getOrderStatusTone(order?.status);
-
-  if (tone === "finalized" || tone === "closed" || tone === "exception") {
-    if (dayOffset === 0) return { tone: "neutral", icon: "fa-clock-rotate-left", label: "Visita de hoy" };
-    if (dayOffset < 0) return { tone: "neutral", icon: "fa-clock-rotate-left", label: `Hace ${Math.abs(dayOffset)} dias` };
-    return { tone: "neutral", icon: "fa-calendar-day", label: `En ${dayOffset} dias` };
-  }
-
-  if (dayOffset < 0) {
-    return {
-      tone: "late",
-      icon: "fa-triangle-exclamation",
-      label: dayOffset === -1 ? "Vencida ayer" : `Vencida hace ${Math.abs(dayOffset)} dias`
-    };
-  }
-
-  if (dayOffset === 0) {
-    return { tone: "today", icon: "fa-bolt", label: `Hoy ${formatArgentinaTime(order.scheduledStartAtUtc, { hourCycle: "h23" })}` };
-  }
-
-  if (dayOffset === 1) {
-    return { tone: "soon", icon: "fa-hourglass-half", label: `El ${formatArgentinaDate(order.scheduledStartAtUtc, { weekday: "long", day: undefined, month: undefined })}` };
-  }
-
-  return { tone: dayOffset <= 7 ? "soon" : "neutral", icon: "fa-calendar-day", label: `En ${dayOffset} dias` };
-}
-
-function getInitials(fullName) {
-  const parts = String(fullName || "").trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return "?";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
 function getOrderTitle(order) {
@@ -780,39 +664,11 @@ function renderSummaryCards() {
 }
 
 function renderOrderProgressTrack(order) {
-  const tone = getOrderStatusTone(order.status);
-  if (tone === "exception") return "";
-
-  const currentRank = getOrderProgressRank(order.status);
-  const isClosed = tone === "closed";
-  const lastStepIndex = ORDER_PROGRESS_STEPS.length - 1;
-
-  const steps = ORDER_PROGRESS_STEPS.map((step, index) => {
-    const isDone = isClosed || index < currentRank;
-    const isCurrent = !isClosed && index === currentRank;
-    const label = isClosed && index === lastStepIndex ? "Cerrada" : step.label;
-
-    return `
-      <li class="provider-order-progress__step ${isDone ? "is-done" : isCurrent ? "is-current" : ""}">
-        <span class="provider-order-progress__dot" aria-hidden="true"></span>
-        <span class="provider-order-progress__label">${escapeHtml(label)}</span>
-      </li>
-    `;
-  }).join("");
-
-  const completedRatio = isClosed ? 1 : Math.min(1, Math.max(0, currentRank / lastStepIndex));
-  const currentStepNumber = Math.min(ORDER_PROGRESS_STEPS.length, currentRank + 1);
-
-  return `
-    <div class="provider-order-progress" style="--provider-order-progress: ${completedRatio.toFixed(2)}">
-      <ol class="provider-order-progress__steps" aria-label="Progreso de la orden">
-        ${steps}
-      </ol>
-      <p class="provider-order-progress__caption">
-        Paso ${currentStepNumber} de ${ORDER_PROGRESS_STEPS.length} &middot; <strong>${escapeHtml(getStatusLabel(order.status))}</strong>
-      </p>
-    </div>
-  `;
+  return renderSharedProgressTrack(order, {
+    prefix: "provider-order-progress",
+    statusLabel: getStatusLabel(order.status),
+    escapeHtml
+  });
 }
 
 function renderProviderOrderCard(order) {

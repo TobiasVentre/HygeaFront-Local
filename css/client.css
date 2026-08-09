@@ -4744,7 +4744,7 @@ body {
 
 /* --- Linea de progreso --- */
 .client-order-progress {
-    --client-order-progress: 0;
+    --order-progress: 0;
 
     padding-top: 0.95rem;
     border-top: 1px solid var(--border-subtle);
@@ -4776,7 +4776,7 @@ body {
 }
 
 .client-order-progress__steps::after {
-    width: calc(80% * var(--client-order-progress));
+    width: calc(80% * var(--order-progress));
     background: var(--client-order-accent);
     transition: width 0.3s ease;
 }

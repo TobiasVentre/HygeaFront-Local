@@ -11,7 +11,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--brand-ink) 0%, var(--brand-strong) 100%);
+    background: linear-gradient(135deg, var(--brand-strong) 0%, var(--brand-ink) 100%);
     padding: 20px;
     position: relative;
 }
@@ -87,7 +87,7 @@ body {
     font-weight: bold;
     color: var(--brand);
     margin-bottom: 20px;
-    background: linear-gradient(135deg, var(--brand-strong) 0%, var(--brand-ink) 100%);
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-strong) 100%);
     border-radius: 33px;
 }
 
@@ -175,8 +175,8 @@ body {
 
 .input-icon input:focus {
     outline: none;
-    border-color: var(--brand-strong);
-    box-shadow: 0 0 0 3px var(--success-soft);
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-glow-md);
 }
 
 .input-icon input:read-only {
@@ -194,7 +194,7 @@ body {
 .confirm-button {
     width: 100%;
     padding: 14px;
-    background: linear-gradient(135deg, var(--brand-ink) 0%, var(--brand-strong) 100%);
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-strong) 100%);
     color: var(--surface-card);
     border: none;
     border-radius: 10px;

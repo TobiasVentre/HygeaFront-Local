@@ -15,9 +15,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (emailFromUrl) {
         emailInput.value = decodeURIComponent(emailFromUrl);
     } else {
-        // Si no hay email en la URL, redirigir al registro
-        alert("No se encontró el email. Por favor, regístrate nuevamente.");
-        window.location.href = "registro.html";
+        // Antes esto era un alert() nativo: bloquea la pagina y no usa el area
+        // de feedback que la propia vista ya tiene.
+        showFeedback("No pudimos identificar tu cuenta. Te llevamos al registro para que la crees de nuevo.", "error");
+        form.querySelectorAll("input, button").forEach((control) => control.setAttribute("disabled", "disabled"));
+        setTimeout(() => {
+            window.location.href = "registro.html";
+        }, 2500);
         return;
     }
 

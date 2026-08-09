@@ -269,33 +269,41 @@
                 <div class="section-header">
                     <div>
                         <h3>Perfil</h3>
-                        <p>Informacion operativa de tu cuenta y de la entidad que gestiona tus servicios.</p>
+                        <p>Tu cuenta, la entidad que gestiona tus servicios y el estado de tus creditos.</p>
                     </div>
                 </div>
+
+                <article class="client-profile-hero" id="clientProfileHero">
+                    <div class="client-profile-hero__identity">
+                        <div class="client-avatar" id="clientAvatar">
+                            <span class="client-avatar__initials" id="clientAvatarInitials" aria-hidden="true"></span>
+                            <img class="client-avatar__image hidden" id="clientAvatarImage" alt="">
+                            <button type="button" class="client-avatar__action" id="clientAvatarButton" aria-label="Cambiar foto de perfil">
+                                <i class="fas fa-camera" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <div class="client-profile-hero__text">
+                            <h4 id="clientProfileName">-</h4>
+                            <p id="clientProfileEmail">-</p>
+                            <p class="client-profile-hero__since" id="clientProfileSince"></p>
+                            <div class="client-profile-hero__actions">
+                                <button type="button" class="btn btn-secondary" id="clientPhotoUpload">
+                                    <i class="fas fa-image"></i>
+                                    <span id="clientPhotoUploadLabel">Subir foto</span>
+                                </button>
+                                <button type="button" class="btn btn-secondary hidden" id="clientPhotoRemove">
+                                    Quitar foto
+                                </button>
+                                <input type="file" id="clientPhotoInput" accept="image/png, image/jpeg, image/webp" class="hidden">
+                            </div>
+                            <p class="client-profile-hero__hint" id="clientPhotoHint">La foto se guarda en este navegador. Todavia no viaja al servidor, asi que no la vas a ver desde otro dispositivo.</p>
+                        </div>
+                    </div>
+                    <div class="client-profile-stats" id="clientProfileStats" aria-live="polite"></div>
+                </article>
+
                 <div class="client-profile-grid">
-                    <article class="request-panel-card client-profile-card">
-                        <div class="request-panel-head">
-                            <div>
-                                <h4>Mi cuenta</h4>
-                                <p>Datos con los que estas operando en el panel.</p>
-                            </div>
-                        </div>
-                        <div id="clientProfileCard" class="client-profile-list">
-                            <p class="request-empty-text">Cargando perfil...</p>
-                        </div>
-                    </article>
-                    <article class="request-panel-card client-profile-card">
-                        <div class="request-panel-head">
-                            <div>
-                                <h4>Entidad asignada</h4>
-                                <p>Proveedor que se usa para sugerir agenda y gestionar tus ordenes.</p>
-                            </div>
-                        </div>
-                        <div id="clientProviderCard" class="client-profile-list">
-                            <p class="request-empty-text">Cargando entidad...</p>
-                        </div>
-                    </article>
-                    <article class="request-panel-card client-profile-card">
+                    <article class="request-panel-card client-profile-card client-profile-card--wide">
                         <div class="request-panel-head">
                             <div>
                                 <h4>Mi membresia</h4>
@@ -306,18 +314,31 @@
                             <p class="request-empty-text">Cargando membresia...</p>
                         </div>
                     </article>
+
                     <article class="request-panel-card client-profile-card">
                         <div class="request-panel-head">
                             <div>
-                                <h4>Movimientos de creditos</h4>
-                                <p>Consumos y variaciones asociadas a tu membresia.</p>
+                                <h4>Entidad asignada</h4>
+                                <p>Proveedor que gestiona tus ordenes y define la agenda disponible.</p>
                             </div>
                         </div>
-                        <div id="clientCreditMovementsList" class="client-profile-list">
-                            <p class="request-empty-text">Cargando movimientos...</p>
+                        <div id="clientProviderCard" class="client-profile-list">
+                            <p class="request-empty-text">Cargando entidad...</p>
                         </div>
                     </article>
                 </div>
+
+                <article class="request-panel-card client-profile-movements">
+                    <div class="request-panel-head">
+                        <div>
+                            <h4>Movimientos de creditos</h4>
+                            <p>Consumos y recargas asociadas a tu membresia.</p>
+                        </div>
+                    </div>
+                    <div id="clientCreditMovementsList" class="client-profile-list">
+                        <p class="request-empty-text">Cargando movimientos...</p>
+                    </div>
+                </article>
             </section>
 
             <section id="clientRequestSection" class="dashboard-section route-section request-screen hidden">

@@ -14,6 +14,12 @@ import {
 } from "../utils/app-shell-ui.js";
 import { ensureAuthorizedPage, isAuthRedirectError } from "../utils/session-guard.js";
 import {
+  fileToAvatarDataUrl,
+  getProfilePhoto,
+  removeProfilePhoto,
+  saveProfilePhoto
+} from "../utils/profile-photo.js";
+import {
   ORDER_PROGRESS_STEPS,
   formatCompactDuration,
   getDayOffsetFromToday,
@@ -728,49 +734,197 @@ async function loadServiceOptions() {
   updateSummaryCards();
 }
 
+function getProfileUserId() {
+  return getStoredUser()?.userId || getStoredUser()?.email || "anon";
+}
+
+function getProfileFullName() {
+  return currentClientProfile?.fullName ?? currentClientProfile?.FullName ?? getUserDisplayName();
+}
+
+/** Pinta el avatar (foto guardada o iniciales) en el perfil y en el encabezado. */
+function renderProfilePhoto() {
+  const photo = getProfilePhoto(getProfileUserId());
+  const fullName = getProfileFullName();
+
+  const initials = document.getElementById("clientAvatarInitials");
+  const image = document.getElementById("clientAvatarImage");
+  const removeButton = document.getElementById("clientPhotoRemove");
+  const uploadLabel = document.getElementById("clientPhotoUploadLabel");
+
+  if (initials) initials.textContent = getInitials(fullName);
+  if (image) {
+    image.classList.toggle("hidden", !photo);
+    image.alt = photo ? `Foto de perfil de ${fullName}` : "";
+    if (photo) image.src = photo;
+    else image.removeAttribute("src");
+  }
+  if (removeButton) removeButton.classList.toggle("hidden", !photo);
+  if (uploadLabel) uploadLabel.textContent = photo ? "Cambiar foto" : "Subir foto";
+
+  syncHeaderAvatar(photo, fullName);
+}
+
+/** El boton de cuenta usa un icono generico: si hay foto, la mostramos ahi tambien. */
+function syncHeaderAvatar(photo, fullName) {
+  const button = document.getElementById("userBtn");
+  if (!button) return;
+
+  const icon = button.querySelector(".user-btn__icon");
+  let image = button.querySelector(".user-btn__photo");
+
+  if (!photo) {
+    image?.remove();
+    icon?.classList.remove("hidden");
+    return;
+  }
+
+  if (!image) {
+    image = document.createElement("img");
+    image.className = "user-btn__photo";
+    button.prepend(image);
+  }
+
+  image.src = photo;
+  image.alt = `Foto de perfil de ${fullName}`;
+  icon?.classList.add("hidden");
+}
+
+function setProfilePhotoHint(message, tone = "") {
+  const hint = document.getElementById("clientPhotoHint");
+  if (!hint) return;
+  hint.textContent = message;
+  hint.className = `client-profile-hero__hint${tone ? ` is-${tone}` : ""}`;
+}
+
+const DEFAULT_PHOTO_HINT = "La foto se guarda en este navegador. Todavia no viaja al servidor, asi que no la vas a ver desde otro dispositivo.";
+
+async function handleProfilePhotoSelected(file) {
+  const uploadButton = document.getElementById("clientPhotoUpload");
+  uploadButton?.setAttribute("disabled", "disabled");
+  setProfilePhotoHint("Procesando la imagen...");
+
+  try {
+    const dataUrl = await fileToAvatarDataUrl(file);
+    saveProfilePhoto(getProfileUserId(), dataUrl);
+    renderProfilePhoto();
+    setProfilePhotoHint("Listo. Recorda que por ahora la foto queda solo en este navegador.", "success");
+  } catch (error) {
+    setProfilePhotoHint(getErrorMessage(error, "No pudimos usar esa imagen."), "error");
+  } finally {
+    uploadButton?.removeAttribute("disabled");
+  }
+}
+
+function setupProfilePhoto() {
+  const input = document.getElementById("clientPhotoInput");
+  const openPicker = () => input?.click();
+
+  document.getElementById("clientPhotoUpload")?.addEventListener("click", openPicker);
+  document.getElementById("clientAvatarButton")?.addEventListener("click", openPicker);
+
+  input?.addEventListener("change", (event) => {
+    const file = event.target.files?.[0];
+    // Reiniciamos el input para poder elegir el mismo archivo dos veces seguidas.
+    event.target.value = "";
+    if (file) handleProfilePhotoSelected(file);
+  });
+
+  document.getElementById("clientPhotoRemove")?.addEventListener("click", () => {
+    removeProfilePhoto(getProfileUserId());
+    renderProfilePhoto();
+    setProfilePhotoHint(DEFAULT_PHOTO_HINT);
+  });
+}
+
+function renderProfileHero() {
+  const nameEl = document.getElementById("clientProfileName");
+  const emailEl = document.getElementById("clientProfileEmail");
+  const sinceEl = document.getElementById("clientProfileSince");
+  const createdAt = currentClientProfile?.createdAtUtc ?? currentClientProfile?.CreatedAtUtc;
+
+  if (nameEl) nameEl.textContent = getProfileFullName();
+  if (emailEl) emailEl.textContent = getStoredUser()?.email ?? "-";
+
+  if (sinceEl) {
+    const entity = currentProviderEntity?.name ?? currentProviderEntity?.Name ?? null;
+    const since = createdAt
+      ? `Cliente desde ${formatArgentinaDate(createdAt, { weekday: undefined, day: undefined, month: "long", year: "numeric" })}`
+      : "";
+    sinceEl.textContent = [entity, since].filter(Boolean).join(" · ");
+  }
+
+  renderProfilePhoto();
+}
+
+function renderProfileStats() {
+  const container = document.getElementById("clientProfileStats");
+  if (!container) return;
+
+  const openOrders = currentOrders.filter((order) => !isClosedOrderStatus(order.status)).length;
+  const tiles = [
+    { icon: "fa-clipboard-list", value: String(currentOrders.length), label: "Ordenes en total" },
+    { icon: "fa-spinner", value: String(openOrders), label: "En curso" }
+  ];
+
+  if (currentMembership) {
+    const daysLeft = Math.ceil((new Date(currentMembership.validToUtc).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    tiles.push({
+      icon: "fa-coins",
+      value: String(currentMembership.availableCredits ?? 0),
+      label: "Creditos disponibles",
+      tone: Number(currentMembership.availableCredits) <= 2 ? "is-warning" : ""
+    });
+    tiles.push({
+      icon: "fa-calendar-check",
+      value: Number.isFinite(daysLeft) && daysLeft >= 0 ? String(daysLeft) : "0",
+      label: daysLeft === 1 ? "Dia de vigencia" : "Dias de vigencia",
+      tone: Number.isFinite(daysLeft) && daysLeft <= 7 ? "is-warning" : ""
+    });
+  } else {
+    tiles.push({ icon: "fa-wallet", value: "Eventual", label: "Modalidad" });
+  }
+
+  container.innerHTML = tiles.map((tile) => `
+    <div class="client-profile-stat ${tile.tone || ""}">
+      <i class="fas ${tile.icon}" aria-hidden="true"></i>
+      <div>
+        <strong>${escapeHtml(tile.value)}</strong>
+        <small>${escapeHtml(tile.label)}</small>
+      </div>
+    </div>
+  `).join("");
+}
+
 function renderClientProfile() {
-  const profileCard = document.getElementById("clientProfileCard");
   const providerCard = document.getElementById("clientProviderCard");
   const membershipCard = document.getElementById("clientMembershipCard");
   const creditMovementsList = document.getElementById("clientCreditMovementsList");
-  const profileCreatedAt = currentClientProfile?.createdAtUtc ?? currentClientProfile?.CreatedAtUtc;
 
-  if (profileCard) {
-    profileCard.innerHTML = `
-      <div class="client-profile-item">
-        <strong>Nombre</strong>
-        <span>${escapeHtml(currentClientProfile?.fullName ?? currentClientProfile?.FullName ?? getUserDisplayName())}</span>
-      </div>
-      <div class="client-profile-item">
-        <strong>Email</strong>
-        <span>${escapeHtml(getStoredUser()?.email ?? "-")}</span>
-      </div>
-      <div class="client-profile-item">
-        <strong>Alta en la plataforma</strong>
-        <span>${escapeHtml(profileCreatedAt ? formatDateTime(profileCreatedAt) : "-")}</span>
-      </div>
-      <div class="client-profile-item">
-        <strong>Ordenes registradas</strong>
-        <span>${escapeHtml(String(currentOrders.length))}</span>
-      </div>
-    `;
-  }
+  renderProfileHero();
+  renderProfileStats();
 
   if (providerCard) {
-    providerCard.innerHTML = `
-      <div class="client-profile-item">
-        <strong>Entidad</strong>
-        <span>${escapeHtml(currentProviderEntity?.name ?? currentProviderEntity?.Name ?? "Sin entidad asignada")}</span>
-      </div>
-      <div class="client-profile-item">
-        <strong>Estado</strong>
-        <span>${escapeHtml(formatEntityStatus(currentProviderEntity))}</span>
-      </div>
-      <div class="client-profile-item">
-        <strong>Agenda sugerida</strong>
-        <span>Se calcula con la disponibilidad activa de esta entidad.</span>
-      </div>
-    `;
+    const entityName = currentProviderEntity?.name ?? currentProviderEntity?.Name ?? null;
+    providerCard.innerHTML = entityName
+      ? `
+        <div class="client-entity">
+          <span class="client-entity__mark" aria-hidden="true"><i class="fas fa-building"></i></span>
+          <div>
+            <strong>${escapeHtml(entityName)}</strong>
+            <span class="client-entity__state">${escapeHtml(formatEntityStatus(currentProviderEntity))}</span>
+          </div>
+        </div>
+        <p class="client-entity__note">
+          <i class="fas fa-circle-info" aria-hidden="true"></i>
+          Los horarios que te ofrecemos al pedir un servicio salen de la disponibilidad de esta entidad.
+        </p>`
+      : `
+        <div class="client-membership-empty">
+          <span class="client-membership-empty__icon"><i class="fas fa-building" aria-hidden="true"></i></span>
+          <strong>Sin entidad asignada</strong>
+          <p>Todavia no hay un proveedor asociado a tu cuenta. Pedi que te asignen uno para reservar horarios.</p>
+        </div>`;
   }
 
   if (membershipCard) {
@@ -820,11 +974,9 @@ function renderClientProfile() {
               <dt>Vigencia</dt>
               <dd>${escapeHtml(formatUtcDateRange(currentMembership.validFromUtc, currentMembership.validToUtc))}</dd>
             </div>
-            <div>
-              <dt>Consumo</dt>
-              <dd>Los creditos se descuentan cuando la orden queda finalizada.</dd>
-            </div>
           </dl>
+
+          <p class="client-membership__fineprint">Los creditos se descuentan cuando la orden queda finalizada.</p>
 
           ${expiringSoon || isLowBalance ? `
             <p class="client-membership__note">
@@ -863,7 +1015,6 @@ function renderClientProfile() {
       : '<p class="request-empty-text">Todavia no hay movimientos de creditos para mostrar.</p>';
   }
 }
-
 async function ensureTechnicianDirectoryEntry(technicianId) {
   if (!isGuid(technicianId)) return null;
 
@@ -2283,6 +2434,9 @@ async function bootstrap() {
   setupSidebar();
   setWelcomeMessage();
   registerEvents();
+  setupProfilePhoto();
+  // La foto vive en el navegador: se puede pintar antes de que responda el backend.
+  renderProfilePhoto();
   ensureRequestDateValue();
   renderOrderItems();
   renderSuggestedSlots();

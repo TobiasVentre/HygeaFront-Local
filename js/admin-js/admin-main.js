@@ -676,8 +676,9 @@ async function fetchClientMembership(clientId) {
   try {
     return normalizeMembership(await FrontGateway.order.getActiveMembershipByClient(clientId));
   } catch (error) {
-    // 404 es la respuesta normal para un cliente sin plan; cualquier otra cosa
-    // se marca como fallida para no mostrarla como "sin membresia".
+    // Sin plan activo el endpoint responde 204 y el gateway lo traduce a null,
+    // asi que aca solo llegan errores reales: se marcan como fallidos para no
+    // mostrarlos como "sin membresia".
     if (error?.status === 404) return null;
     console.error("No se pudo consultar la membresia del cliente", clientId, error);
     return { failed: true };

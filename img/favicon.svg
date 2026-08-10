@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="512" height="512" role="img" aria-label="Hygea">
+  <!--
+    Isotipo Hygea: casa con gota, dibujado para leerse a 16px.
+    La casa es una silueta maciza y la gota va calada, en negativo: a tamaño de
+    pestaña una silueta con un hueco sobrevive, mientras que un trazo fino se
+    empasta. Para recolorear, cambiar los dos fill.
+  -->
+  <defs>
+    <clipPath id="hygeaRound">
+      <rect width="100" height="100" rx="22"/>
+    </clipPath>
+    <mask id="hygeaCasa">
+      <path d="M50 14 88 46v30a6 6 0 0 1-6 6H18a6 6 0 0 1-6-6V46z" fill="#fff"/>
+      <path d="M50 40c0 0 11 12.4 11 19.4a11 11 0 0 1-22 0C39 52.4 50 40 50 40z" fill="#000"/>
+    </mask>
+  </defs>
+
+  <g clip-path="url(#hygeaRound)">
+    <rect width="100" height="100" fill="#2563eb"/>
+    <rect width="100" height="100" fill="#fff" mask="url(#hygeaCasa)"/>
+  </g>
+</svg>

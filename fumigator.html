@@ -293,13 +293,10 @@
                             </div>
                         </header>
 
-                        <form id="availabilityForm" class="avail-form" novalidate>
-                            <div class="avail-presets">
-                                <span class="avail-preset-label">Acceso rápido:</span>
-                                <button type="button" class="avail-preset-chip" data-start="08:00" data-end="12:00">Mañana · 08–12h</button>
-                                <button type="button" class="avail-preset-chip" data-start="13:00" data-end="18:00">Tarde · 13–18h</button>
-                                <button type="button" class="avail-preset-chip" data-start="08:00" data-end="18:00">Día completo · 08–18h</button>
-                            </div>
+                        <!-- Solo aparece al tocar "Editar" en un bloque: la carga se hace
+                             desde el selector de dias de abajo. -->
+                        <form id="availabilityForm" class="avail-form avail-form--edit hidden" novalidate>
+                            <p class="avail-form__title">Editando un bloque</p>
                             <div class="avail-form-row">
                                 <div class="avail-field">
                                     <label class="avail-label" for="availabilityDate">Día</label>
@@ -313,10 +310,10 @@
                                     <label class="avail-label" for="availabilityEndTime">Hasta</label>
                                     <input type="time" id="availabilityEndTime" class="avail-input" required>
                                 </div>
-                                <button type="submit" class="btn btn-primary avail-submit-btn" id="availabilitySubmitBtn">Guardar disponibilidad</button>
+                                <button type="submit" class="btn btn-primary avail-submit-btn" id="availabilitySubmitBtn">Guardar cambios</button>
                             </div>
                             <div class="avail-form-footer">
-                                <button type="button" class="btn btn-secondary hidden" id="availabilityCancelEditBtn">Cancelar edición</button>
+                                <button type="button" class="btn btn-secondary" id="availabilityCancelEditBtn">Cancelar edición</button>
                                 <div id="availabilityFeedback" class="agenda-loading hidden"></div>
                             </div>
                         </form>

@@ -6556,3 +6556,206 @@ body {
     background: var(--danger-bg);
     color: var(--danger-strong);
 }
+
+/* --- Bloques de disponibilidad: una fila por dia con su linea del tiempo --- */
+.avail-days {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.avail-day {
+    display: grid;
+    gap: 0.6rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    background: var(--surface-card);
+}
+
+.avail-day__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.4rem 0.75rem;
+}
+
+.avail-day__head strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 0.96rem;
+}
+
+.avail-day__head strong::first-letter {
+    text-transform: uppercase;
+}
+
+.avail-day__head span {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+}
+
+.avail-day__count {
+    flex: 0 0 auto;
+    padding: 0.16rem 0.55rem;
+    border-radius: 999px;
+    background: var(--surface-subtle);
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+/* La pista es la jornada completa; los tramos se posicionan encima en % */
+.avail-day__track {
+    position: relative;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--surface-subtle);
+    overflow: hidden;
+}
+
+.avail-day__seg {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-radius: 4px;
+}
+
+.avail-day__seg.is-libre {
+    background: color-mix(in srgb, var(--success-bright) 34%, var(--surface-card) 66%);
+}
+
+.avail-day__seg.is-ocupado {
+    background: var(--brand);
+}
+
+.avail-day__seg.is-ausencia {
+    background: repeating-linear-gradient(
+        45deg,
+        var(--danger-bg) 0 6px,
+        color-mix(in srgb, var(--danger) 32%, var(--danger-bg) 68%) 6px 12px
+    );
+}
+
+.avail-day__scale {
+    position: relative;
+    height: 0.95rem;
+}
+
+.avail-day__tick {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    color: var(--text-tertiary);
+    font-size: 0.68rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.avail-day__blocks {
+    display: grid;
+    gap: 0.3rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.avail-day__block {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    padding: 0.4rem 0.55rem;
+    border-radius: 8px;
+    background: var(--surface-page);
+    font-size: 0.86rem;
+}
+
+.avail-day__range {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.avail-day__len {
+    color: var(--text-muted);
+}
+
+.avail-day__acts {
+    display: flex;
+    gap: 0.4rem;
+    margin-left: auto;
+}
+
+.avail-day__act {
+    padding: 0.2rem 0.6rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    background: var(--surface-card);
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.avail-day__act:hover {
+    border-color: var(--brand);
+    color: var(--brand-strong);
+}
+
+.avail-day__act.is-danger:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.avail-days__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.1rem;
+    margin: 0.9rem 0 0;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.avail-days__legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.avail-days__key {
+    width: 14px;
+    height: 10px;
+    border-radius: 3px;
+}
+
+.avail-days__key.is-libre {
+    background: color-mix(in srgb, var(--success-bright) 34%, var(--surface-card) 66%);
+}
+
+.avail-days__key.is-ocupado {
+    background: var(--brand);
+}
+
+.avail-days__key.is-ausencia {
+    background: repeating-linear-gradient(
+        45deg,
+        var(--danger-bg) 0 4px,
+        color-mix(in srgb, var(--danger) 32%, var(--danger-bg) 68%) 4px 8px
+    );
+}
+
+/* El formulario ahora solo aparece al editar un bloque */
+.avail-form--edit {
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--brand-soft);
+    border-radius: 12px;
+    background: var(--brand-softer);
+}
+
+.avail-form__title {
+    margin: 0 0 0.6rem;
+    color: var(--brand-strong);
+    font-size: 0.86rem;
+    font-weight: 700;
+}

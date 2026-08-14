@@ -648,9 +648,9 @@ function resetAvailabilityForm() {
   if (refs.availabilityStartTime) refs.availabilityStartTime.value = "08:00";
   if (refs.availabilityEndTime) refs.availabilityEndTime.value = "12:00";
   if (refs.availabilitySubmitBtn) {
-    refs.availabilitySubmitBtn.textContent = "Guardar disponibilidad";
+    refs.availabilitySubmitBtn.textContent = "Guardar cambios";
   }
-  refs.availabilityCancelEditBtn?.classList.add("hidden");
+  refs.availabilityForm?.classList.add("hidden");
   showAvailabilityFeedback("");
   renderAvailabilityDaySummary();
 }
@@ -1571,37 +1571,140 @@ function renderOrderProgressTrack(order) {
   `;
 }
 
+/** Ventana horaria que dibuja la linea del tiempo: de 6 a 22 cubre una jornada. */
+const TIMELINE_START_HOUR = 6;
+const TIMELINE_END_HOUR = 22;
+const TIMELINE_HOURS = TIMELINE_END_HOUR - TIMELINE_START_HOUR;
+
+/** Posicion porcentual de un instante dentro de la ventana del dia. */
+function timelinePercent(utcValue, dateValue) {
+  const minutosDelDia = minutesFromDayStart(utcValue, dateValue);
+  const desde = TIMELINE_START_HOUR * 60;
+  return ((minutosDelDia - desde) / (TIMELINE_HOURS * 60)) * 100;
+}
+
+/**
+ * Minutos desde la medianoche argentina del dia dado. Un bloque puede empezar
+ * el dia anterior o terminar el siguiente, asi que se calcula contra la
+ * medianoche real y despues se recorta a la ventana visible.
+ */
+function minutesFromDayStart(utcValue, dateValue) {
+  const medianoche = new Date(argentinaDateTimeToUtcIso(dateValue, "00:00")).getTime();
+  return (new Date(utcValue).getTime() - medianoche) / 60000;
+}
+
+function clampPercent(value) {
+  return Math.max(0, Math.min(100, value));
+}
+
+/** Tramos a dibujar para un dia, ya recortados a la ventana visible. */
+function buildDayTimelineSegments(dateValue, slots, absences, orders) {
+  const tramos = [];
+
+  const agregar = (tipo, startAtUtc, endAtUtc, etiqueta) => {
+    const desde = clampPercent(timelinePercent(startAtUtc, dateValue));
+    const hasta = clampPercent(timelinePercent(endAtUtc, dateValue));
+    if (hasta <= desde) return;
+    tramos.push({ tipo, desde, ancho: hasta - desde, etiqueta });
+  };
+
+  slots.forEach((slot) => agregar("libre", slot.startAtUtc, slot.endAtUtc, "Disponible"));
+  orders.forEach((order) => agregar(
+    "ocupado",
+    order.scheduledStartAtUtc,
+    order.scheduledEndAtUtc,
+    `Orden ${formatTime(order.scheduledStartAtUtc)}`
+  ));
+  absences.forEach((absence) => agregar("ausencia", absence.startAtUtc, absence.endAtUtc, "Ausencia"));
+
+  return tramos;
+}
+
 function renderAvailabilityList() {
   const refs = getPageRefs();
+  if (!refs.availabilityList) return;
+
   const slots = state.availability
     .slice()
     .sort((left, right) => new Date(left.startAtUtc) - new Date(right.startAtUtc));
-
-  if (!refs.availabilityList) return;
 
   if (!slots.length) {
     refs.availabilityList.innerHTML = '<div class="agenda-loading">No hay bloques cargados para los proximos dias.</div>';
     return;
   }
 
-  refs.availabilityList.innerHTML = slots
-    .map((slot) => `
-      <article class="availability-card" data-availability-id="${escapeHtml(slot.id)}">
-        <div class="availability-info">
-          <div class="availability-time">${escapeHtml(formatDate(slot.startAtUtc))}</div>
-          <div class="availability-duration">
-            ${escapeHtml(formatTime(slot.startAtUtc))} - ${escapeHtml(formatTime(slot.endAtUtc))}
-            <span>(${escapeHtml(slotDurationLabel(slot.startAtUtc, slot.endAtUtc))})</span>
-          </div>
-        </div>
-        <div class="availability-actions">
-          <button type="button" class="btn btn-secondary" data-action="edit-availability" data-availability-id="${escapeHtml(slot.id)}">Editar</button>
-          <button type="button" class="btn btn-secondary" data-action="delete-availability" data-availability-id="${escapeHtml(slot.id)}">Eliminar</button>
-        </div>
-      </article>
-    `)
+  // Un dia por fila: se agrupa por fecha de Argentina, no por la del UTC.
+  const porDia = new Map();
+  slots.forEach((slot) => {
+    const dia = toDateInputValue(slot.startAtUtc);
+    if (!porDia.has(dia)) porDia.set(dia, []);
+    porDia.get(dia).push(slot);
+  });
+
+  const escala = [8, 12, 16, 20]
+    .map((hora) => {
+      const izquierda = ((hora - TIMELINE_START_HOUR) / TIMELINE_HOURS) * 100;
+      return `<span class="avail-day__tick" style="left:${izquierda}%">${String(hora).padStart(2, "0")}</span>`;
+    })
     .join("");
+
+  refs.availabilityList.innerHTML = `
+    <div class="avail-days">
+      ${[...porDia.entries()].map(([dia, bloques]) => {
+        const ausencias = state.absences.filter((absence) => toDateInputValue(absence.startAtUtc) === dia);
+        const ordenes = state.orders.filter((order) =>
+          order.scheduledStartAtUtc && toDateInputValue(order.scheduledStartAtUtc) === dia);
+
+        const tramos = buildDayTimelineSegments(dia, bloques, ausencias, ordenes);
+        const minutosLibres = bloques.reduce((total, slot) =>
+          total + (new Date(slot.endAtUtc) - new Date(slot.startAtUtc)) / 60000, 0);
+        const minutosOcupados = ordenes.reduce((total, order) =>
+          total + (new Date(order.scheduledEndAtUtc) - new Date(order.scheduledStartAtUtc)) / 60000, 0);
+
+        return `
+          <article class="avail-day" data-day="${escapeHtml(dia)}">
+            <header class="avail-day__head">
+              <div>
+                <strong>${escapeHtml(formatDate(`${dia}T12:00:00Z`))}</strong>
+                <span>${escapeHtml(formatDurationMinutes(minutosLibres))} cargados${ordenes.length ? ` · ${escapeHtml(formatDurationMinutes(minutosOcupados))} con orden` : ""}</span>
+              </div>
+              <span class="avail-day__count">${escapeHtml(String(bloques.length))} ${bloques.length === 1 ? "bloque" : "bloques"}</span>
+            </header>
+
+            <div class="avail-day__track" role="img" aria-label="${escapeHtml(`Jornada del ${formatDate(`${dia}T12:00:00Z`)}: ${formatDurationMinutes(minutosLibres)} disponibles`)}">
+              ${tramos.map((tramo) => `
+                <span class="avail-day__seg is-${tramo.tipo}"
+                  style="left:${tramo.desde.toFixed(2)}%;width:${tramo.ancho.toFixed(2)}%"
+                  title="${escapeHtml(tramo.etiqueta)}"></span>
+              `).join("")}
+            </div>
+            <div class="avail-day__scale">${escala}</div>
+
+            <ul class="avail-day__blocks">
+              ${bloques.map((slot) => `
+                <li class="avail-day__block" data-availability-id="${escapeHtml(slot.id)}">
+                  <span class="avail-day__range">${escapeHtml(formatTime(slot.startAtUtc))} a ${escapeHtml(formatTime(slot.endAtUtc))}</span>
+                  <span class="avail-day__len">${escapeHtml(slotDurationLabel(slot.startAtUtc, slot.endAtUtc))}</span>
+                  <span class="avail-day__acts">
+                    <button type="button" class="avail-day__act" data-action="edit-availability" data-availability-id="${escapeHtml(slot.id)}">Editar</button>
+                    <button type="button" class="avail-day__act is-danger" data-action="delete-availability" data-availability-id="${escapeHtml(slot.id)}">Eliminar</button>
+                  </span>
+                </li>
+              `).join("")}
+            </ul>
+          </article>
+        `;
+      }).join("")}
+    </div>
+
+    <p class="avail-days__legend">
+      <span><i class="avail-days__key is-libre"></i> Disponible</span>
+      <span><i class="avail-days__key is-ocupado"></i> Con orden asignada</span>
+      <span><i class="avail-days__key is-ausencia"></i> Ausencia</span>
+    </p>
+  `;
 }
+
 
 function renderAbsenceList() {
   const refs = getPageRefs();
@@ -1787,6 +1890,7 @@ async function loadAbsences() {
 
   state.absences = absences.map(normalizeAbsenceSlot);
   renderAbsenceList();
+  renderAvailabilityList();
   renderWeeklySummary(refs.availabilityWeeklySummary, state.availability);
   renderAvailabilityDaySummary();
 }
@@ -1824,6 +1928,8 @@ async function loadOrders() {
   renderExecutionOrders();
   renderOrdersList();
   renderSummaryCards();
+  // Las ordenes pintan los tramos ocupados de la linea del tiempo.
+  renderAvailabilityList();
 }
 
 // El tecnico veia al cliente como "#c1111111". Los nombres viven en
@@ -2129,9 +2235,10 @@ function beginAvailabilityEdit(availabilityId) {
   refs.availabilityEndTime.value = toTimeInputValue(slot.endAtUtc);
 
   if (refs.availabilitySubmitBtn) {
-    refs.availabilitySubmitBtn.textContent = "Actualizar disponibilidad";
+    refs.availabilitySubmitBtn.textContent = "Guardar cambios";
   }
-  refs.availabilityCancelEditBtn?.classList.remove("hidden");
+  refs.availabilityForm?.classList.remove("hidden");
+  refs.availabilityForm?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   showAvailabilityFeedback("Editando bloque existente.", "info");
   setSection("disponibilidad");
 }
@@ -2676,14 +2783,6 @@ function setupAvailabilityActions() {
   refs.availabilityCancelEditBtn?.addEventListener("click", resetAvailabilityForm);
   refs.availabilityAgendaDate?.addEventListener("change", renderAvailabilityDaySummary);
 
-  // Preset chips — llenan Desde/Hasta con un clic
-  refs.availabilityForm?.addEventListener("click", (event) => {
-    const chip = event.target.closest(".avail-preset-chip");
-    if (!chip) return;
-    event.preventDefault();
-    if (refs.availabilityStartTime) refs.availabilityStartTime.value = chip.dataset.start || "";
-    if (refs.availabilityEndTime) refs.availabilityEndTime.value = chip.dataset.end || "";
-  });
   refs.availabilitySubnav?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-availability-view]");
     if (!button) return;

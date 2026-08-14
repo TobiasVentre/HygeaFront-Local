@@ -224,6 +224,12 @@
                         <h3>Ordenes de servicio</h3>
                         <p>Revisa, confirma y sigue el detalle operativo de cada orden.</p>
                     </div>
+                    <div class="section-header-actions">
+                        <button type="button" class="btn btn-primary" id="providerOpenNewOrder">
+                            <i class="fas fa-plus-circle"></i>
+                            Cargar orden
+                        </button>
+                    </div>
                 </div>
 
                 <div class="provider-orders-shell">
@@ -491,7 +497,65 @@
         </div>
     </div>
 
-    <script type="module" src="js/provider-js/provider-main.js?v=20260809-1"></script>
+    <div id="provider-new-order-modal" class="provider-modal hidden" role="dialog" aria-modal="true" aria-labelledby="providerNewOrderTitle" aria-hidden="true">
+        <div class="provider-modal__content">
+            <div class="provider-modal__header">
+                <div>
+                    <h3 id="providerNewOrderTitle">Cargar orden</h3>
+                    <p>Para cuando el pedido llega por telefono y lo cargas vos en nombre del cliente.</p>
+                </div>
+                <button type="button" class="provider-modal__close" data-provider-modal-close aria-label="Cerrar carga de orden">&times;</button>
+            </div>
+
+            <div class="provider-modal__body new-order">
+                <section class="new-order__step">
+                    <h4><span class="new-order__num">1</span> Cliente</h4>
+                    <label class="input-group">
+                        <span>Para quien es la orden</span>
+                        <select id="newOrderClient"></select>
+                    </label>
+                    <p class="new-order__credit hidden" id="newOrderCredit" aria-live="polite"></p>
+                </section>
+
+                <section class="new-order__step">
+                    <h4><span class="new-order__num">2</span> Servicios</h4>
+                    <div class="new-order__picker">
+                        <label class="input-group">
+                            <span>Servicio</span>
+                            <select id="newOrderService"></select>
+                        </label>
+                        <label class="input-group new-order__qty">
+                            <span>Cantidad</span>
+                            <input type="number" id="newOrderQuantity" min="1" max="5" step="1" value="1">
+                        </label>
+                        <button type="button" class="btn btn-secondary" id="newOrderAddItem">Agregar</button>
+                    </div>
+                    <ul class="new-order__items" id="newOrderItems"></ul>
+                </section>
+
+                <section class="new-order__step">
+                    <h4><span class="new-order__num">3</span> Fecha y horario</h4>
+                    <label class="input-group">
+                        <span>Dia</span>
+                        <input type="date" id="newOrderDate">
+                    </label>
+                    <div class="new-order__slots" id="newOrderSlots"></div>
+                </section>
+
+                <div class="new-order__feedback hidden" id="newOrderFeedback" role="status"></div>
+            </div>
+
+            <div class="provider-modal__footer">
+                <button type="button" class="btn btn-secondary" data-provider-modal-close>Cancelar</button>
+                <button type="button" class="btn btn-primary" id="newOrderSubmit" disabled>
+                    <i class="fas fa-clipboard-check"></i>
+                    Crear orden
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/provider-js/provider-main.js?v=20260814-1"></script>
     <script src="js/sidebar-mobile.js"></script>
 </body>
 </html>

@@ -1521,3 +1521,181 @@ body.provider-modal-open {
     grid-template-columns: 1fr;
   }
 }
+
+/* --- Alta de orden desde el proveedor --- */
+.new-order {
+    display: grid;
+    gap: 1.4rem;
+}
+
+.new-order__step h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0 0 0.7rem;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.new-order__num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--brand-softer);
+    color: var(--brand-strong);
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.new-order__picker {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 6rem auto;
+    gap: 0.6rem;
+    align-items: end;
+}
+
+@media (max-width: 560px) {
+    .new-order__picker {
+        grid-template-columns: 1fr;
+    }
+}
+
+.new-order__items {
+    display: grid;
+    gap: 0.4rem;
+    margin: 0.8rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.new-order__item,
+.new-order__total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    background: var(--surface-page);
+}
+
+.new-order__item strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 0.92rem;
+}
+
+.new-order__item small {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+}
+
+.new-order__total {
+    background: var(--surface-card);
+    font-size: 0.95rem;
+}
+
+.new-order__empty,
+.new-order__hint {
+    margin: 0;
+    padding: 0.7rem 0.8rem;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+
+.new-order__remove {
+    flex: 0 0 auto;
+    width: 26px;
+    height: 26px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    background: var(--surface-card);
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.new-order__remove:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.new-order__slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(96px, 100%), 1fr));
+    gap: 0.5rem;
+    margin-top: 0.7rem;
+}
+
+.new-order__slot {
+    display: grid;
+    justify-items: center;
+    gap: 0.1rem;
+    padding: 0.55rem 0.4rem;
+    border: 1.5px solid var(--border-subtle);
+    border-radius: 10px;
+    background: var(--surface-card);
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.new-order__slot strong {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.new-order__slot small {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+}
+
+.new-order__slot:hover {
+    border-color: var(--brand);
+}
+
+.new-order__slot.is-selected {
+    border-color: var(--brand);
+    background: var(--brand-softer);
+}
+
+.new-order__slot.is-selected strong {
+    color: var(--brand-strong);
+}
+
+/* El aviso de credito va antes de crear la orden, no despues */
+.new-order__credit {
+    margin: 0.6rem 0 0;
+    padding: 0.65rem 0.85rem;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    line-height: 1.45;
+}
+
+.new-order__credit.is-info {
+    background: var(--brand-softer);
+    color: var(--brand-strong);
+}
+
+.new-order__credit.is-warning {
+    background: var(--warning-bg);
+    color: var(--warning-text);
+}
+
+.new-order__feedback {
+    padding: 0.7rem 0.9rem;
+    border-radius: 10px;
+    background: var(--surface-page);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.new-order__feedback.is-error {
+    background: var(--danger-bg);
+    color: var(--danger-strong);
+}

@@ -3,15 +3,19 @@ import {
   formatArgentinaDate,
   formatArgentinaDateTime,
   formatArgentinaTime,
-  getArgentinaDateInputValue
+  argentinaDateTimeToUtcIso,
+  getArgentinaDateInputValue,
+  shiftArgentinaDate
 } from "../utils/argentina-time.js";
 import {
   clearAppFeedback,
+  confirmAppAction,
   setActiveNavItems,
   showAppFeedback,
   syncMenuExpandedState
 } from "../utils/app-shell-ui.js";
 import { ensureAuthorizedPage, isAuthRedirectError } from "../utils/session-guard.js";
+import { buildSuggestedSlots } from "../utils/scheduling-slots.js";
 import {
   ORDER_PROGRESS_STEPS,
   formatCompactDuration,
@@ -2105,6 +2109,414 @@ async function loadContext() {
   state.providerEntity = await FrontGateway.directory.getProviderById(state.providerAdminProfile.providerEntityId);
 }
 
+/* --- Alta de orden desde la entidad proveedora --- */
+
+const newOrder = {
+  items: [],
+  slots: [],
+  selectedSlot: null,
+  membership: null,
+  services: [],
+  loadingSlots: false
+};
+
+function getNewOrderRefs() {
+  return {
+    modal: document.getElementById("provider-new-order-modal"),
+    client: document.getElementById("newOrderClient"),
+    credit: document.getElementById("newOrderCredit"),
+    service: document.getElementById("newOrderService"),
+    quantity: document.getElementById("newOrderQuantity"),
+    addItem: document.getElementById("newOrderAddItem"),
+    items: document.getElementById("newOrderItems"),
+    date: document.getElementById("newOrderDate"),
+    slots: document.getElementById("newOrderSlots"),
+    feedback: document.getElementById("newOrderFeedback"),
+    submit: document.getElementById("newOrderSubmit")
+  };
+}
+
+function setNewOrderModalOpen(isOpen) {
+  const refs = getNewOrderRefs();
+  if (!refs.modal) return;
+
+  refs.modal.classList.toggle("hidden", !isOpen);
+  refs.modal.setAttribute("aria-hidden", isOpen ? "false" : "true");
+  document.body.classList.toggle("provider-modal-open", isOpen);
+}
+
+function showNewOrderFeedback(message, tone = "") {
+  const refs = getNewOrderRefs();
+  if (!refs.feedback) return;
+
+  refs.feedback.className = `new-order__feedback${tone ? ` is-${tone}` : ""}`;
+  refs.feedback.textContent = message || "";
+  refs.feedback.classList.toggle("hidden", !message);
+}
+
+function getNewOrderDurationMinutes() {
+  return newOrder.items.reduce((total, item) => total + item.durationMinutes * item.quantity, 0);
+}
+
+function renderNewOrderItems() {
+  const refs = getNewOrderRefs();
+  if (!refs.items) return;
+
+  if (!newOrder.items.length) {
+    refs.items.innerHTML = '<li class="new-order__empty">Todavia no agregaste ningun servicio.</li>';
+    return;
+  }
+
+  const total = newOrder.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+
+  refs.items.innerHTML = newOrder.items.map((item) => `
+    <li class="new-order__item">
+      <div>
+        <strong>${escapeHtml(item.serviceName)}</strong>
+        <small>${escapeHtml(String(item.quantity))} x ${escapeHtml(formatCurrency(item.unitPrice))} · ${escapeHtml(String(item.durationMinutes * item.quantity))} min</small>
+      </div>
+      <button type="button" class="new-order__remove" data-remove-service="${escapeHtml(item.serviceId)}" aria-label="Quitar ${escapeHtml(item.serviceName)}">&times;</button>
+    </li>
+  `).join("") + `
+    <li class="new-order__total">
+      <span>Total</span>
+      <strong>${escapeHtml(formatCurrency(total))}</strong>
+    </li>
+  `;
+}
+
+function renderNewOrderCredit() {
+  const refs = getNewOrderRefs();
+  if (!refs.credit) return;
+
+  if (!newOrder.membership) {
+    refs.credit.classList.add("hidden");
+    refs.credit.textContent = "";
+    return;
+  }
+
+  const disponibles = Number(newOrder.membership.availableCredits ?? 0);
+  refs.credit.classList.remove("hidden");
+
+  // El aviso se arma antes de crear la orden a proposito: el dato de cobertura
+  // que devuelve el backend llega recien en la respuesta, y para entonces el
+  // credito ya se comprometio.
+  if (disponibles > 0) {
+    refs.credit.className = "new-order__credit is-info";
+    refs.credit.textContent = `Esta orden le va a consumir 1 credito de ${newOrder.membership.planName}. Le quedan ${disponibles}.`;
+  } else {
+    refs.credit.className = "new-order__credit is-warning";
+    refs.credit.textContent = `${newOrder.membership.planName} esta sin creditos: esta visita le va a quedar fuera del plan.`;
+  }
+}
+
+function renderNewOrderSlots() {
+  const refs = getNewOrderRefs();
+  if (!refs.slots) return;
+
+  if (!newOrder.items.length) {
+    refs.slots.innerHTML = '<p class="new-order__hint">Agrega al menos un servicio para ver los horarios libres.</p>';
+    return;
+  }
+
+  if (newOrder.loadingSlots) {
+    refs.slots.innerHTML = '<p class="new-order__hint">Buscando horarios disponibles...</p>';
+    return;
+  }
+
+  if (!newOrder.slots.length) {
+    refs.slots.innerHTML = '<p class="new-order__hint">No hay horarios libres ese dia para la duracion pedida. Proba otra fecha.</p>';
+    return;
+  }
+
+  refs.slots.innerHTML = newOrder.slots.map((slot) => {
+    const activo = newOrder.selectedSlot?.startAtUtc === slot.startAtUtc;
+    return `
+      <button type="button" class="new-order__slot${activo ? " is-selected" : ""}" data-slot="${escapeHtml(slot.startAtUtc)}">
+        <strong>${escapeHtml(formatArgentinaTime(slot.startAtUtc, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" }))}</strong>
+        <small>${escapeHtml(String(slot.availableTechnicianCount))} ${slot.availableTechnicianCount === 1 ? "tecnico" : "tecnicos"}</small>
+      </button>
+    `;
+  }).join("");
+}
+
+function syncNewOrderSubmit() {
+  const refs = getNewOrderRefs();
+  if (!refs.submit) return;
+
+  const listo = Boolean(newOrder.items.length && newOrder.selectedSlot && refs.client?.value);
+  refs.submit.disabled = !listo;
+}
+
+function renderNewOrder() {
+  renderNewOrderItems();
+  renderNewOrderCredit();
+  renderNewOrderSlots();
+  syncNewOrderSubmit();
+}
+
+async function loadNewOrderMembership() {
+  const refs = getNewOrderRefs();
+  newOrder.membership = null;
+
+  const clientId = refs.client?.value;
+  if (!isGuid(clientId)) {
+    renderNewOrderCredit();
+    return;
+  }
+
+  try {
+    const membership = await FrontGateway.order.getActiveMembershipByClient(clientId);
+    newOrder.membership = membership
+      ? {
+          planName: membership.planName ?? membership.PlanName ?? "Su plan",
+          availableCredits: membership.availableCredits ?? membership.AvailableCredits ?? 0
+        }
+      : null;
+  } catch (error) {
+    console.error("No se pudo leer la membresia del cliente", error);
+    newOrder.membership = null;
+  }
+
+  renderNewOrderCredit();
+}
+
+async function refreshNewOrderSlots() {
+  const refs = getNewOrderRefs();
+  newOrder.selectedSlot = null;
+  newOrder.slots = [];
+
+  const duracion = getNewOrderDurationMinutes();
+  const fecha = refs.date?.value;
+  if (!duracion || !fecha || !state.providerAdminProfile) {
+    renderNewOrder();
+    return;
+  }
+
+  newOrder.loadingSlots = true;
+  renderNewOrderSlots();
+
+  try {
+    const providerEntityId = state.providerAdminProfile.providerEntityId;
+    const tecnicos = (await FrontGateway.directory.getTechniciansByProvider(providerEntityId))
+      .filter((tecnico) => ACTIVE_TECHNICIAN_STATUS_VALUES.has(tecnico.status ?? tecnico.Status));
+
+    if (!tecnicos.length) {
+      showNewOrderFeedback("No tenes tecnicos activos para asignar.", "error");
+      return;
+    }
+
+    const fromUtc = argentinaDateTimeToUtcIso(fecha, "00:00");
+    const toUtc = argentinaDateTimeToUtcIso(fecha, "23:59");
+
+    const snapshots = await Promise.all(tecnicos.map(async (tecnico) => {
+      const tecnicoId = tecnico.id ?? tecnico.Id;
+      try {
+        const [availability, absences, reservations] = await Promise.all([
+          FrontGateway.scheduling.getAvailabilityByTechnician(tecnicoId, fromUtc, toUtc),
+          FrontGateway.scheduling.getAbsencesByTechnician(tecnicoId, fromUtc, toUtc),
+          FrontGateway.scheduling.getBusyPeriodsByTechnician(tecnicoId)
+        ]);
+        return { availability, absences, reservations };
+      } catch (error) {
+        console.error("No se pudo leer la agenda del tecnico", tecnicoId, error);
+        return { availability: [], absences: [], reservations: [] };
+      }
+    }));
+
+    // Es el mismo calculo que ve el cliente al pedir un turno: si difiriera,
+    // el proveedor ofreceria horarios que despues el backend rechaza.
+    newOrder.slots = buildSuggestedSlots(tecnicos, snapshots, duracion)
+      .filter((slot) => getArgentinaDateInputValue(new Date(slot.startAtUtc)) === fecha);
+
+    showNewOrderFeedback("");
+  } finally {
+    newOrder.loadingSlots = false;
+    renderNewOrder();
+  }
+}
+
+function addNewOrderItem() {
+  const refs = getNewOrderRefs();
+  const serviceId = refs.service?.value;
+  const servicio = newOrder.services.find((item) => (item.id ?? item.Id) === serviceId);
+  if (!servicio) return;
+
+  const cantidad = Math.max(1, Math.min(5, Number(refs.quantity?.value) || 1));
+  const existente = newOrder.items.find((item) => item.serviceId === serviceId);
+
+  // Repetir un servicio acumula en la misma linea, igual que en el panel del
+  // cliente, en vez de duplicar filas.
+  if (existente) {
+    existente.quantity = Math.min(5, existente.quantity + cantidad);
+  } else {
+    newOrder.items.push({
+      serviceId,
+      serviceName: servicio.name ?? servicio.Name,
+      unitPrice: Number(servicio.basePrice ?? servicio.BasePrice ?? 0),
+      durationMinutes: Number(servicio.durationMinutes ?? servicio.DurationMinutes ?? 60),
+      quantity: cantidad
+    });
+  }
+
+  refreshNewOrderSlots().catch((error) => console.error(error));
+}
+
+function removeNewOrderItem(serviceId) {
+  newOrder.items = newOrder.items.filter((item) => item.serviceId !== serviceId);
+  refreshNewOrderSlots().catch((error) => console.error(error));
+}
+
+async function openNewOrderModal() {
+  const refs = getNewOrderRefs();
+
+  newOrder.items = [];
+  newOrder.slots = [];
+  newOrder.selectedSlot = null;
+  newOrder.membership = null;
+  showNewOrderFeedback("");
+
+  const clientes = [...(state.clientProfilesById?.values() ?? [])];
+  if (refs.client) {
+    refs.client.innerHTML = clientes.length
+      ? clientes.map((cliente) => `<option value="${escapeHtml(cliente.id)}">${escapeHtml(cliente.fullName)}</option>`).join("")
+      : '<option value="">Sin clientes en esta entidad</option>';
+  }
+
+  if (!newOrder.services.length) {
+    try {
+      newOrder.services = await FrontGateway.catalog.getEnabledServiceOfferings();
+    } catch (error) {
+      console.error("No se pudo leer el catalogo", error);
+      newOrder.services = [];
+    }
+  }
+
+  if (refs.service) {
+    refs.service.innerHTML = newOrder.services.length
+      ? newOrder.services.map((servicio) => {
+          const id = servicio.id ?? servicio.Id;
+          const nombre = servicio.name ?? servicio.Name;
+          const minutos = servicio.durationMinutes ?? servicio.DurationMinutes ?? 60;
+          return `<option value="${escapeHtml(id)}">${escapeHtml(nombre)} · ${escapeHtml(String(minutos))} min</option>`;
+        }).join("")
+      : '<option value="">Sin servicios disponibles</option>';
+  }
+
+  if (refs.date) {
+    const hoy = getArgentinaDateInputValue();
+    refs.date.min = hoy;
+    if (!refs.date.value || refs.date.value < hoy) refs.date.value = shiftArgentinaDate(hoy, 1);
+  }
+
+  setNewOrderModalOpen(true);
+  renderNewOrder();
+  await loadNewOrderMembership();
+}
+
+async function submitNewOrder() {
+  const refs = getNewOrderRefs();
+  if (!state.providerAdminProfile) return;
+
+  const clientId = refs.client?.value;
+  if (!isGuid(clientId) || !newOrder.selectedSlot || !newOrder.items.length) return;
+
+  const cliente = state.clientProfilesById?.get(clientId);
+  const disponibles = Number(newOrder.membership?.availableCredits ?? 0);
+
+  const aviso = newOrder.membership && disponibles > 0
+    ? `Esta orden le va a consumir 1 credito a ${cliente?.fullName ?? "el cliente"} (le quedan ${disponibles}). ¿Confirmas?`
+    : `Vas a crear una orden a nombre de ${cliente?.fullName ?? "el cliente"}. ¿Confirmas?`;
+
+  const confirmado = await confirmAppAction({
+    title: "Confirmar carga de orden",
+    message: aviso,
+    confirmLabel: "Crear orden",
+    cancelLabel: "Volver",
+    tone: "primary"
+  });
+  if (!confirmado) return;
+
+  refs.submit?.setAttribute("disabled", "disabled");
+  showNewOrderFeedback("Creando la orden...");
+
+  try {
+    await FrontGateway.scheduling.createReservationWithOrder({
+      clientId,
+      providerEntityId: state.providerAdminProfile.providerEntityId,
+      startAtUtc: newOrder.selectedSlot.startAtUtc,
+      items: newOrder.items.map((item) => ({
+        serviceId: item.serviceId,
+        serviceName: item.serviceName,
+        unitPrice: item.unitPrice,
+        quantity: item.quantity,
+        durationMinutes: item.durationMinutes
+      }))
+    });
+
+    setNewOrderModalOpen(false);
+    showAppFeedback(`La orden de ${cliente?.fullName ?? "el cliente"} quedo creada y ya aparece en el listado.`, {
+      type: "success",
+      title: "Orden cargada"
+    });
+
+    await loadOrders();
+  } catch (error) {
+    showNewOrderFeedback(getErrorMessage(error, "No se pudo crear la orden."), "error");
+  } finally {
+    refs.submit?.removeAttribute("disabled");
+  }
+}
+
+function setupNewOrder() {
+  const refs = getNewOrderRefs();
+  if (!refs.modal) return;
+
+  document.getElementById("providerOpenNewOrder")?.addEventListener("click", () => {
+    openNewOrderModal().catch((error) => {
+      showAppFeedback(getErrorMessage(error, "No se pudo abrir la carga de orden."), { type: "error" });
+    });
+  });
+
+  refs.modal.querySelectorAll("[data-provider-modal-close]").forEach((boton) => {
+    boton.addEventListener("click", () => setNewOrderModalOpen(false));
+  });
+
+  refs.modal.addEventListener("click", (event) => {
+    if (event.target === refs.modal) setNewOrderModalOpen(false);
+  });
+
+  refs.client?.addEventListener("change", () => {
+    loadNewOrderMembership().catch((error) => console.error(error));
+    syncNewOrderSubmit();
+  });
+
+  refs.addItem?.addEventListener("click", addNewOrderItem);
+
+  refs.items?.addEventListener("click", (event) => {
+    const boton = event.target.closest("[data-remove-service]");
+    if (boton) removeNewOrderItem(boton.dataset.removeService);
+  });
+
+  refs.date?.addEventListener("change", () => {
+    refreshNewOrderSlots().catch((error) => console.error(error));
+  });
+
+  refs.slots?.addEventListener("click", (event) => {
+    const boton = event.target.closest("[data-slot]");
+    if (!boton) return;
+    newOrder.selectedSlot = newOrder.slots.find((slot) => slot.startAtUtc === boton.dataset.slot) || null;
+    renderNewOrderSlots();
+    syncNewOrderSubmit();
+  });
+
+  refs.submit?.addEventListener("click", () => {
+    submitNewOrder().catch((error) => {
+      showNewOrderFeedback(getErrorMessage(error, "No se pudo crear la orden."), "error");
+    });
+  });
+}
+
 function setTechnicianModalOpen(isOpen) {
   const modal = document.getElementById("provider-technician-modal");
   if (!modal) return;
@@ -2197,6 +2609,7 @@ function setupNavigation() {
   });
 
   setupTechnicianModal();
+  setupNewOrder();
 
   window.addEventListener("hashchange", () => {
     handleProviderRouteChange().catch((error) => {

@@ -8,7 +8,8 @@ import {
   getArgentinaDateInputValue,
   getArgentinaRangeEndUtcIso,
   getArgentinaRangeStartUtcIso,
-  getArgentinaTimeInputValue
+  getArgentinaTimeInputValue,
+  shiftArgentinaDate
 } from "../utils/argentina-time.js";
 import {
   confirmAppAction,
@@ -109,7 +110,10 @@ const state = {
   currentOrderCancellationRequests: [],
   currentOrderEvidencePreviewUrls: new Map(),
   orderActionFeedback: null,
-  availabilityView: "availability"
+  availabilityView: "availability",
+  bulkWeekStart: null,
+  bulkSelectedDates: new Set(),
+  bulkLoadedUntil: null
 };
 
 function isGuid(value) {
@@ -237,6 +241,15 @@ function getPageRefs() {
     availabilitySubmitBtn: document.getElementById("availabilitySubmitBtn"),
     availabilityCancelEditBtn: document.getElementById("availabilityCancelEditBtn"),
     availabilityFeedback: document.getElementById("availabilityFeedback"),
+    availabilityBulkPrevWeek: document.getElementById("availabilityBulkPrevWeek"),
+    availabilityBulkNextWeek: document.getElementById("availabilityBulkNextWeek"),
+    availabilityBulkWeekLabel: document.getElementById("availabilityBulkWeekLabel"),
+    availabilityBulkStart: document.getElementById("availabilityBulkStart"),
+    availabilityBulkEnd: document.getElementById("availabilityBulkEnd"),
+    availabilityBulkDays: document.getElementById("availabilityBulkDays"),
+    availabilityBulkSubmit: document.getElementById("availabilityBulkSubmit"),
+    availabilityBulkSummary: document.getElementById("availabilityBulkSummary"),
+    availabilityBulkResult: document.getElementById("availabilityBulkResult"),
     absenceForm: document.getElementById("absenceForm"),
     absenceDate: document.getElementById("absenceDate"),
     absenceStartTime: document.getElementById("absenceStartTime"),
@@ -1751,9 +1764,13 @@ async function loadAvailability() {
   const availability = await FrontGateway.scheduling.getAvailabilityByTechnician(state.technicianProfile.id, fromUtc, toUtc);
 
   state.availability = availability.map(normalizeAvailabilitySlot);
+  // La carga inicial cubre 21 dias: el selector semanal lo usa para saber hasta
+  // donde puede detectar conflictos sin volver a pedir.
+  state.bulkLoadedUntil = shiftArgentinaDate(getArgentinaDateInputValue(), 21);
   renderAvailabilityList();
   renderWeeklySummary(refs.availabilityWeeklySummary, state.availability);
   renderAvailabilityDaySummary();
+  renderBulkAvailability();
 }
 
 async function loadAbsences() {
@@ -2207,6 +2224,368 @@ function validateAbsenceForm(dateValue, startTimeValue, endTimeValue, reason) {
   };
 }
 
+/* --- Carga de disponibilidad por dias de la semana --- */
+
+const BULK_WEEKDAYS = [
+  { offset: 0, short: "Lun", long: "lunes" },
+  { offset: 1, short: "Mar", long: "martes" },
+  { offset: 2, short: "Mié", long: "miércoles" },
+  { offset: 3, short: "Jue", long: "jueves" },
+  { offset: 4, short: "Vie", long: "viernes" },
+  { offset: 5, short: "Sáb", long: "sábado" },
+  { offset: 6, short: "Dom", long: "domingo" }
+];
+
+/** Cuantas peticiones se disparan a la vez al crear los bloques. */
+const BULK_CONCURRENCY = 6;
+
+/**
+ * Lunes de la semana que contiene la fecha dada, en dias de Argentina.
+ * getDay() sobre un input date lo interpreta como UTC, que para el huso
+ * argentino cae el dia anterior: por eso se arma la fecha a mediodia.
+ */
+function getWeekStart(dateValue) {
+  const { year, month, day } = splitDateInput(dateValue);
+  const noon = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+  const weekday = (noon.getUTCDay() + 6) % 7; // 0 = lunes
+  return shiftArgentinaDate(dateValue, -weekday);
+}
+
+function splitDateInput(dateValue) {
+  const [year, month, day] = String(dateValue).split("-").map(Number);
+  return { year, month, day };
+}
+
+function getBulkWeekDates() {
+  return BULK_WEEKDAYS.map((weekday) => ({
+    ...weekday,
+    date: shiftArgentinaDate(state.bulkWeekStart, weekday.offset)
+  }));
+}
+
+/**
+ * Un dia no se puede cargar si su bloque ya arranco: el backend exige que la
+ * disponibilidad empiece en el futuro. Eso alcanza tambien al dia de hoy cuando
+ * el horario elegido ya paso.
+ */
+function isBulkDayInThePast(dateValue, startTime) {
+  const startAtUtc = argentinaDateTimeToUtcIso(dateValue, startTime || "00:00");
+  if (!startAtUtc) return true;
+  return new Date(startAtUtc).getTime() <= Date.now();
+}
+
+/** Bloques ya cargados que se cruzan con el horario pedido para ese dia. */
+function findBulkConflicts(dateValue, startTime, endTime) {
+  const startAtUtc = argentinaDateTimeToUtcIso(dateValue, startTime);
+  const endAtUtc = argentinaDateTimeToUtcIso(dateValue, endTime);
+  if (!startAtUtc || !endAtUtc) return [];
+
+  const start = new Date(startAtUtc).getTime();
+  const end = new Date(endAtUtc).getTime();
+
+  return state.availability.filter((slot) => {
+    const slotStart = new Date(slot.startAtUtc).getTime();
+    const slotEnd = new Date(slot.endAtUtc).getTime();
+    return slotStart < end && slotEnd > start;
+  });
+}
+
+function getBulkTimes() {
+  const refs = getPageRefs();
+  return {
+    startTime: refs.availabilityBulkStart?.value || "",
+    endTime: refs.availabilityBulkEnd?.value || ""
+  };
+}
+
+function isBulkTimeRangeValid(startTime, endTime) {
+  if (!startTime || !endTime) return false;
+  return startTime < endTime;
+}
+
+/**
+ * Estado de cada dia de la semana mostrada. Es lo que pinta los chips y lo que
+ * decide que se envia, asi que vive en un solo lugar.
+ */
+function getBulkDayStates() {
+  const { startTime, endTime } = getBulkTimes();
+  const rangeIsValid = isBulkTimeRangeValid(startTime, endTime);
+
+  return getBulkWeekDates().map((weekday) => {
+    const past = isBulkDayInThePast(weekday.date, startTime);
+    const conflicts = rangeIsValid && !past ? findBulkConflicts(weekday.date, startTime, endTime) : [];
+
+    return {
+      ...weekday,
+      past,
+      conflicts,
+      selectable: !past && rangeIsValid,
+      selected: state.bulkSelectedDates.has(weekday.date)
+    };
+  });
+}
+
+function renderBulkDays() {
+  const refs = getPageRefs();
+  if (!refs.availabilityBulkDays) return;
+
+  const days = getBulkDayStates();
+
+  refs.availabilityBulkDays.innerHTML = days.map((day) => {
+    const classes = ["avail-day-chip"];
+    if (day.selected) classes.push("is-selected");
+    if (day.past) classes.push("is-past");
+    else if (day.conflicts.length) classes.push("is-conflict");
+
+    const dayNumber = Number(day.date.split("-")[2]);
+    const note = day.past
+      ? "ya pasó"
+      : day.conflicts.length
+        ? `ocupado ${formatArgentinaTime(day.conflicts[0].startAtUtc, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" })}`
+        : "";
+
+    return `
+      <button type="button"
+        class="${classes.join(" ")}"
+        data-bulk-date="${escapeHtml(day.date)}"
+        ${day.past ? "disabled" : ""}
+        aria-pressed="${day.selected ? "true" : "false"}"
+        title="${escapeHtml(day.long)} ${dayNumber}${note ? ` · ${note}` : ""}">
+        <span class="avail-day-chip__name">${escapeHtml(day.short)}</span>
+        <span class="avail-day-chip__num">${dayNumber}</span>
+        ${note ? `<span class="avail-day-chip__note">${escapeHtml(note)}</span>` : ""}
+      </button>
+    `;
+  }).join("");
+
+  renderBulkSummary(days);
+}
+
+function renderBulkSummary(days) {
+  const refs = getPageRefs();
+  const { startTime, endTime } = getBulkTimes();
+  const selected = days.filter((day) => day.selected && !day.past);
+  const conflicting = selected.filter((day) => day.conflicts.length);
+  const creatable = selected.length - conflicting.length;
+
+  if (refs.availabilityBulkSubmit) {
+    refs.availabilityBulkSubmit.disabled = creatable === 0;
+    refs.availabilityBulkSubmit.textContent = creatable > 0
+      ? `Cargar ${creatable} ${creatable === 1 ? "día" : "días"}`
+      : "Cargar días seleccionados";
+  }
+
+  if (!refs.availabilityBulkSummary) return;
+
+  if (!isBulkTimeRangeValid(startTime, endTime)) {
+    refs.availabilityBulkSummary.textContent = "Elegí un horario válido: la hora de fin tiene que ser posterior al inicio.";
+    return;
+  }
+
+  if (!selected.length) {
+    refs.availabilityBulkSummary.textContent = "Marcá los días a los que querés aplicar ese horario.";
+    return;
+  }
+
+  const partes = [`${creatable} ${creatable === 1 ? "bloque" : "bloques"} de ${startTime} a ${endTime}`];
+  if (conflicting.length) {
+    // El aviso llega antes de enviar para que se pueda destildar el dia; si se
+    // envia igual, ese dia se saltea y se informa en el resultado.
+    partes.push(`${conflicting.length} se ${conflicting.length === 1 ? "saltea" : "saltean"} porque ya ${conflicting.length === 1 ? "tenés" : "tenés"} algo cargado (${conflicting.map((day) => day.short).join(", ")})`);
+  }
+
+  refs.availabilityBulkSummary.textContent = partes.join(" · ");
+}
+
+function renderBulkWeekLabel() {
+  const refs = getPageRefs();
+  if (refs.availabilityBulkWeekLabel) {
+    const end = shiftArgentinaDate(state.bulkWeekStart, 6);
+    const [, mesInicio, diaInicio] = state.bulkWeekStart.split("-");
+    const [anioFin, mesFin, diaFin] = end.split("-");
+    const nombreMes = (fecha) => formatArgentinaDate(`${fecha}T12:00:00Z`, { weekday: undefined, day: undefined, month: "long" });
+
+    // Cuando la semana cruza de mes hay que nombrar los dos, si no alcanza con uno.
+    refs.availabilityBulkWeekLabel.textContent = mesInicio === mesFin
+      ? `Semana del ${Number(diaInicio)} al ${Number(diaFin)} de ${nombreMes(end)} de ${anioFin}`
+      : `Semana del ${Number(diaInicio)} de ${nombreMes(state.bulkWeekStart)} al ${Number(diaFin)} de ${nombreMes(end)} de ${anioFin}`;
+  }
+
+  if (refs.availabilityBulkPrevWeek) {
+    // No tiene sentido retroceder a una semana entera en el pasado.
+    const currentWeekStart = getWeekStart(getArgentinaDateInputValue());
+    refs.availabilityBulkPrevWeek.disabled = state.bulkWeekStart <= currentWeekStart;
+  }
+}
+
+function renderBulkAvailability() {
+  renderBulkWeekLabel();
+  renderBulkDays();
+}
+
+/**
+ * La lista del panel cubre 21 dias. Al navegar mas alla hay que traer esa semana,
+ * porque si no el detector de conflictos no ve nada y diria que esta libre.
+ */
+async function ensureBulkWeekLoaded() {
+  if (!state.technicianProfile) return;
+
+  const weekEnd = shiftArgentinaDate(state.bulkWeekStart, 7);
+  if (state.bulkLoadedUntil && weekEnd <= state.bulkLoadedUntil) return;
+
+  const fromUtc = argentinaDateTimeToUtcIso(state.bulkWeekStart, "00:00");
+  const toUtc = argentinaDateTimeToUtcIso(weekEnd, "00:00");
+
+  try {
+    const extra = await FrontGateway.scheduling.getAvailabilityByTechnician(
+      state.technicianProfile.id,
+      fromUtc,
+      toUtc
+    );
+
+    const known = new Set(state.availability.map((slot) => slot.id));
+    extra.map(normalizeAvailabilitySlot)
+      .filter((slot) => !known.has(slot.id))
+      .forEach((slot) => state.availability.push(slot));
+
+    if (!state.bulkLoadedUntil || weekEnd > state.bulkLoadedUntil) {
+      state.bulkLoadedUntil = weekEnd;
+    }
+  } catch (error) {
+    console.error("No se pudo traer la disponibilidad de la semana", error);
+    showBulkResult("No pudimos revisar si ya tenías bloques cargados en esta semana. Podés cargar igual, pero los días ocupados van a fallar.", "warning");
+  }
+}
+
+function showBulkResult(message, tone = "") {
+  const refs = getPageRefs();
+  if (!refs.availabilityBulkResult) return;
+
+  refs.availabilityBulkResult.className = `avail-bulk__result${tone ? ` is-${tone}` : ""}`;
+  refs.availabilityBulkResult.innerHTML = message;
+  refs.availabilityBulkResult.classList.toggle("hidden", !message);
+}
+
+async function moveBulkWeek(deltaWeeks) {
+  const currentWeekStart = getWeekStart(getArgentinaDateInputValue());
+  const next = shiftArgentinaDate(state.bulkWeekStart, deltaWeeks * 7);
+  state.bulkWeekStart = next < currentWeekStart ? currentWeekStart : next;
+
+  // Los dias marcados son de la semana anterior: no se arrastran.
+  state.bulkSelectedDates.clear();
+  showBulkResult("");
+  renderBulkAvailability();
+
+  await ensureBulkWeekLoaded();
+  renderBulkAvailability();
+}
+
+function toggleBulkDay(dateValue) {
+  const day = getBulkDayStates().find((item) => item.date === dateValue);
+  if (!day || !day.selectable) return;
+
+  if (state.bulkSelectedDates.has(dateValue)) state.bulkSelectedDates.delete(dateValue);
+  else state.bulkSelectedDates.add(dateValue);
+
+  renderBulkDays();
+}
+
+async function submitBulkAvailability() {
+  const refs = getPageRefs();
+  if (!state.technicianProfile) {
+    showBulkResult("No se pudo resolver el perfil tecnico actual.", "error");
+    return;
+  }
+
+  const { startTime, endTime } = getBulkTimes();
+  const days = getBulkDayStates();
+  const seleccionados = days.filter((day) => day.selected && !day.past);
+  const salteados = seleccionados.filter((day) => day.conflicts.length);
+  const aCrear = seleccionados.filter((day) => !day.conflicts.length);
+
+  if (!aCrear.length) return;
+
+  refs.availabilityBulkSubmit?.setAttribute("disabled", "disabled");
+  showBulkResult(`Cargando ${aCrear.length} ${aCrear.length === 1 ? "bloque" : "bloques"}...`);
+
+  const pendientes = [...aCrear];
+  const creados = [];
+  const fallidos = [];
+
+  const trabajadores = Array.from({ length: Math.min(BULK_CONCURRENCY, pendientes.length) }, async () => {
+    while (pendientes.length) {
+      const day = pendientes.shift();
+      try {
+        await FrontGateway.scheduling.createAvailability({
+          technicianId: state.technicianProfile.id,
+          providerEntityId: state.technicianProfile.providerEntityId,
+          startAtUtc: argentinaDateTimeToUtcIso(day.date, startTime),
+          endAtUtc: argentinaDateTimeToUtcIso(day.date, endTime)
+        });
+        creados.push(day);
+      } catch (error) {
+        fallidos.push({ day, message: getErrorMessage(error, "no se pudo crear") });
+      }
+    }
+  });
+
+  await Promise.all(trabajadores);
+
+  state.bulkSelectedDates.clear();
+  refs.availabilityBulkSubmit?.removeAttribute("disabled");
+
+  await loadAvailability();
+  state.bulkLoadedUntil = null;
+  await ensureBulkWeekLoaded();
+  renderBulkAvailability();
+
+  const lineas = [];
+  if (creados.length) lineas.push(`<strong>${creados.length} ${creados.length === 1 ? "bloque creado" : "bloques creados"}</strong> de ${escapeHtml(startTime)} a ${escapeHtml(endTime)}.`);
+  if (salteados.length) lineas.push(`${salteados.length} ${salteados.length === 1 ? "día salteado" : "días salteados"} porque ya tenías algo cargado: ${escapeHtml(salteados.map((day) => day.long).join(", "))}.`);
+  fallidos.forEach(({ day, message }) => lineas.push(`No se pudo cargar el ${escapeHtml(day.long)}: ${escapeHtml(message)}`));
+
+  const tono = fallidos.length ? "error" : creados.length ? "success" : "warning";
+  showBulkResult(lineas.map((linea) => `<p>${linea}</p>`).join(""), tono);
+}
+
+function setupBulkAvailability() {
+  const refs = getPageRefs();
+  if (!refs.availabilityBulkDays) return;
+
+  state.bulkWeekStart = getWeekStart(getArgentinaDateInputValue());
+
+  refs.availabilityBulkPrevWeek?.addEventListener("click", () => {
+    moveBulkWeek(-1).catch((error) => console.error(error));
+  });
+
+  refs.availabilityBulkNextWeek?.addEventListener("click", () => {
+    moveBulkWeek(1).catch((error) => console.error(error));
+  });
+
+  refs.availabilityBulkDays.addEventListener("click", (event) => {
+    const chip = event.target.closest("[data-bulk-date]");
+    if (chip && !chip.disabled) toggleBulkDay(chip.dataset.bulkDate);
+  });
+
+  [refs.availabilityBulkStart, refs.availabilityBulkEnd].forEach((input) => {
+    input?.addEventListener("change", () => {
+      // Cambiar el horario cambia que dias estan en conflicto o ya pasaron.
+      getBulkDayStates()
+        .filter((day) => day.selected && !day.selectable)
+        .forEach((day) => state.bulkSelectedDates.delete(day.date));
+      renderBulkDays();
+    });
+  });
+
+  refs.availabilityBulkSubmit?.addEventListener("click", () => {
+    submitBulkAvailability().catch((error) => {
+      showBulkResult(getErrorMessage(error, "No se pudieron cargar los días."), "error");
+    });
+  });
+
+  renderBulkAvailability();
+}
+
 async function submitAvailabilityForm(event) {
   event.preventDefault();
 
@@ -2293,6 +2672,7 @@ async function submitAbsenceForm(event) {
 function setupAvailabilityActions() {
   const refs = getPageRefs();
   refs.availabilityForm?.addEventListener("submit", submitAvailabilityForm);
+  setupBulkAvailability();
   refs.availabilityCancelEditBtn?.addEventListener("click", resetAvailabilityForm);
   refs.availabilityAgendaDate?.addEventListener("change", renderAvailabilityDaySummary);
 

@@ -6967,3 +6967,243 @@ body {
 .avail-days__key.is-level-3 {
     background: color-mix(in srgb, var(--success-bright) 52%, var(--surface-card) 48%);
 }
+
+/* --- Perfil del tecnico --- */
+.tech-profile-hero {
+    container-type: inline-size;
+    display: grid;
+    gap: 1.4rem;
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+    background: var(--surface-card);
+    box-shadow: 0 18px 35px -30px var(--shadow-lg);
+}
+
+.tech-profile-hero__identity {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.15rem;
+}
+
+.tech-profile-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 68px;
+    height: 68px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, var(--brand-softer) 0%, var(--brand-soft) 100%);
+    color: var(--brand-strong);
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+
+.tech-profile-hero__text {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.tech-profile-hero__text h4 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.4rem;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+.tech-profile-hero__text p {
+    margin: 0.2rem 0 0;
+    color: var(--text-secondary);
+    overflow-wrap: anywhere;
+}
+
+.tech-profile-hero__meta {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+
+.tech-profile-badge {
+    flex: 0 0 auto;
+    align-self: flex-start;
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    background: var(--brand-softer);
+    color: var(--brand-strong);
+    font-size: 0.84rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.tech-profile-badge.is-empty {
+    background: var(--surface-subtle);
+    color: var(--text-tertiary);
+}
+
+.tech-profile-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
+    gap: 0.7rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.tech-profile-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    background: var(--surface-page);
+}
+
+.tech-profile-stat > i {
+    color: var(--brand);
+}
+
+.tech-profile-stat strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 800;
+    line-height: 1.15;
+}
+
+.tech-profile-stat small {
+    display: block;
+    margin-top: 0.1rem;
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.tech-profile-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    align-items: start;
+    gap: 1.25rem;
+}
+
+@media (max-width: 900px) {
+    .tech-profile-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Los datos van como valores, no como campos: el tecnico no los edita */
+.tech-profile-facts {
+    display: grid;
+    gap: 0.7rem;
+    margin: 0;
+}
+
+.tech-profile-facts dt {
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.tech-profile-facts dd {
+    margin: 0.15rem 0 0;
+    color: var(--text-primary);
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.tech-change {
+    display: grid;
+    gap: 1rem;
+}
+
+.tech-change__current {
+    display: grid;
+    gap: 0.15rem;
+    margin: 0;
+    padding: 0.7rem 0.9rem;
+    border-radius: 12px;
+    background: var(--surface-page);
+}
+
+.tech-change__current span {
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.tech-change__current strong {
+    color: var(--text-primary);
+}
+
+.tech-change__form {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.tech-change__actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.tech-change__history {
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.tech-change__history h5 {
+    margin: 0 0 0.6rem;
+    color: var(--text-primary);
+    font-size: 0.92rem;
+}
+
+@container (max-width: 460px) {
+    .tech-profile-hero__identity {
+        flex-wrap: wrap;
+    }
+}
+
+/* Los campos del cambio de entidad usaban una clase que este panel no define */
+.tech-change__form .input-group {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.tech-change__form .input-group > span {
+    color: var(--text-primary);
+    font-size: 0.86rem;
+    font-weight: 600;
+}
+
+.tech-change__form select,
+.tech-change__form textarea {
+    width: 100%;
+    min-height: 42px;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    background: var(--surface-card);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.92rem;
+}
+
+.tech-change__form textarea {
+    min-height: 5rem;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.tech-change__form select:focus,
+.tech-change__form textarea:focus {
+    outline: none;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-glow-sm);
+}

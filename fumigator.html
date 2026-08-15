@@ -457,200 +457,76 @@
 
             <!-- Perfil del Profesional -->
             <div class="dashboard-section profile-section hidden" id="fumigatorProfileSection">
-                <!-- Page Header (Sticky) -->
-                <header class="profile-page-header" id="profilePageHeader">
-                    <div class="profile-header-content">
-                        <div>
-                            <h2 class="profile-page-title">Perfil Profesional</h2>
-                            <p class="profile-page-subtitle">Datos visibles para tus clientes</p>
-                        </div>
-                        <button class="btn btn-primary" id="editFumigatorProfile" aria-label="Editar perfil">
-                            <i class="fas fa-edit"></i>
-                            Editar Perfil
-                        </button>
+                <div class="section-header">
+                    <div>
+                        <h3>Mi perfil</h3>
+                        <p>Como te ven la entidad que te asigna trabajo y los clientes que atendes.</p>
                     </div>
-                </header>
+                </div>
 
-                <!-- Profile Content -->
-                <div class="profile-content-wrapper">
-                    <section class="profile-content">
-                        <form id="fumigatorProfileForm" class="profile-form" novalidate>
-                            <!-- Información de contacto -->
-                            <div class="profile-card profile-card--content">
-                                <header class="profile-card-header">
-                                    <h3 class="profile-card-title">
-                                        <i class="fas fa-user-circle" aria-hidden="true"></i>
-                                        Información de contacto
-                                    </h3>
-                                </header>
-                                <div class="profile-card-body">
-                                    <div class="profile-fields-row">
-                                        <div class="profile-field">
-                                            <label class="profile-label" for="profileFirstNameInput">Nombre</label>
-                                            <input type="text" 
-                                                   id="profileFirstNameInput" 
-                                                   name="firstName" 
-                                                   class="profile-input" 
-                                                   placeholder="Nombre" 
-                                                   disabled
-                                                   aria-label="Nombre">
-                                        </div>
-                                        <div class="profile-field">
-                                            <label class="profile-label" for="profileLastNameInput">Apellido</label>
-                                            <input type="text" 
-                                                   id="profileLastNameInput" 
-                                                   name="lastName" 
-                                                   class="profile-input" 
-                                                   placeholder="Apellido" 
-                                                   disabled
-                                                   aria-label="Apellido">
-                                        </div>
-                                    </div>
-                                    <div class="profile-field">
-                                        <label class="profile-label" for="profileEmailInput">Email</label>
-                                        <input type="email" 
-                                               id="profileEmailInput" 
-                                               name="email" 
-                                               class="profile-input" 
-                                               placeholder="correo@ejemplo.com" 
-                                               required 
-                                               disabled
-                                               aria-label="Email">
-                                    </div>
+                <article class="tech-profile-hero">
+                    <div class="tech-profile-hero__identity">
+                        <span class="tech-profile-avatar" id="technicianAvatar" aria-hidden="true"></span>
+                        <div class="tech-profile-hero__text">
+                            <h4 id="technicianProfileName">-</h4>
+                            <p id="technicianProfileEmail">-</p>
+                            <p class="tech-profile-hero__meta" id="technicianProfileMeta"></p>
+                        </div>
+                        <span class="tech-profile-badge" id="technicianProfileSpecialty"></span>
+                    </div>
+                    <div class="tech-profile-stats" id="technicianProfileStats" aria-live="polite"></div>
+                </article>
+
+                <div class="tech-profile-grid">
+                    <article class="request-panel-card">
+                        <div class="request-panel-head">
+                            <div>
+                                <h4>Datos de la cuenta</h4>
+                                <p>Los administra la entidad proveedora. Si algo esta mal, pediles la correccion.</p>
+                            </div>
+                        </div>
+                        <dl class="tech-profile-facts" id="technicianProfileFacts"></dl>
+                    </article>
+
+                    <article class="request-panel-card">
+                        <div class="request-panel-head">
+                            <div>
+                                <h4>Cambio de entidad</h4>
+                                <p>Pedi el pase a otra entidad proveedora. Lo resuelve un administrador.</p>
+                            </div>
+                        </div>
+
+                        <div class="tech-change">
+                            <p class="tech-change__current">
+                                <span>Entidad actual</span>
+                                <strong id="technicianCurrentProviderName">Cargando entidad...</strong>
+                            </p>
+
+                            <div id="technicianProviderChangeForm" class="tech-change__form">
+                                <label class="input-group">
+                                    <span>Solicitar cambio a</span>
+                                    <select id="technicianProviderTargetSelect" required>
+                                        <option value="">Seleccionar entidad</option>
+                                    </select>
+                                </label>
+                                <label class="input-group">
+                                    <span>Motivo</span>
+                                    <textarea id="technicianProviderChangeNote" rows="3" placeholder="Aclaracion breve para la entidad destino."></textarea>
+                                </label>
+                                <div class="tech-change__actions">
+                                    <button type="button" class="btn btn-secondary" id="technicianProviderChangeSubmit">Enviar solicitud</button>
+                                </div>
+                                <div id="technicianProviderChangeFeedback" class="profile-inline-feedback hidden" aria-live="polite"></div>
+                            </div>
+
+                            <div class="tech-change__history">
+                                <h5>Solicitudes registradas</h5>
+                                <div id="technicianProviderChangeRequests" class="provider-technician-list">
+                                    <p class="request-empty-text">Todavia no registraste solicitudes de cambio de entidad.</p>
                                 </div>
                             </div>
-
-                            <!-- Información profesional -->
-                            <div class="profile-card profile-card--content">
-                                <header class="profile-card-header">
-                                    <h3 class="profile-card-title">
-                                        <i class="fas fa-user-gear" aria-hidden="true"></i>
-                                        Información profesional
-                                    </h3>
-                                </header>
-                                <div class="profile-card-body">
-                                    <div class="profile-field">
-                                        <label class="profile-label" for="profileSpecialtyInput">Especialidad</label>
-                                        <div class="profile-specialty-wrapper">
-                                            <select 
-                                                   id="profileSpecialtyInput" 
-                                                   name="specialty" 
-                                                   class="profile-input" 
-                                                   disabled
-                                                   aria-label="Especialidad">
-                                                <option value="">Seleccionar especialidad</option>
-                                                <option value="Fumigacion">Fumigacion</option>
-                                                <option value="Control de roedores">Control de roedores</option>
-                                                <option value="Desinfeccion">Desinfeccion</option>
-                                                <option value="Control de plagas urbanas">Control de plagas urbanas</option>
-                                                <option value="Manejo integrado de plagas">Manejo integrado de plagas</option>
-                                                <option value="Sanitizacion de ambientes">Sanitizacion de ambientes</option>
-                                            </select>
-                                            <span class="profile-specialty-chip" id="specialtyChip" aria-hidden="true"></span>
-                                        </div>
-                                    </div>
-                                    <div class="profile-professional-extras" aria-label="Información profesional adicional">
-                                        <div class="profile-chips-container" id="professionalChips" role="list">
-                                        </div>
-                                        <div class="profile-location" role="group" aria-label="Entidad proveedora">
-                                            <i class="fas fa-building" aria-hidden="true"></i>
-                                            <span id="profileProviderName">Entidad proveedora</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Biografía -->
-                            <div class="profile-card profile-card--content">
-                                <header class="profile-card-header">
-                                    <h3 class="profile-card-title">
-                                        <i class="fas fa-file-alt" aria-hidden="true"></i>
-                                        Biografía
-                                    </h3>
-                                </header>
-                                <div class="profile-card-body">
-                                    <div class="profile-field">
-                                        <label class="profile-label" for="profileBioInput">Descripción profesional</label>
-                                        <div class="profile-biography-wrapper">
-                                            <textarea id="profileBioInput" 
-                                                      name="biography" 
-                                                      class="profile-textarea" 
-                                                      rows="6" 
-                                                      placeholder="Comparte tu experiencia y enfoque profesional." 
-                                                      disabled
-                                                      aria-label="Biografía profesional"></textarea>
-                                            <button type="button" 
-                                                    class="profile-biography-toggle hidden" 
-                                                    id="bioToggle"
-                                                    aria-expanded="false"
-                                                    aria-controls="profileBioInput">
-                                                <span class="bio-toggle-text">Ver más</span>
-                                                <i class="fas fa-chevron-down" aria-hidden="true"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Acciones del formulario -->
-                            <div class="profile-card profile-card--content">
-                                <header class="profile-card-header">
-                                    <h3 class="profile-card-title">
-                                        <i class="fas fa-building" aria-hidden="true"></i>
-                                        Cambio de entidad
-                                    </h3>
-                                </header>
-                                <div class="profile-card-body">
-                                    <div class="profile-field">
-                                        <label class="profile-label">Entidad actual</label>
-                                        <div class="profile-static-value" id="technicianCurrentProviderName">Cargando entidad...</div>
-                                    </div>
-                                    <div id="technicianProviderChangeForm" class="profile-inline-form">
-                                        <div class="profile-field">
-                                            <label class="profile-label" for="technicianProviderTargetSelect">Solicitar cambio a</label>
-                                            <select id="technicianProviderTargetSelect" class="profile-input" required>
-                                                <option value="">Seleccionar entidad</option>
-                                            </select>
-                                        </div>
-                                        <div class="profile-field">
-                                            <label class="profile-label" for="technicianProviderChangeNote">Motivo</label>
-                                            <textarea id="technicianProviderChangeNote"
-                                                      class="profile-textarea"
-                                                      rows="3"
-                                                      placeholder="Aclaracion breve para la entidad destino."></textarea>
-                                        </div>
-                                        <div class="profile-inline-actions">
-                                            <button type="button" class="btn btn-secondary" id="technicianProviderChangeSubmit">Enviar solicitud</button>
-                                        </div>
-                                        <div id="technicianProviderChangeFeedback" class="profile-inline-feedback hidden" aria-live="polite"></div>
-                                    </div>
-                                    <div class="profile-inline-history">
-                                        <h4 class="profile-inline-history-title">Solicitudes registradas</h4>
-                                        <div id="technicianProviderChangeRequests" class="provider-technician-list">
-                                            <p class="request-empty-text">Todavia no registraste solicitudes de cambio de entidad.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="profile-actions hidden" id="profileActions">
-                                <button type="button" 
-                                        class="btn btn-secondary" 
-                                        id="cancelProfileEdit"
-                                        aria-label="Cancelar edición">
-                                    <i class="fas fa-times" aria-hidden="true"></i>
-                                    Cancelar
-                                </button>
-                                <button type="submit" 
-                                        class="btn btn-primary" 
-                                        id="saveProfile"
-                                        aria-label="Guardar cambios">
-                                    <i class="fas fa-save" aria-hidden="true"></i>
-                                    Guardar Cambios
-                                </button>
-                            </div>
-                        </form>
-                    </section>
+                        </div>
+                    </article>
                 </div>
             </div>
         </main>

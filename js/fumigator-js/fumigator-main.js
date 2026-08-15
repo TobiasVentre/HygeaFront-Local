@@ -22,6 +22,7 @@ import {
 import { ensureAuthorizedPage, isAuthRedirectError } from "../utils/session-guard.js";
 import {
   ORDER_PROGRESS_STEPS,
+  getInitials,
   getOrderProgressRank,
   getOrderStatusIcon,
   getOrderStatusTone as getOrderTone,
@@ -216,7 +217,6 @@ function getPageRefs() {
     welcomeName: document.getElementById("welcome-name"),
     welcomeMessage: document.getElementById("welcome-message"),
     profileSection: document.getElementById("fumigatorProfileSection"),
-    profilePageHeader: document.getElementById("profilePageHeader"),
     dashboardSection: document.getElementById("mainDashboardSection"),
     agendaSection: document.getElementById("technicianAgendaSection"),
     executionSection: document.getElementById("technicianExecutionSection"),
@@ -269,13 +269,6 @@ function getPageRefs() {
     activeOrders: document.getElementById("active-orders"),
     inProgressOrders: document.getElementById("in-progress-orders"),
     nextService: document.getElementById("next-service"),
-    profileFirstNameInput: document.getElementById("profileFirstNameInput"),
-    profileLastNameInput: document.getElementById("profileLastNameInput"),
-    profileEmailInput: document.getElementById("profileEmailInput"),
-    profileSpecialtyInput: document.getElementById("profileSpecialtyInput"),
-    specialtyChip: document.getElementById("specialtyChip"),
-    profileBioInput: document.getElementById("profileBioInput"),
-    bioToggle: document.getElementById("bioToggle"),
     technicianCurrentProviderName: document.getElementById("technicianCurrentProviderName"),
     technicianProviderTargetSelect: document.getElementById("technicianProviderTargetSelect"),
     technicianProviderChangeNote: document.getElementById("technicianProviderChangeNote"),
@@ -1933,49 +1926,97 @@ function populateProfile() {
   if (refs.welcomeName) refs.welcomeName.textContent = "Jornada operativa";
   if (refs.welcomeMessage) refs.welcomeMessage.textContent = `${displayName}: agenda, bandeja y seguimiento para ejecutar, registrar evidencia y cerrar cada orden con trazabilidad.`;
 
-  if (refs.profileFirstNameInput) refs.profileFirstNameInput.value = state.user.firstName || "";
-  if (refs.profileLastNameInput) refs.profileLastNameInput.value = state.user.lastName || "";
-  if (refs.profileEmailInput) refs.profileEmailInput.value = state.user.email || "";
-  if (refs.profileSpecialtyInput) refs.profileSpecialtyInput.value = state.technicianProfile.specialty || "";
-  if (refs.specialtyChip) {
-    refs.specialtyChip.textContent = state.technicianProfile.specialty || "";
-    refs.specialtyChip.setAttribute("aria-hidden", state.technicianProfile.specialty ? "false" : "true");
-  }
-  if (refs.profileBioInput) {
-    refs.profileBioInput.value = "Perfil sincronizado desde AuthMS/DirectoryMS. La edicion avanzada queda pendiente.";
-  }
-  // El perfil mostraba "Consultorio Onsari" fijo, heredado del template.
-  const profileProviderName = document.getElementById("profileProviderName");
-  if (profileProviderName && state.technicianProfile) {
-    profileProviderName.textContent = getProviderName(state.technicianProfile.providerEntityId);
+  const entidad = getProviderName(state.technicianProfile.providerEntityId);
+  const especialidad = state.technicianProfile.specialty || "";
+  const alta = state.technicianProfile.createdAtUtc ?? state.technicianProfile.CreatedAtUtc;
+
+  const avatar = document.getElementById("technicianAvatar");
+  if (avatar) avatar.textContent = getInitials(displayName);
+
+  const nombre = document.getElementById("technicianProfileName");
+  if (nombre) nombre.textContent = displayName;
+
+  const email = document.getElementById("technicianProfileEmail");
+  if (email) email.textContent = state.user.email || "-";
+
+  const meta = document.getElementById("technicianProfileMeta");
+  if (meta) {
+    const desde = alta
+      ? `En la plataforma desde ${formatArgentinaDate(alta, { weekday: undefined, day: undefined, month: "long", year: "numeric" })}`
+      : "";
+    meta.textContent = [entidad, desde].filter(Boolean).join(" · ");
   }
 
-  if (refs.technicianCurrentProviderName) {
-    refs.technicianCurrentProviderName.textContent = getProviderName(state.technicianProfile.providerEntityId);
+  const badge = document.getElementById("technicianProfileSpecialty");
+  if (badge) {
+    badge.textContent = especialidad || "Sin especialidad cargada";
+    badge.classList.toggle("is-empty", !especialidad);
   }
-  if (refs.technicianProviderTargetSelect) {
-    const providerOptions = state.availableProviders
-      .filter((provider) => provider.id !== state.technicianProfile.providerEntityId && provider.isEnabled)
-      .map((provider) => `<option value="${escapeHtml(provider.id)}">${escapeHtml(provider.name)}</option>`)
-      .join("");
-    refs.technicianProviderTargetSelect.innerHTML = `
-      <option value="">Seleccionar entidad</option>
-      ${providerOptions}
-    `;
-  }
-  const hasPendingProviderChange = state.providerChangeRequests.some((request) => request.status === "Pending" || request.status === 1);
-  if (refs.technicianProviderTargetSelect) refs.technicianProviderTargetSelect.disabled = hasPendingProviderChange;
-  if (refs.technicianProviderChangeNote) refs.technicianProviderChangeNote.disabled = hasPendingProviderChange;
-  if (refs.technicianProviderChangeSubmit) refs.technicianProviderChangeSubmit.disabled = hasPendingProviderChange;
-  if (hasPendingProviderChange) {
-    showProviderChangeFeedback("Ya tienes una solicitud de cambio pendiente. Espera la decision de la entidad destino.", "info");
-  } else {
-    showProviderChangeFeedback("");
-  }
-  renderProviderChangeRequests();
 
-  setupProfileEnhancements();
+  renderTechnicianProfileStats();
+  renderTechnicianProfileFacts(displayName, entidad, especialidad, alta);
+
+  const currentProviderName = document.getElementById("technicianCurrentProviderName");
+  if (currentProviderName) currentProviderName.textContent = entidad;
 }
+
+function renderTechnicianProfileStats() {
+  const contenedor = document.getElementById("technicianProfileStats");
+  if (!contenedor) return;
+
+  const hoy = getArgentinaDateInputValue();
+  const delDia = state.orders.filter((order) =>
+    order.scheduledStartAtUtc && toDateInputValue(order.scheduledStartAtUtc) === hoy).length;
+  const activas = state.orders.filter((order) => !isClosedTechnicianOrder(order)).length;
+  const minutosCargados = state.availability.reduce((total, slot) =>
+    total + (new Date(slot.endAtUtc) - new Date(slot.startAtUtc)) / 60000, 0);
+
+  const tiles = [
+    { icon: "fa-calendar-day", value: String(delDia), label: "Ordenes hoy" },
+    { icon: "fa-clipboard-list", value: String(activas), label: "Activas" },
+    { icon: "fa-clock", value: formatDurationMinutes(minutosCargados), label: "Disponibilidad cargada" },
+    { icon: "fa-user-slash", value: String(state.absences.length), label: state.absences.length === 1 ? "Ausencia" : "Ausencias" }
+  ];
+
+  contenedor.innerHTML = tiles.map((tile) => `
+    <div class="tech-profile-stat">
+      <i class="fas ${tile.icon}" aria-hidden="true"></i>
+      <div>
+        <strong>${escapeHtml(tile.value)}</strong>
+        <small>${escapeHtml(tile.label)}</small>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderTechnicianProfileFacts(displayName, entidad, especialidad, alta) {
+  const contenedor = document.getElementById("technicianProfileFacts");
+  if (!contenedor) return;
+
+  // Se muestran como valores y no como campos de formulario: el tecnico no puede
+  // editarlos. El endpoint de actualizacion es de la entidad proveedora.
+  const filas = [
+    ["Nombre", displayName],
+    ["Email", state.user.email || "-"],
+    ["Especialidad", especialidad || "Sin especialidad cargada"],
+    ["Entidad proveedora", entidad],
+    ["Alta en la plataforma", alta ? formatDate(alta) : "-"]
+  ];
+
+  contenedor.innerHTML = filas.map(([etiqueta, valor]) => `
+    <div>
+      <dt>${escapeHtml(etiqueta)}</dt>
+      <dd>${escapeHtml(valor)}</dd>
+    </div>
+  `).join("");
+}
+
+/** Una orden deja de estar activa cuando se finaliza o se cierra. */
+function isClosedTechnicianOrder(order) {
+  const estado = order.status;
+  return estado === 4 || estado === 6 || estado === "Finalized" || estado === "Closed";
+}
+
 
 async function loadAvailability() {
   const refs = getPageRefs();
@@ -3308,72 +3349,6 @@ function setupCancellationModal() {
   });
 }
 
-function setupProfileEnhancements() {
-  const refs = getPageRefs();
-
-  if (refs.profilePageHeader && refs.profileSection && !refs.profileSection.querySelector(".profile-header-trigger")) {
-    const headerTrigger = document.createElement("div");
-    headerTrigger.className = "profile-header-trigger";
-    refs.profileSection.insertBefore(headerTrigger, refs.profileSection.firstChild);
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        refs.profilePageHeader?.classList.toggle("sticky", entry.intersectionRatio < 1);
-      });
-    }, {
-      threshold: [0, 1],
-      rootMargin: "-60px 0px 0px 0px"
-    });
-
-    observer.observe(headerTrigger);
-  }
-
-  const refreshSpecialtyChip = () => {
-    if (!refs.specialtyChip || !refs.profileSpecialtyInput) return;
-    const value = refs.profileSpecialtyInput.value.trim();
-    refs.specialtyChip.textContent = value;
-    refs.specialtyChip.setAttribute("aria-hidden", value ? "false" : "true");
-  };
-
-  const refreshBiographyToggle = () => {
-    if (!refs.profileBioInput || !refs.bioToggle) return;
-    const text = refs.profileBioInput.value || "";
-    const lineCount = text.split("\n").length;
-    const hasLongContent = lineCount > 3 || text.length > 200;
-    refs.bioToggle.classList.toggle("hidden", !hasLongContent);
-
-    if (!hasLongContent) {
-      refs.profileBioInput.setAttribute("data-expanded", "false");
-      refs.bioToggle.setAttribute("aria-expanded", "false");
-      const label = refs.bioToggle.querySelector(".bio-toggle-text");
-      if (label) label.textContent = "Ver mas";
-    }
-  };
-
-  if (refs.profileSpecialtyInput && !refs.profileSpecialtyInput.dataset.enhanced) {
-    refs.profileSpecialtyInput.addEventListener("input", refreshSpecialtyChip);
-    refs.profileSpecialtyInput.dataset.enhanced = "true";
-  }
-
-  if (refs.profileBioInput && !refs.profileBioInput.dataset.enhanced) {
-    refs.profileBioInput.addEventListener("input", refreshBiographyToggle);
-    refs.profileBioInput.dataset.enhanced = "true";
-  }
-
-  if (refs.bioToggle && !refs.bioToggle.dataset.enhanced && refs.profileBioInput) {
-    refs.bioToggle.addEventListener("click", () => {
-      const isExpanded = refs.profileBioInput.getAttribute("data-expanded") === "true";
-      refs.profileBioInput.setAttribute("data-expanded", isExpanded ? "false" : "true");
-      refs.bioToggle.setAttribute("aria-expanded", isExpanded ? "false" : "true");
-      const label = refs.bioToggle.querySelector(".bio-toggle-text");
-      if (label) label.textContent = isExpanded ? "Ver mas" : "Ver menos";
-    });
-    refs.bioToggle.dataset.enhanced = "true";
-  }
-
-  refreshSpecialtyChip();
-  refreshBiographyToggle();
-}
 
 async function bootstrapTechnicianContext() {
   const context = await ensureAuthorizedPage(["Technician"]);
@@ -3388,7 +3363,8 @@ async function bootstrapTechnicianContext() {
     authUserId: profile.authUserId ?? profile.AuthUserId,
     providerEntityId: profile.providerEntityId ?? profile.ProviderEntityId,
     specialty: profile.specialty ?? profile.Specialty ?? "",
-    status: profile.status ?? profile.Status
+    status: profile.status ?? profile.Status,
+    createdAtUtc: profile.createdAtUtc ?? profile.CreatedAtUtc ?? null
   };
 
   if (!isGuid(state.technicianProfile.id) || !isGuid(state.technicianProfile.providerEntityId)) {
@@ -3404,7 +3380,6 @@ export async function initializeFumigatorPanel() {
   setupOrderActions();
   setupProviderChangeActions();
   setupAccessibleDialogs();
-  setupProfileEnhancements();
   setSection(parseTechnicianSection());
 
   try {

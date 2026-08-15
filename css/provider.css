@@ -1709,3 +1709,125 @@ body.provider-modal-open {
     transform: none;
     box-shadow: none;
 }
+
+/* --- Perfil de la entidad --- */
+.prov-profile-hero {
+    display: grid;
+    gap: 1.4rem;
+    margin-bottom: 1.25rem;
+    padding: 1.5rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+    background: var(--surface-card);
+    box-shadow: 0 18px 35px -30px var(--shadow-lg);
+}
+
+.prov-profile-hero__identity {
+    display: flex;
+    align-items: center;
+    gap: 1.15rem;
+}
+
+.prov-profile-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--brand-softer) 0%, var(--brand-soft) 100%);
+    color: var(--brand-strong);
+    font-size: 1.3rem;
+    font-weight: 800;
+}
+
+.prov-profile-hero__text {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.prov-profile-hero__text h4 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.35rem;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+.prov-profile-hero__text p {
+    margin: 0.2rem 0 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.prov-profile-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
+    gap: 0.7rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.prov-profile-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    background: var(--surface-page);
+}
+
+.prov-profile-stat > i {
+    color: var(--brand);
+}
+
+.prov-profile-stat strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 800;
+    line-height: 1.15;
+}
+
+.prov-profile-stat small {
+    display: block;
+    margin-top: 0.1rem;
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.prov-profile-admin {
+    max-width: 34rem;
+}
+
+.prov-profile-facts {
+    display: grid;
+    gap: 0.7rem;
+    margin: 0;
+}
+
+.prov-profile-facts dt {
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.prov-profile-facts dd {
+    margin: 0.15rem 0 0;
+    color: var(--text-primary);
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 520px) {
+    .prov-profile-hero__identity {
+        flex-wrap: wrap;
+    }
+}

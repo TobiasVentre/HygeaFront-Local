@@ -1249,61 +1249,68 @@ function renderPendingCancellationRequests() {
 }
 
 function renderProfile() {
-  const providerCard = document.getElementById("providerProfileCard");
+  const identidad = document.getElementById("providerProfileIdentity");
+  const stats = document.getElementById("providerProfileStats");
   const adminCard = document.getElementById("providerAdminCard");
-  const providerIsEnabled = state.providerEntity?.isEnabled ?? state.providerEntity?.IsEnabled ?? false;
 
-  if (providerCard) {
-    const technicianCount = state.technicians.length;
-    const activeOrders = state.orders.filter((order) => isActiveOrderStatus(getStatusValue(order.status))).length;
+  const nombre = state.providerEntity?.name ?? state.providerEntity?.Name ?? "Sin nombre";
+  const habilitada = state.providerEntity?.isEnabled ?? state.providerEntity?.IsEnabled ?? false;
 
-    providerCard.innerHTML = `
-      <div class="provider-entity-head">
-        <span class="provider-entity-avatar" aria-hidden="true">${escapeHtml(getInitials(state.providerEntity?.name ?? state.providerEntity?.Name ?? "Entidad"))}</span>
-        <div>
-          <strong>${escapeHtml(state.providerEntity?.name ?? state.providerEntity?.Name ?? "Sin nombre")}</strong>
-          <span class="provider-status-badge ${providerIsEnabled ? "is-active" : "is-inactive"}">
-            <i class="fas ${providerIsEnabled ? "fa-circle-check" : "fa-circle-pause"}" aria-hidden="true"></i>
-            ${providerIsEnabled ? "Habilitada" : "Deshabilitada"}
-          </span>
-        </div>
+  if (identidad) {
+    identidad.innerHTML = `
+      <span class="prov-profile-avatar" aria-hidden="true">${escapeHtml(getInitials(nombre))}</span>
+      <div class="prov-profile-hero__text">
+        <h4>${escapeHtml(nombre)}</h4>
+        <p>Entidad proveedora de la red Hygea</p>
       </div>
-      <div class="provider-meta-list">
-        <div class="provider-meta-item">
-          <strong>Staff tecnico</strong>
-          <span>${escapeHtml(String(technicianCount))} tecnico${technicianCount === 1 ? "" : "s"}</span>
-        </div>
-        <div class="provider-meta-item">
-          <strong>Ordenes activas</strong>
-          <span>${escapeHtml(String(activeOrders))}</span>
-        </div>
-        <div class="provider-meta-item">
-          <strong>Ordenes historicas</strong>
-          <span>${escapeHtml(String(state.orders.length))}</span>
-        </div>
-      </div>
+      <span class="provider-status-badge ${habilitada ? "is-active" : "is-inactive"}">
+        <i class="fas ${habilitada ? "fa-circle-check" : "fa-circle-pause"}" aria-hidden="true"></i>
+        ${habilitada ? "Habilitada" : "Deshabilitada"}
+      </span>
     `;
+  }
+
+  if (stats) {
+    const tecnicos = state.technicians.length;
+    const activos = state.technicians.filter((tecnico) =>
+      ACTIVE_TECHNICIAN_STATUS_VALUES.has(tecnico.status ?? tecnico.Status)).length;
+    const activas = state.orders.filter((order) => isActiveOrderStatus(getStatusValue(order.status))).length;
+
+    const tiles = [
+      { icon: "fa-users-cog", value: String(tecnicos), label: tecnicos === 1 ? "Tecnico" : "Tecnicos" },
+      { icon: "fa-user-shield", value: String(activos), label: "Activos" },
+      { icon: "fa-clipboard-check", value: String(activas), label: "Ordenes activas" },
+      { icon: "fa-clipboard-list", value: String(state.orders.length), label: "Ordenes historicas" }
+    ];
+
+    stats.innerHTML = tiles.map((tile) => `
+      <div class="prov-profile-stat">
+        <i class="fas ${tile.icon}" aria-hidden="true"></i>
+        <div>
+          <strong>${escapeHtml(tile.value)}</strong>
+          <small>${escapeHtml(tile.label)}</small>
+        </div>
+      </div>
+    `).join("");
   }
 
   if (adminCard) {
-    adminCard.innerHTML = `
-      <div class="provider-meta-list">
-        <div class="provider-meta-item">
-          <strong>Nombre</strong>
-          <span>${escapeHtml(state.providerAdminProfile?.fullName ?? getUserDisplayName())}</span>
-        </div>
-        <div class="provider-meta-item">
-          <strong>Email</strong>
-          <span>${escapeHtml(state.user?.email ?? "-")}</span>
-        </div>
-        <div class="provider-meta-item">
-          <strong>Alta en el panel</strong>
-          <span>${escapeHtml(state.providerAdminProfile?.createdAtUtc ? formatDateTime(state.providerAdminProfile.createdAtUtc) : "-")}</span>
-        </div>
+    const alta = state.providerAdminProfile?.createdAtUtc ?? state.providerAdminProfile?.CreatedAtUtc;
+    const filas = [
+      ["Nombre", state.providerAdminProfile?.fullName ?? getUserDisplayName()],
+      ["Email", state.user?.email ?? "-"],
+      ["Alta en el panel", alta ? formatDateTime(alta) : "-"]
+    ];
+
+    adminCard.innerHTML = filas.map(([etiqueta, valor]) => `
+      <div>
+        <dt>${escapeHtml(etiqueta)}</dt>
+        <dd>${escapeHtml(valor)}</dd>
       </div>
-    `;
+    `).join("");
   }
 }
+
 
 function renderOrderDetail() {
   const hero = document.getElementById("providerOrderDetailHero");

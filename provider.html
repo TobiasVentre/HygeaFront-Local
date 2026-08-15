@@ -420,27 +420,20 @@
                     </div>
                 </div>
 
-                <div class="order-detail-layout provider-layout">
-                    <article class="request-panel-card">
-                        <div class="request-panel-head">
-                            <div>
-                                <h4>Entidad</h4>
-                                <p>Datos del proveedor asociado a este usuario.</p>
-                            </div>
-                        </div>
-                        <div id="providerProfileCard" class="provider-profile-card"></div>
-                    </article>
+                <article class="prov-profile-hero">
+                    <div class="prov-profile-hero__identity" id="providerProfileIdentity"></div>
+                    <div class="prov-profile-stats" id="providerProfileStats" aria-live="polite"></div>
+                </article>
 
-                    <article class="request-panel-card">
-                        <div class="request-panel-head">
-                            <div>
-                                <h4>Administrador</h4>
-                                <p>Identidad autenticada que opera el panel.</p>
-                            </div>
+                <article class="request-panel-card prov-profile-admin">
+                    <div class="request-panel-head">
+                        <div>
+                            <h4>Usuario administrador</h4>
+                            <p>Identidad autenticada que opera este panel.</p>
                         </div>
-                        <div id="providerAdminCard" class="provider-profile-card"></div>
-                    </article>
-                </div>
+                    </div>
+                    <dl class="prov-profile-facts" id="providerAdminCard"></dl>
+                </article>
             </section>
         </main>
     </div>

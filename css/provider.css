@@ -1699,3 +1699,13 @@ body.provider-modal-open {
     background: var(--danger-bg);
     color: var(--danger-strong);
 }
+
+/* El botón de crear orden arranca deshabilitado hasta elegir horario: tiene que
+   verse deshabilitado, si no parece que la pantalla no responde al tocarlo. */
+.provider-modal__footer .btn[disabled],
+.provider-modal__footer .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}

@@ -1151,6 +1151,12 @@ body {
     overflow: hidden;
 }
 
+/* Sin esto el display: flex de abajo le gana al display: none que el navegador
+   aplica por el atributo hidden, y el dialogo nunca se va de la pantalla. */
+.app-shell-dialog-backdrop[hidden] {
+    display: none;
+}
+
 .app-shell-dialog-backdrop {
     position: fixed;
     inset: 0;

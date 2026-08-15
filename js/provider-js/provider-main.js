@@ -2464,7 +2464,7 @@ async function submitNewOrder() {
   } catch (error) {
     showNewOrderFeedback(getErrorMessage(error, "No se pudo crear la orden."), "error");
   } finally {
-    refs.submit?.removeAttribute("disabled");
+    syncNewOrderSubmit();
   }
 }
 

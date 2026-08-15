@@ -6759,3 +6759,211 @@ body {
     font-size: 0.86rem;
     font-weight: 700;
 }
+
+/* --- Agendas semanal y mensual --- */
+.agenda-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.agenda-nav__label {
+    min-width: 12rem;
+    text-align: center;
+    color: var(--text-primary);
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.agenda-week__rows {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.agenda-week__row {
+    display: grid;
+    grid-template-columns: 5.5rem minmax(0, 1fr) 6rem;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.7rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    background: var(--surface-card);
+}
+
+.agenda-week__row.is-today {
+    border-color: var(--brand);
+    background: var(--brand-softer);
+}
+
+.agenda-week__row.is-empty {
+    background: var(--surface-page);
+}
+
+.agenda-week__day {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+}
+
+.agenda-week__day strong {
+    color: var(--text-primary);
+    font-size: 0.86rem;
+    text-transform: capitalize;
+}
+
+.agenda-week__today {
+    padding: 0.05rem 0.35rem;
+    border-radius: 999px;
+    background: var(--brand);
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight: 700;
+}
+
+.agenda-week__none {
+    margin: 0;
+    color: var(--text-tertiary);
+    font-size: 0.8rem;
+}
+
+.agenda-week__stat {
+    text-align: right;
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.agenda-week__stat small {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+}
+
+/* La escala es una fila mas de la misma grilla: asi cae siempre alineada con
+   las pistas, sin margenes calculados a ojo. */
+.agenda-week__row--scale {
+    border-color: transparent;
+    background: transparent;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.agenda-week__scale {
+    position: relative;
+    height: 1rem;
+}
+
+@media (max-width: 640px) {
+    .agenda-week__row {
+        grid-template-columns: 4.5rem minmax(0, 1fr);
+        row-gap: 0.35rem;
+    }
+
+    .agenda-week__stat {
+        grid-column: 2;
+        text-align: left;
+    }
+
+    .agenda-week__row--scale {
+        display: none;
+    }
+}
+
+/* --- Mes --- */
+.agenda-month__head,
+.agenda-month__grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.35rem;
+}
+
+.agenda-month__head {
+    margin-bottom: 0.4rem;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.agenda-month__cell {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    min-height: 3.1rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    background: var(--surface-card);
+}
+
+.agenda-month__cell.is-blank {
+    border-color: transparent;
+    background: transparent;
+}
+
+.agenda-month__cell b {
+    color: var(--text-secondary);
+    font-size: 0.86rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+/* La intensidad del verde dice cuanta disponibilidad tiene el dia */
+.agenda-month__cell.is-level-1 {
+    background: color-mix(in srgb, var(--success-bright) 16%, var(--surface-card) 84%);
+}
+
+.agenda-month__cell.is-level-2 {
+    background: color-mix(in srgb, var(--success-bright) 32%, var(--surface-card) 68%);
+}
+
+.agenda-month__cell.is-level-3 {
+    background: color-mix(in srgb, var(--success-bright) 52%, var(--surface-card) 48%);
+}
+
+.agenda-month__cell.is-level-2 b,
+.agenda-month__cell.is-level-3 b {
+    color: var(--text-primary);
+}
+
+.agenda-month__cell.is-today {
+    border-color: var(--brand);
+    box-shadow: inset 0 0 0 1px var(--brand);
+}
+
+.agenda-month__dot,
+.agenda-month__abs {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.agenda-month__dot {
+    background: var(--brand);
+}
+
+.agenda-month__abs {
+    background: var(--danger);
+}
+
+.agenda-month__legend {
+    margin-top: 1rem;
+}
+
+.avail-days__key.is-level-1 {
+    background: color-mix(in srgb, var(--success-bright) 16%, var(--surface-card) 84%);
+    border: 1px solid var(--border-subtle);
+}
+
+.avail-days__key.is-level-2 {
+    background: color-mix(in srgb, var(--success-bright) 32%, var(--surface-card) 68%);
+}
+
+.avail-days__key.is-level-3 {
+    background: color-mix(in srgb, var(--success-bright) 52%, var(--surface-card) 48%);
+}

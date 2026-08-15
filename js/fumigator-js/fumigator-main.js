@@ -111,6 +111,8 @@ const state = {
   currentOrderEvidencePreviewUrls: new Map(),
   orderActionFeedback: null,
   availabilityView: "availability",
+  agendaWeekStart: null,
+  agendaMonthStart: null,
   bulkWeekStart: null,
   bulkSelectedDates: new Set(),
   bulkLoadedUntil: null
@@ -261,8 +263,8 @@ function getPageRefs() {
     absenceList: document.getElementById("absenceList"),
     availabilityViewAvailability: document.getElementById("availabilityViewAvailability"),
     availabilityViewAbsences: document.getElementById("availabilityViewAbsences"),
-    availabilityViewAgendaDay: document.getElementById("availabilityViewAgendaDay"),
     availabilityViewAgendaWeek: document.getElementById("availabilityViewAgendaWeek"),
+    availabilityViewAgendaMonth: document.getElementById("availabilityViewAgendaMonth"),
     ordersToday: document.getElementById("orders-today"),
     activeOrders: document.getElementById("active-orders"),
     inProgressOrders: document.getElementById("in-progress-orders"),
@@ -652,7 +654,6 @@ function resetAvailabilityForm() {
   }
   refs.availabilityForm?.classList.add("hidden");
   showAvailabilityFeedback("");
-  renderAvailabilityDaySummary();
 }
 
 function resetAbsenceForm() {
@@ -668,7 +669,6 @@ function resetAbsenceForm() {
   }
   refs.absenceCancelEditBtn?.classList.add("hidden");
   showAbsenceFeedback("");
-  renderAvailabilityDaySummary();
 }
 
 function setSection(sectionKey) {
@@ -717,15 +717,210 @@ function setTechnicianOrdersMode(mode = "list") {
   refs.technicianOrderDetailView?.classList.toggle("hidden", mode !== "detail");
 }
 
+/* --- Agendas semanal y mensual --- */
+
+/**
+ * Todo lo que pasa un dia, en el mismo formato que usa la lista de bloques.
+ * Tener una sola funcion evita que las tres vistas cuenten distinto.
+ */
+function getDayLoad(dateValue) {
+  const bloques = state.availability.filter((slot) => toDateInputValue(slot.startAtUtc) === dateValue);
+  const ausencias = state.absences.filter((absence) => toDateInputValue(absence.startAtUtc) === dateValue);
+  const ordenes = state.orders.filter((order) =>
+    order.scheduledStartAtUtc && toDateInputValue(order.scheduledStartAtUtc) === dateValue);
+
+  const minutos = (items, desde, hasta) => items.reduce((total, item) =>
+    total + (new Date(item[hasta]) - new Date(item[desde])) / 60000, 0);
+
+  return {
+    bloques,
+    ausencias,
+    ordenes,
+    minutosLibres: minutos(bloques, "startAtUtc", "endAtUtc"),
+    minutosOcupados: minutos(ordenes, "scheduledStartAtUtc", "scheduledEndAtUtc"),
+    tramos: buildDayTimelineSegments(dateValue, bloques, ausencias, ordenes)
+  };
+}
+
+function renderTimelineTrack(tramos) {
+  return `
+    <div class="avail-day__track">
+      ${tramos.map((tramo) => `
+        <span class="avail-day__seg is-${tramo.tipo}"
+          style="left:${tramo.desde.toFixed(2)}%;width:${tramo.ancho.toFixed(2)}%"
+          title="${escapeHtml(tramo.etiqueta)}"></span>
+      `).join("")}
+    </div>
+  `;
+}
+
+function timelineLegend() {
+  return `
+    <p class="avail-days__legend">
+      <span><i class="avail-days__key is-libre"></i> Disponible</span>
+      <span><i class="avail-days__key is-ocupado"></i> Con orden asignada</span>
+      <span><i class="avail-days__key is-ausencia"></i> Ausencia</span>
+    </p>
+  `;
+}
+
+/* --- Semana --- */
+
+function renderAgendaWeek() {
+  const contenedor = document.getElementById("availabilityWeeklySummary");
+  const etiqueta = document.getElementById("agendaWeekLabel");
+  if (!contenedor) return;
+
+  const inicio = state.agendaWeekStart || getWeekStart(getArgentinaDateInputValue());
+  const dias = Array.from({ length: 7 }, (_, i) => shiftArgentinaDate(inicio, i));
+
+  if (etiqueta) {
+    const fin = dias[6];
+    const nombreMes = (fecha) => formatArgentinaDate(`${fecha}T12:00:00Z`, { weekday: undefined, day: undefined, month: "long" });
+    const [, mesIni] = inicio.split("-");
+    const [anioFin, mesFin, diaFin] = fin.split("-");
+    etiqueta.textContent = mesIni === mesFin
+      ? `${Number(inicio.split("-")[2])} al ${Number(diaFin)} de ${nombreMes(fin)} de ${anioFin}`
+      : `${Number(inicio.split("-")[2])} de ${nombreMes(inicio)} al ${Number(diaFin)} de ${nombreMes(fin)}`;
+  }
+
+  const hoy = getArgentinaDateInputValue();
+
+  contenedor.innerHTML = `
+    <div class="agenda-week__rows">
+      ${dias.map((dia) => {
+        const carga = getDayLoad(dia);
+        const esHoy = dia === hoy;
+        const nombre = formatArgentinaDate(`${dia}T12:00:00Z`, { weekday: "short", day: "2-digit", month: undefined, year: undefined });
+
+        return `
+          <article class="agenda-week__row${esHoy ? " is-today" : ""}${carga.bloques.length ? "" : " is-empty"}">
+            <div class="agenda-week__day">
+              <strong>${escapeHtml(nombre)}</strong>
+              ${esHoy ? '<span class="agenda-week__today">hoy</span>' : ""}
+            </div>
+            <div class="agenda-week__body">
+              ${carga.tramos.length
+                ? renderTimelineTrack(carga.tramos)
+                : '<p class="agenda-week__none">Sin disponibilidad cargada</p>'}
+            </div>
+            <div class="agenda-week__stat">
+              ${carga.bloques.length ? escapeHtml(formatDurationMinutes(carga.minutosLibres)) : "—"}
+              ${carga.ordenes.length ? `<small>${escapeHtml(String(carga.ordenes.length))} ${carga.ordenes.length === 1 ? "orden" : "ordenes"}</small>` : ""}
+            </div>
+          </article>
+        `;
+      }).join("")}
+    </div>
+    <div class="agenda-week__row agenda-week__row--scale">
+      <span></span>
+      <div class="agenda-week__scale">
+      ${[8, 12, 16, 20].map((hora) => {
+        const izquierda = ((hora - TIMELINE_START_HOUR) / TIMELINE_HOURS) * 100;
+        return `<span class="avail-day__tick" style="left:${izquierda}%">${String(hora).padStart(2, "0")}</span>`;
+      }).join("")}
+      </div>
+      <span></span>
+    </div>
+    ${timelineLegend()}
+  `;
+}
+
+/* --- Mes --- */
+
+function renderAgendaMonth() {
+  const contenedor = document.getElementById("availabilityMonthlySummary");
+  const etiqueta = document.getElementById("agendaMonthLabel");
+  if (!contenedor) return;
+
+  const referencia = state.agendaMonthStart || `${getArgentinaDateInputValue().slice(0, 7)}-01`;
+  const [anio, mes] = referencia.split("-").map(Number);
+
+  if (etiqueta) {
+    etiqueta.textContent = formatArgentinaDate(`${referencia}T12:00:00Z`, {
+      weekday: undefined,
+      day: undefined,
+      month: "long",
+      year: "numeric"
+    });
+  }
+
+  const diasDelMes = new Date(Date.UTC(anio, mes, 0)).getUTCDate();
+  const primerDia = `${referencia.slice(0, 8)}01`;
+  // La grilla arranca en lunes: se rellena con los huecos previos.
+  const offsetInicial = (new Date(Date.UTC(anio, mes - 1, 1, 12)).getUTCDay() + 6) % 7;
+
+  const celdas = [];
+  for (let i = 0; i < offsetInicial; i++) celdas.push(null);
+  for (let d = 1; d <= diasDelMes; d++) {
+    celdas.push(`${referencia.slice(0, 8)}${String(d).padStart(2, "0")}`);
+  }
+
+  const hoy = getArgentinaDateInputValue();
+
+  contenedor.innerHTML = `
+    <div class="agenda-month__head">
+      ${["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((dia) => `<span>${dia}</span>`).join("")}
+    </div>
+    <div class="agenda-month__grid">
+      ${celdas.map((dia) => {
+        if (!dia) return '<span class="agenda-month__cell is-blank"></span>';
+
+        const carga = getDayLoad(dia);
+        const horas = carga.minutosLibres / 60;
+        // Cuatro intensidades bastan para leer la carga de un vistazo.
+        const nivel = !carga.bloques.length ? 0 : horas <= 3 ? 1 : horas <= 6 ? 2 : 3;
+
+        return `
+          <span class="agenda-month__cell is-level-${nivel}${dia === hoy ? " is-today" : ""}"
+            title="${escapeHtml(`${formatDate(`${dia}T12:00:00Z`)}: ${carga.bloques.length ? formatDurationMinutes(carga.minutosLibres) : "sin disponibilidad"}${carga.ordenes.length ? ` · ${carga.ordenes.length} orden(es)` : ""}`)}">
+            <b>${Number(dia.split("-")[2])}</b>
+            ${carga.ordenes.length ? `<i class="agenda-month__dot" aria-hidden="true"></i>` : ""}
+            ${carga.ausencias.length ? `<i class="agenda-month__abs" aria-hidden="true"></i>` : ""}
+          </span>
+        `;
+      }).join("")}
+    </div>
+    <p class="avail-days__legend agenda-month__legend">
+      <span><i class="avail-days__key is-level-1"></i> Hasta 3 h</span>
+      <span><i class="avail-days__key is-level-2"></i> 3 a 6 h</span>
+      <span><i class="avail-days__key is-level-3"></i> Mas de 6 h</span>
+      <span><i class="avail-days__key is-ocupado"></i> Con ordenes</span>
+      <span><i class="avail-days__key is-ausencia"></i> Con ausencia</span>
+    </p>
+  `;
+}
+
+function moveAgendaWeek(delta) {
+  state.agendaWeekStart = shiftArgentinaDate(state.agendaWeekStart || getWeekStart(getArgentinaDateInputValue()), delta * 7);
+  renderAgendaWeek();
+}
+
+function moveAgendaMonth(delta) {
+  const actual = state.agendaMonthStart || `${getArgentinaDateInputValue().slice(0, 7)}-01`;
+  const [anio, mes] = actual.split("-").map(Number);
+  const nuevo = new Date(Date.UTC(anio, mes - 1 + delta, 1));
+  state.agendaMonthStart = `${nuevo.getUTCFullYear()}-${String(nuevo.getUTCMonth() + 1).padStart(2, "0")}-01`;
+  renderAgendaMonth();
+}
+
+function setupAgendas() {
+  document.getElementById("agendaWeekPrev")?.addEventListener("click", () => moveAgendaWeek(-1));
+  document.getElementById("agendaWeekNext")?.addEventListener("click", () => moveAgendaWeek(1));
+  document.getElementById("agendaMonthPrev")?.addEventListener("click", () => moveAgendaMonth(-1));
+  document.getElementById("agendaMonthNext")?.addEventListener("click", () => moveAgendaMonth(1));
+}
+
+
 function setAvailabilityView(view = "availability") {
   const refs = getPageRefs();
-  const resolvedView = ["availability", "absences", "agenda-day", "agenda-week"].includes(view) ? view : "availability";
+  const resolvedView = ["availability", "absences", "agenda-week", "agenda-month"].includes(view) ? view : "availability";
   state.availabilityView = resolvedView;
 
   refs.availabilityViewAvailability?.classList.toggle("hidden", resolvedView !== "availability");
   refs.availabilityViewAbsences?.classList.toggle("hidden", resolvedView !== "absences");
-  refs.availabilityViewAgendaDay?.classList.toggle("hidden", resolvedView !== "agenda-day");
   refs.availabilityViewAgendaWeek?.classList.toggle("hidden", resolvedView !== "agenda-week");
+  refs.availabilityViewAgendaMonth?.classList.toggle("hidden", resolvedView !== "agenda-month");
 
   refs.availabilitySubnav?.querySelectorAll("[data-availability-view]").forEach((button) => {
     const isActive = button.dataset.availabilityView === resolvedView;
@@ -734,124 +929,7 @@ function setAvailabilityView(view = "availability") {
   });
 }
 
-function renderAvailabilityDaySummary() {
-  const refs = getPageRefs();
-  if (!refs.availabilityDaySummary) return;
 
-  const selectedDate = refs.availabilityAgendaDate?.value || getArgentinaDateInputValue();
-  if (refs.availabilityAgendaDate && !refs.availabilityAgendaDate.value) {
-    refs.availabilityAgendaDate.value = selectedDate;
-  }
-
-  const availableSlots = state.availability
-    .filter((slot) => toDateInputValue(slot.startAtUtc) === selectedDate)
-    .sort((left, right) => new Date(left.startAtUtc) - new Date(right.startAtUtc));
-
-  const absences = state.absences
-    .filter((absence) => toDateInputValue(absence.startAtUtc) === selectedDate)
-    .sort((left, right) => new Date(left.startAtUtc) - new Date(right.startAtUtc));
-
-  if (!availableSlots.length && !absences.length) {
-    refs.availabilityDaySummary.innerHTML = '<div class="agenda-loading">No hay bloques ni ausencias para el dia seleccionado.</div>';
-    return;
-  }
-
-  const timeline = [
-    ...availableSlots.map((slot) => ({
-      id: slot.id,
-      type: "availability",
-      startAtUtc: slot.startAtUtc,
-      endAtUtc: slot.endAtUtc,
-      label: "Disponible",
-      note: "Bloque habilitado para nuevas asignaciones."
-    })),
-    ...absences.map((absence) => ({
-      id: absence.id,
-      type: "absence",
-      startAtUtc: absence.startAtUtc,
-      endAtUtc: absence.endAtUtc,
-      label: "Ausencia",
-      note: absence.reason || "Bloqueo operativo"
-    }))
-  ].sort((left, right) => new Date(left.startAtUtc) - new Date(right.startAtUtc));
-
-  refs.availabilityDaySummary.innerHTML = `
-    <div class="availability-timeline">
-      ${timeline.map((entry) => `
-        <article class="availability-timeline-card ${entry.type === "absence" ? "is-absence" : "is-availability"}">
-          <div class="availability-timeline-card__time">
-            <strong>${escapeHtml(formatTime(entry.startAtUtc))} - ${escapeHtml(formatTime(entry.endAtUtc))}</strong>
-            <span>${escapeHtml(slotDurationLabel(entry.startAtUtc, entry.endAtUtc))}</span>
-          </div>
-          <div class="availability-timeline-card__body">
-            <span class="availability-timeline-card__badge">${escapeHtml(entry.label)}</span>
-            <p>${escapeHtml(entry.note)}</p>
-          </div>
-        </article>
-      `).join("")}
-    </div>
-  `;
-}
-
-function renderWeeklySummary(target, availability) {
-  if (!target) return;
-
-  if (!availability.length && !state.absences.length) {
-    target.innerHTML = '<div class="agenda-loading">Todavia no hay disponibilidad cargada.</div>';
-    return;
-  }
-
-  const groupedAvailability = availability.reduce((accumulator, slot) => {
-    const key = toDateInputValue(slot.startAtUtc);
-    if (!accumulator.has(key)) accumulator.set(key, []);
-    accumulator.get(key).push(slot);
-    return accumulator;
-  }, new Map());
-
-  const groupedAbsences = state.absences.reduce((accumulator, absence) => {
-    const key = toDateInputValue(absence.startAtUtc);
-    if (!accumulator.has(key)) accumulator.set(key, []);
-    accumulator.get(key).push(absence);
-    return accumulator;
-  }, new Map());
-
-  const keys = [...new Set([...groupedAvailability.keys(), ...groupedAbsences.keys()])].sort((left, right) => left.localeCompare(right));
-
-  const markup = keys
-    .map((dayKey) => {
-      const orderedSlots = (groupedAvailability.get(dayKey) || [])
-        .slice()
-        .sort((left, right) => new Date(left.startAtUtc) - new Date(right.startAtUtc));
-      const orderedAbsences = (groupedAbsences.get(dayKey) || [])
-        .slice()
-        .sort((left, right) => new Date(left.startAtUtc) - new Date(right.startAtUtc));
-
-      const referenceDate = orderedSlots[0]?.startAtUtc || orderedAbsences[0]?.startAtUtc;
-      const ranges = orderedSlots.length
-        ? orderedSlots
-        .map((slot) => `${formatTime(slot.startAtUtc)} - ${formatTime(slot.endAtUtc)}`)
-        .join(" | ")
-        : "Sin bloques de disponibilidad";
-      const absenceLabel = orderedAbsences.length
-        ? `${orderedAbsences.length} ausencia(s)`
-        : "Sin ausencias";
-
-      return `
-        <div class="schedule-item">
-            <span class="schedule-day-badge">
-            <span class="day-abbr">${escapeHtml(formatArgentinaDateTime(referenceDate, { weekday: "short", timeZone: ARGENTINA_TIME_ZONE }).replace(".", ""))}</span>
-            <span class="day-num">${escapeHtml(dayKey.slice(-2))}</span>
-          </span>
-          <span>${escapeHtml(formatDate(referenceDate))}</span>
-          <span>${escapeHtml(ranges)}</span>
-          <span class="schedule-count-badge">${orderedSlots.length} bloque(s) · ${escapeHtml(absenceLabel)}</span>
-        </div>
-      `;
-    })
-    .join("");
-
-  target.innerHTML = markup;
-}
 
 function renderOrderWeekSummary(target, orders) {
   if (!target) return;
@@ -1719,25 +1797,73 @@ function renderAbsenceList() {
     return;
   }
 
-  refs.absenceList.innerHTML = items
-    .map((absence) => `
-      <article class="availability-card absence-card" data-absence-id="${escapeHtml(absence.id)}">
-        <div class="availability-info">
-          <div class="availability-time">${escapeHtml(formatDate(absence.startAtUtc))}</div>
-          <div class="availability-duration">
-            ${escapeHtml(formatTime(absence.startAtUtc))} - ${escapeHtml(formatTime(absence.endAtUtc))}
-            <span>(${escapeHtml(slotDurationLabel(absence.startAtUtc, absence.endAtUtc))})</span>
-          </div>
-          <div class="absence-reason">${escapeHtml(absence.reason)}</div>
-        </div>
-        <div class="availability-actions">
-          <button type="button" class="btn btn-secondary" data-action="edit-absence" data-absence-id="${escapeHtml(absence.id)}">Editar</button>
-          <button type="button" class="btn btn-secondary" data-action="delete-absence" data-absence-id="${escapeHtml(absence.id)}">Eliminar</button>
-        </div>
-      </article>
-    `)
+  // Mismo formato que los bloques: una fila por dia con su jornada dibujada,
+  // para que las dos solapas se lean igual.
+  const porDia = new Map();
+  items.forEach((absence) => {
+    const dia = toDateInputValue(absence.startAtUtc);
+    if (!porDia.has(dia)) porDia.set(dia, []);
+    porDia.get(dia).push(absence);
+  });
+
+  const escala = [8, 12, 16, 20]
+    .map((hora) => {
+      const izquierda = ((hora - TIMELINE_START_HOUR) / TIMELINE_HOURS) * 100;
+      return `<span class="avail-day__tick" style="left:${izquierda}%">${String(hora).padStart(2, "0")}</span>`;
+    })
     .join("");
+
+  refs.absenceList.innerHTML = `
+    <div class="avail-days">
+      ${[...porDia.entries()].map(([dia, ausencias]) => {
+        const carga = getDayLoad(dia);
+        const minutos = ausencias.reduce((total, absence) =>
+          total + (new Date(absence.endAtUtc) - new Date(absence.startAtUtc)) / 60000, 0);
+
+        return `
+          <article class="avail-day" data-day="${escapeHtml(dia)}">
+            <header class="avail-day__head">
+              <div>
+                <strong>${escapeHtml(formatDate(`${dia}T12:00:00Z`))}</strong>
+                <span>${escapeHtml(formatDurationMinutes(minutos))} bloqueados${carga.bloques.length ? ` · ${escapeHtml(formatDurationMinutes(carga.minutosLibres))} de disponibilidad ese dia` : ""}</span>
+              </div>
+              <span class="avail-day__count">${escapeHtml(String(ausencias.length))} ${ausencias.length === 1 ? "ausencia" : "ausencias"}</span>
+            </header>
+
+            <div class="avail-day__track">
+              ${carga.tramos.map((tramo) => `
+                <span class="avail-day__seg is-${tramo.tipo}"
+                  style="left:${tramo.desde.toFixed(2)}%;width:${tramo.ancho.toFixed(2)}%"
+                  title="${escapeHtml(tramo.etiqueta)}"></span>
+              `).join("")}
+            </div>
+            <div class="avail-day__scale">${escala}</div>
+
+            <ul class="avail-day__blocks">
+              ${ausencias.map((absence) => `
+                <li class="avail-day__block" data-absence-id="${escapeHtml(absence.id)}">
+                  <span class="avail-day__range">${escapeHtml(formatTime(absence.startAtUtc))} a ${escapeHtml(formatTime(absence.endAtUtc))}</span>
+                  <span class="avail-day__len">${escapeHtml(absence.reason || "Sin motivo")}</span>
+                  <span class="avail-day__acts">
+                    <button type="button" class="avail-day__act" data-action="edit-absence" data-absence-id="${escapeHtml(absence.id)}">Editar</button>
+                    <button type="button" class="avail-day__act is-danger" data-action="delete-absence" data-absence-id="${escapeHtml(absence.id)}">Eliminar</button>
+                  </span>
+                </li>
+              `).join("")}
+            </ul>
+          </article>
+        `;
+      }).join("")}
+    </div>
+
+    <p class="avail-days__legend">
+      <span><i class="avail-days__key is-libre"></i> Disponible</span>
+      <span><i class="avail-days__key is-ocupado"></i> Con orden asignada</span>
+      <span><i class="avail-days__key is-ausencia"></i> Ausencia</span>
+    </p>
+  `;
 }
+
 
 function renderSummaryCards() {
   const refs = getPageRefs();
@@ -1871,8 +1997,8 @@ async function loadAvailability() {
   // donde puede detectar conflictos sin volver a pedir.
   state.bulkLoadedUntil = shiftArgentinaDate(getArgentinaDateInputValue(), 21);
   renderAvailabilityList();
-  renderWeeklySummary(refs.availabilityWeeklySummary, state.availability);
-  renderAvailabilityDaySummary();
+  renderAgendaWeek();
+  renderAgendaMonth();
   renderBulkAvailability();
 }
 
@@ -1891,8 +2017,8 @@ async function loadAbsences() {
   state.absences = absences.map(normalizeAbsenceSlot);
   renderAbsenceList();
   renderAvailabilityList();
-  renderWeeklySummary(refs.availabilityWeeklySummary, state.availability);
-  renderAvailabilityDaySummary();
+  renderAgendaWeek();
+  renderAgendaMonth();
 }
 
 async function loadOrders() {
@@ -2780,8 +2906,8 @@ function setupAvailabilityActions() {
   const refs = getPageRefs();
   refs.availabilityForm?.addEventListener("submit", submitAvailabilityForm);
   setupBulkAvailability();
+  setupAgendas();
   refs.availabilityCancelEditBtn?.addEventListener("click", resetAvailabilityForm);
-  refs.availabilityAgendaDate?.addEventListener("change", renderAvailabilityDaySummary);
 
   refs.availabilitySubnav?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-availability-view]");

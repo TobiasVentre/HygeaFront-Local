@@ -280,8 +280,8 @@
                 <div class="section-subnav availability-subnav" id="availabilitySubnav">
                     <button type="button" class="section-subnav__item is-active" data-availability-view="availability">Disponibilidad</button>
                     <button type="button" class="section-subnav__item" data-availability-view="absences">Ausencias</button>
-                    <button type="button" class="section-subnav__item" data-availability-view="agenda-day">Agenda por dia</button>
-                    <button type="button" class="section-subnav__item" data-availability-view="agenda-week">Agenda por semana</button>
+                    <button type="button" class="section-subnav__item" data-availability-view="agenda-week">Agenda semanal</button>
+                    <button type="button" class="section-subnav__item" data-availability-view="agenda-month">Agenda mensual</button>
                 </div>
 
                 <div class="availability-pane" id="availabilityViewAvailability">
@@ -420,31 +420,37 @@
                     </div>
                 </div>
 
-                <div class="availability-pane hidden" id="availabilityViewAgendaDay">
+                <div class="availability-pane hidden" id="availabilityViewAgendaWeek">
                     <div class="dashboard-section availability-visual-section">
                         <header class="section-header">
                             <div>
-                                <h3>Agenda por día</h3>
-                                <p>Visualiza disponibilidad y bloqueos del día que selecciones.</p>
+                                <h3>Agenda semanal</h3>
+                                <p>Una fila por dia para ver de un vistazo como quedo cubierta la semana.</p>
+                            </div>
+                            <div class="section-header-actions agenda-nav">
+                                <button type="button" class="avail-week-nav" id="agendaWeekPrev" aria-label="Semana anterior"><i class="fas fa-chevron-left"></i></button>
+                                <span class="agenda-nav__label" id="agendaWeekLabel" aria-live="polite">—</span>
+                                <button type="button" class="avail-week-nav" id="agendaWeekNext" aria-label="Semana siguiente"><i class="fas fa-chevron-right"></i></button>
                             </div>
                         </header>
-                        <div class="avail-date-picker-row">
-                            <label class="avail-label" for="availabilityAgendaDate">Seleccionar día</label>
-                            <input type="date" id="availabilityAgendaDate" class="avail-input avail-input--date-inline">
-                        </div>
-                        <div id="availabilityDaySummary" class="availability-day-summary"></div>
+                        <div id="availabilityWeeklySummary" class="agenda-week"></div>
                     </div>
                 </div>
 
-                <div class="availability-pane hidden" id="availabilityViewAgendaWeek">
+                <div class="availability-pane hidden" id="availabilityViewAgendaMonth">
                     <div class="dashboard-section availability-visual-section">
-                        <div class="section-header">
+                        <header class="section-header">
                             <div>
-                                <h3>Agenda por semana</h3>
-                                <p>Resumen semanal para validar cobertura operativa y bloqueos.</p>
+                                <h3>Agenda mensual</h3>
+                                <p>El mes completo, con la carga de cada dia.</p>
                             </div>
-                        </div>
-                        <div id="availabilityWeeklySummary" class="weekly-schedule"></div>
+                            <div class="section-header-actions agenda-nav">
+                                <button type="button" class="avail-week-nav" id="agendaMonthPrev" aria-label="Mes anterior"><i class="fas fa-chevron-left"></i></button>
+                                <span class="agenda-nav__label" id="agendaMonthLabel" aria-live="polite">—</span>
+                                <button type="button" class="avail-week-nav" id="agendaMonthNext" aria-label="Mes siguiente"><i class="fas fa-chevron-right"></i></button>
+                            </div>
+                        </header>
+                        <div id="availabilityMonthlySummary" class="agenda-month"></div>
                     </div>
                 </div>
             </div>

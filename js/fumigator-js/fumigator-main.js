@@ -113,6 +113,8 @@ const state = {
   orderActionFeedback: null,
   availabilityView: "availability",
   agendaWeekStart: null,
+  agendaDayDate: null,
+  agendaDayOrigin: "agenda-week",
   agendaMonthStart: null,
   bulkWeekStart: null,
   bulkSelectedDates: new Set(),
@@ -265,6 +267,7 @@ function getPageRefs() {
     availabilityViewAbsences: document.getElementById("availabilityViewAbsences"),
     availabilityViewAgendaWeek: document.getElementById("availabilityViewAgendaWeek"),
     availabilityViewAgendaMonth: document.getElementById("availabilityViewAgendaMonth"),
+    availabilityViewAgendaDay: document.getElementById("availabilityViewAgendaDay"),
     ordersToday: document.getElementById("orders-today"),
     activeOrders: document.getElementById("active-orders"),
     inProgressOrders: document.getElementById("in-progress-orders"),
@@ -787,7 +790,7 @@ function renderAgendaWeek() {
         const nombre = formatArgentinaDate(`${dia}T12:00:00Z`, { weekday: "short", day: "2-digit", month: undefined, year: undefined });
 
         return `
-          <article class="agenda-week__row${esHoy ? " is-today" : ""}${carga.bloques.length ? "" : " is-empty"}">
+          <article class="agenda-week__row is-clickable${esHoy ? " is-today" : ""}${carga.bloques.length ? "" : " is-empty"}" data-day="${escapeHtml(dia)}" role="button" tabindex="0" aria-label="${escapeHtml(`Ver el detalle del ${formatDate(`${dia}T12:00:00Z`)}`)}">
             <div class="agenda-week__day">
               <strong>${escapeHtml(nombre)}</strong>
               ${esHoy ? '<span class="agenda-week__today">hoy</span>' : ""}
@@ -865,7 +868,7 @@ function renderAgendaMonth() {
         const nivel = !carga.bloques.length ? 0 : horas <= 3 ? 1 : horas <= 6 ? 2 : 3;
 
         return `
-          <span class="agenda-month__cell is-level-${nivel}${dia === hoy ? " is-today" : ""}"
+          <span class="agenda-month__cell is-clickable is-level-${nivel}${dia === hoy ? " is-today" : ""}" data-day="${escapeHtml(dia)}" role="button" tabindex="0"
             title="${escapeHtml(`${formatDate(`${dia}T12:00:00Z`)}: ${carga.bloques.length ? formatDurationMinutes(carga.minutosLibres) : "sin disponibilidad"}${carga.ordenes.length ? ` · ${carga.ordenes.length} orden(es)` : ""}`)}">
             <b>${Number(dia.split("-")[2])}</b>
             ${carga.ordenes.length ? `<i class="agenda-month__dot" aria-hidden="true"></i>` : ""}
@@ -905,18 +908,126 @@ function setupAgendas() {
 }
 
 
+/* --- Detalle de un dia, al que se llega tocando un dia en semana o mes --- */
+
+function openAgendaDay(dateValue, origen = "agenda-week") {
+  if (!dateValue) return;
+  state.agendaDayDate = dateValue;
+  // Se recuerda de donde vino para que "Volver" no adivine.
+  state.agendaDayOrigin = ["agenda-week", "agenda-month"].includes(origen) ? origen : "agenda-week";
+  renderAgendaDay();
+  setAvailabilityView("agenda-day");
+}
+
+function renderAgendaDay() {
+  const contenedor = document.getElementById("agendaDayDetail");
+  const titulo = document.getElementById("agendaDayTitle");
+  const subtitulo = document.getElementById("agendaDaySubtitle");
+  if (!contenedor) return;
+
+  const dia = state.agendaDayDate || getArgentinaDateInputValue();
+  const carga = getDayLoad(dia);
+
+  if (titulo) titulo.textContent = formatDate(`${dia}T12:00:00Z`);
+  if (subtitulo) {
+    const partes = [];
+    partes.push(carga.bloques.length
+      ? `${formatDurationMinutes(carga.minutosLibres)} de disponibilidad`
+      : "Sin disponibilidad cargada");
+    if (carga.ordenes.length) partes.push(`${carga.ordenes.length} ${carga.ordenes.length === 1 ? "orden" : "ordenes"}`);
+    if (carga.ausencias.length) partes.push(`${carga.ausencias.length} ${carga.ausencias.length === 1 ? "ausencia" : "ausencias"}`);
+    subtitulo.textContent = partes.join(" · ");
+  }
+
+  const escala = [8, 12, 16, 20]
+    .map((hora) => {
+      const izquierda = ((hora - TIMELINE_START_HOUR) / TIMELINE_HOURS) * 100;
+      return `<span class="avail-day__tick" style="left:${izquierda}%">${String(hora).padStart(2, "0")}</span>`;
+    })
+    .join("");
+
+  const lista = (items, vacio, pintar) => items.length
+    ? `<ul class="agenda-day__list">${items.map(pintar).join("")}</ul>`
+    : `<p class="agenda-day__empty">${escapeHtml(vacio)}</p>`;
+
+  contenedor.innerHTML = `
+    <div class="agenda-day__track-wrap">
+      ${renderTimelineTrack(carga.tramos)}
+      <div class="avail-day__scale">${escala}</div>
+    </div>
+    ${timelineLegend()}
+
+    <div class="agenda-day__cols">
+      <section>
+        <h4>Disponibilidad</h4>
+        ${lista(carga.bloques, "No cargaste disponibilidad este dia.", (slot) => `
+          <li>
+            <span class="agenda-day__hora">${escapeHtml(formatTime(slot.startAtUtc))} a ${escapeHtml(formatTime(slot.endAtUtc))}</span>
+            <span class="agenda-day__nota">${escapeHtml(slotDurationLabel(slot.startAtUtc, slot.endAtUtc))}</span>
+          </li>
+        `)}
+      </section>
+
+      <section>
+        <h4>Ordenes</h4>
+        ${lista(
+          carga.ordenes.slice().sort((a, b) => new Date(a.scheduledStartAtUtc) - new Date(b.scheduledStartAtUtc)),
+          "No tenes ordenes agendadas este dia.",
+          (order) => `
+            <li>
+              <span class="agenda-day__hora">${escapeHtml(formatTime(order.scheduledStartAtUtc))} a ${escapeHtml(formatTime(order.scheduledEndAtUtc))}</span>
+              <span class="agenda-day__nota">${escapeHtml(getClientDisplayName(order.clientId))}</span>
+              <a class="agenda-day__link" href="#ordenes/${escapeHtml(order.id)}">Ver orden</a>
+            </li>
+          `
+        )}
+      </section>
+
+      <section>
+        <h4>Ausencias</h4>
+        ${lista(carga.ausencias, "Sin ausencias este dia.", (absence) => `
+          <li>
+            <span class="agenda-day__hora">${escapeHtml(formatTime(absence.startAtUtc))} a ${escapeHtml(formatTime(absence.endAtUtc))}</span>
+            <span class="agenda-day__nota">${escapeHtml(absence.reason || "Sin motivo")}</span>
+          </li>
+        `)}
+      </section>
+    </div>
+  `;
+}
+
+function setupAgendaDay() {
+  document.getElementById("agendaDayBack")?.addEventListener("click", () => {
+    setAvailabilityView(state.agendaDayOrigin || "agenda-week");
+  });
+
+  // Los dias se pintan con innerHTML, asi que el click se delega al contenedor.
+  document.getElementById("availabilityWeeklySummary")?.addEventListener("click", (event) => {
+    const fila = event.target.closest("[data-day]");
+    if (fila) openAgendaDay(fila.dataset.day, "agenda-week");
+  });
+
+  document.getElementById("availabilityMonthlySummary")?.addEventListener("click", (event) => {
+    const celda = event.target.closest("[data-day]");
+    if (celda) openAgendaDay(celda.dataset.day, "agenda-month");
+  });
+}
+
+
 function setAvailabilityView(view = "availability") {
   const refs = getPageRefs();
-  const resolvedView = ["availability", "absences", "agenda-week", "agenda-month"].includes(view) ? view : "availability";
+  const resolvedView = ["availability", "absences", "agenda-week", "agenda-month", "agenda-day"].includes(view) ? view : "availability";
   state.availabilityView = resolvedView;
 
   refs.availabilityViewAvailability?.classList.toggle("hidden", resolvedView !== "availability");
   refs.availabilityViewAbsences?.classList.toggle("hidden", resolvedView !== "absences");
   refs.availabilityViewAgendaWeek?.classList.toggle("hidden", resolvedView !== "agenda-week");
   refs.availabilityViewAgendaMonth?.classList.toggle("hidden", resolvedView !== "agenda-month");
+  refs.availabilityViewAgendaDay?.classList.toggle("hidden", resolvedView !== "agenda-day");
 
   refs.availabilitySubnav?.querySelectorAll("[data-availability-view]").forEach((button) => {
-    const isActive = button.dataset.availabilityView === resolvedView;
+    const vistaResaltada = resolvedView === "agenda-day" ? (state.agendaDayOrigin || "agenda-week") : resolvedView;
+    const isActive = button.dataset.availabilityView === vistaResaltada;
     button.classList.toggle("is-active", isActive);
     button.setAttribute("aria-current", isActive ? "page" : "false");
   });
@@ -2948,6 +3059,7 @@ function setupAvailabilityActions() {
   refs.availabilityForm?.addEventListener("submit", submitAvailabilityForm);
   setupBulkAvailability();
   setupAgendas();
+  setupAgendaDay();
   refs.availabilityCancelEditBtn?.addEventListener("click", resetAvailabilityForm);
 
   refs.availabilitySubnav?.addEventListener("click", (event) => {

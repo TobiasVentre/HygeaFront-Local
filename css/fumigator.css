@@ -1497,17 +1497,7 @@ body {
     color: var(--text-muted);
 }
 
-.breadcrumb-link {
-    color: var(--brand-strong);
-    text-decoration: none;
-    transition: color 0.2s ease;
-    font-weight: 500;
-}
 
-.breadcrumb-link:hover {
-    color: var(--brand-strong);
-    text-decoration: underline;
-}
 
 .breadcrumb-separator {
     color: var(--border-strong);
@@ -1519,76 +1509,16 @@ body {
 }
 
 /* Profile Page Header */
-.profile-page-header {
-    background: var(--surface-card);
-    padding: 1.5rem 1rem;
-    border-radius: 30px;
-    margin-bottom: 2rem;
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    transition: box-shadow 0.2s ease;
-}
 
-.profile-page-header.sticky {
-    box-shadow: 0 16px 30px -24px var(--shadow-lg);
-}
 
-.profile-header-trigger {
-    position: absolute;
-    inset: 0 auto auto 0;
-    width: 1px;
-    height: 1px;
-    pointer-events: none;
-}
 
-.profile-header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
 
-.profile-page-title {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0;
-    line-height: 1.2;
-}
 
-.profile-page-subtitle {
-    color: var(--text-muted);
-    font-size: 0.95rem;
-    margin: 0.25rem 0 0 0;
-}
 
 /* Usaba un degrade a negro con sombra verde, fuera del lenguaje de botones
    del producto. Se alinea con `.btn-primary`. */
-#editFumigatorProfile {
-    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-strong) 100%);
-    color: var(--surface-card);
-    border: none;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: 0 2px 8px var(--brand-glow-lg);
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
 
-#editFumigatorProfile:hover {
-    box-shadow: 0 6px 18px var(--brand-glow-lg);
-    transform: translateY(-2px);
-}
 
-#editFumigatorProfile i {
-    font-size: 1rem;
-}
 
 /* Profile Content Wrapper (sin sidebar) */
 .profile-content-wrapper {
@@ -1727,31 +1657,9 @@ body {
     gap: 0.75rem;
 }
 
-.profile-specialty-chip {
-    display: inline-block;
-    background: var(--surface-subtle);
-    color: var(--text-primary);
-    padding: 0.5rem 1rem;
-    border-radius: 999px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    border: 1px solid var(--border-subtle);
-    align-self: flex-start;
-    transition: all 0.2s ease;
-}
 
-.profile-specialty-chip:not(:empty) {
-    display: inline-block;
-}
 
-.profile-specialty-chip:empty {
-    display: none;
-}
 
-.profile-specialty-chip:not(:empty):hover {
-    background: var(--border-subtle);
-    border-color: var(--border-strong);
-}
 
 /* Professional Extras */
 .profile-professional-extras {
@@ -1842,39 +1750,10 @@ body {
     overflow: visible;
 }
 
-.profile-biography-toggle {
-    margin-top: 1rem;
-    background: transparent;
-    border: 1px solid var(--border-subtle);
-    color: var(--brand-strong);
-    padding: 0.625rem 1rem;
-    border-radius: 8px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.2s ease;
-}
 
-.profile-biography-toggle:hover {
-    background: var(--surface-subtle);
-    border-color: var(--brand-strong);
-    color: var(--brand-contrast);
-}
 
-.profile-biography-toggle i {
-    transition: transform 0.2s ease;
-}
 
-.profile-biography-toggle[aria-expanded="true"] i {
-    transform: rotate(180deg);
-}
 
-.profile-biography-toggle.hidden {
-    display: none;
-}
 
 /* Profile Actions */
 .profile-actions {
@@ -2005,18 +1884,8 @@ body {
     }
 
     /* Profile Responsive */
-    .profile-page-header {
-        padding: 1rem 0;
-    }
 
-    .profile-header-content {
-        flex-direction: column;
-        align-items: flex-start;
-    }
 
-    .profile-page-title {
-        font-size: 1.5rem;
-    }
 
     .profile-card,
     .profile-card--content {

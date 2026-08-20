@@ -715,19 +715,23 @@
 /* --- Tecnicos --- */
 .provider-technician-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.7rem;
 }
 
+/* Fila de lista: columnas fijas para que todos los tecnicos queden alineados */
 .provider-technician-card {
   display: grid;
-  gap: 0.9rem;
-  padding: 1.2rem 1.25rem;
+  grid-template-columns: minmax(0, 1fr) 7rem 24rem 19rem;
+  align-items: center;
+  column-gap: 1.25rem;
+  row-gap: 0.85rem;
+  padding: 0.9rem 1.15rem;
   border: 1px solid var(--border-subtle);
   border-left: 4px solid var(--text-subtle);
-  border-radius: 18px;
+  border-radius: 14px;
   background: var(--surface-card);
-  box-shadow: 0 18px 34px -30px var(--shadow-lg);
+  box-shadow: 0 12px 26px -26px var(--shadow-lg);
 }
 
 .provider-technician-card.is-active {
@@ -744,8 +748,9 @@
 
 .provider-technician-card__head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.75rem;
+  min-width: 0;
 }
 
 .provider-technician-card__identity {
@@ -754,41 +759,57 @@
 }
 
 .provider-technician-card__identity h4 {
-  margin: 0 0 0.15rem;
+  margin: 0 0 0.1rem;
   color: var(--text-primary);
-  font-size: 1.05rem;
+  font-size: 1rem;
+  line-height: 1.25;
   overflow-wrap: anywhere;
 }
 
 .provider-technician-card__identity p {
   margin: 0;
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.provider-technician-card > .provider-status-badge {
+  justify-self: start;
 }
 
 .provider-technician-card__stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.5rem;
-  padding: 0.75rem 0;
-  border-top: 1px solid var(--border-subtle);
-  border-bottom: 1px solid var(--border-subtle);
+  gap: 0.75rem;
 }
 
 .provider-technician-card__stats strong {
   display: block;
   color: var(--text-primary);
-  font-size: 1.02rem;
+  font-size: 0.98rem;
+  line-height: 1.2;
 }
 
 .provider-technician-card__stats small {
   display: block;
   margin-top: 0.1rem;
   color: var(--text-muted);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.provider-technician-card > .provider-technician-actions {
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  padding-left: 1.25rem;
+  border-left: 1px solid var(--border-subtle);
+}
+
+.provider-technician-card > .provider-technician-actions .btn {
+  white-space: nowrap;
 }
 
 .provider-staff-card {
@@ -1111,6 +1132,21 @@ body.provider-modal-open {
   min-height: 44px;
 }
 
+/* Con el sidebar puesto, las 4 columnas de la fila dejan de entrar antes de 960px */
+@media (max-width: 1280px) {
+  .provider-technician-card {
+    grid-template-columns: minmax(0, 1fr) 7rem 24rem;
+  }
+
+  .provider-technician-card > .provider-technician-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    padding: 0.75rem 0 0;
+    border-left: none;
+    border-top: 1px solid var(--border-subtle);
+  }
+}
+
 @media (max-width: 960px) {
   .provider-layout {
     grid-template-columns: 1fr;
@@ -1143,8 +1179,29 @@ body.provider-modal-open {
     min-height: 44px;
   }
 
-  .provider-technician-list {
-    grid-template-columns: 1fr;
+  .provider-technician-card {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+
+  /* En una sola columna las etiquetas no entran en 3 celdas: se dejan envolver */
+  .provider-technician-card__stats {
+    grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+    gap: 0.6rem 0.75rem;
+  }
+
+  .provider-technician-card__stats small {
+    white-space: normal;
+  }
+
+  .provider-technician-card > .provider-technician-actions {
+    flex-wrap: wrap;
+  }
+
+  .provider-technician-card > .provider-technician-actions .btn {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-height: 44px;
   }
 
   /* El badge de motivo comprimia la descripcion a una columna de una palabra */

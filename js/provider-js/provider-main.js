@@ -1090,8 +1090,9 @@ function renderTechnicians() {
             <h4>${escapeHtml(fullName)}</h4>
             <p>${escapeHtml(technician.specialty || "Sin especialidad")}</p>
           </div>
-          <span class="provider-status-badge ${getTechnicianStatusBadgeClass(technician.status)}">${escapeHtml(getTechnicianStatusLabel(technician.status))}</span>
         </div>
+
+        <span class="provider-status-badge ${getTechnicianStatusBadgeClass(technician.status)}">${escapeHtml(getTechnicianStatusLabel(technician.status))}</span>
 
         <div class="provider-technician-card__stats">
           <div>

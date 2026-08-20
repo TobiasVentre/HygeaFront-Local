@@ -1,0 +1,14 @@
+# Mientras hygeago.com.ar sirva las dos propuestas para revisión, nada de
+# esto tiene que indexarse: son dos versiones del mismo contenido y Google
+# las leeria como contenido duplicado.
+#
+# Al elegir la version final y dejar una sola landing, reemplazar todo este
+# archivo por:
+#
+#   User-agent: *
+#   Allow: /
+#
+#   Sitemap: https://hygeago.com.ar/sitemap.xml
+
+User-agent: *
+Disallow: /

@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hygea Go — Control de plagas y limpieza de tanques con turno online</title>
+<meta name="description" content="Hygea Go es la plataforma de Hygea Group. Pedís fumigación o limpieza de tanque, elegís día y horario, y te queda el historial completo de cada servicio.">
+<meta name="theme-color" content="#004aad">
+<meta property="og:title" content="Hygea Go — Control de plagas y limpieza de tanques con turno online">
+<meta property="og:description" content="Pedís el servicio, elegís el día y seguís todo desde tu cuenta. 15 años de Hygea Group, ahora también en la plataforma.">
+<meta property="og:type" content="website">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Karla:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/base.css">
+<link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+
+<a class="saltar-al-contenido" href="#contenido">Saltar al contenido</a>
+
+<svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<symbol id="i-plaga" viewBox="0 0 24 24"><path d="M9 6a3 3 0 0 1 6 0"/><rect x="7" y="7" width="10" height="12" rx="5"/><path d="M7 11H3M7 15H4M17 11h4M17 15h3M8.5 19.5 6.5 22M15.5 19.5 17.5 22M8 7 6 4M16 7l2-3"/></symbol>
+<symbol id="i-gota" viewBox="0 0 24 24"><path d="M12 3s6 6.4 6 10.5a6 6 0 0 1-12 0C6 9.4 12 3 12 3z"/><path d="M9.5 13.6a2.6 2.6 0 0 0 2.5 2.6"/></symbol>
+<symbol id="i-repetir" viewBox="0 0 24 24"><path d="M4 9a7.5 7.5 0 0 1 12.6-3.4L19.5 8M20 15a7.5 7.5 0 0 1-12.6 3.4L4.5 16"/><path d="M20 4.5V8h-3.5M4 19.5V16h3.5"/></symbol>
+<symbol id="i-escudo" viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4.4 3 7.6 7 9 4-1.4 7-4.6 7-9V6l-7-3z"/><path d="m9 12 2 2 4-4"/></symbol>
+<symbol id="i-reloj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.4 2"/></symbol>
+<symbol id="i-camara" viewBox="0 0 24 24"><path d="M4 8h2.8l1.5-2.3h7.4L17.2 8H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z"/><circle cx="12" cy="14" r="3.4"/></symbol>
+<symbol id="i-tecnico" viewBox="0 0 24 24"><circle cx="10" cy="8" r="3.6"/><path d="M3.5 20c0-3.7 2.9-5.7 6.5-5.7 1.1 0 2.1.2 3 .5"/><path d="m14.8 17.4 2 2 4.2-4.2"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4.2 7.4 7.8 5.8 7.8-5.8"/></symbol>
+<symbol id="i-flecha" viewBox="0 0 24 24"><path d="M4.5 12h14M13 6l6 6-6 6"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="m5 13 4.2 4.2L19 6.8"/></symbol>
+<symbol id="i-lista" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></symbol>
+<symbol id="i-wsp" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm0 1.67c2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.25 8.24a8.23 8.23 0 0 1-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.26-8.24zm-2.6 4.1c-.16-.35-.32-.36-.47-.37h-.4c-.14 0-.36.05-.55.26-.19.21-.72.7-.72 1.71s.74 1.98.84 2.12c.1.14 1.43 2.29 3.54 3.12 1.75.69 2.11.55 2.49.52.38-.03 1.22-.5 1.4-.98.17-.48.17-.9.12-.98-.05-.09-.19-.14-.4-.24-.21-.11-1.22-.6-1.41-.67-.19-.07-.33-.1-.47.1-.14.21-.54.67-.66.81-.12.14-.24.16-.45.05-.21-.1-.88-.32-1.68-1.03-.62-.55-1.04-1.24-1.16-1.44-.12-.21-.01-.32.09-.42.09-.09.21-.24.31-.36.1-.12.14-.21.21-.35.07-.14.03-.26-.02-.36-.05-.11-.46-1.12-.63-1.53z"/></symbol>
+<symbol id="i-ig" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5.4"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="1.15" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-in" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M6.94 8.5H3.56V21h3.38V8.5zM5.25 3a1.96 1.96 0 1 0 0 3.92 1.96 1.96 0 0 0 0-3.92zM21 14.1c0-3.4-1.82-4.98-4.24-4.98-1.96 0-2.84 1.08-3.32 1.84V8.5H10.1c.04.95 0 12.5 0 12.5h3.34v-6.98c0-.3.02-.6.11-.82.24-.6.79-1.22 1.71-1.22 1.21 0 1.69.92 1.69 2.27V21H21v-6.9z"/></symbol>
+</defs>
+</svg>
+
+<!-- ================= CABECERA ================= -->
+<header class="cabecera" id="cabecera">
+  <div class="contenedor cabecera__fila">
+    <a class="marca" href="#inicio" aria-label="Hygea Go, inicio">
+      <svg class="marca__iso" viewBox="0 0 100 100" aria-hidden="true">
+        <mask id="isoNav"><path d="M50 14 88 46v30a6 6 0 0 1-6 6H18a6 6 0 0 1-6-6V46z" fill="#fff"/><path d="M50 40s11 12.4 11 19.4a11 11 0 0 1-22 0C39 52.4 50 40 50 40z" fill="#000"/></mask>
+        <rect width="100" height="100" rx="22" fill="currentColor"/>
+        <rect class="iso-hueco" width="100" height="100" rx="22" mask="url(#isoNav)"/>
+      </svg>
+      <span class="marca__texto">Hygea <span class="marca__go">Go</span></span>
+    </a>
+
+    <nav class="cabecera__nav" aria-label="Principal">
+      <a href="#servicios">Servicios</a>
+      <a href="#como-funciona">Cómo funciona</a>
+      <a href="#plataforma">La plataforma</a>
+      <a href="#planes">Planes</a>
+      <a href="#preguntas">Preguntas</a>
+    </nav>
+
+    <div class="cabecera__acciones">
+      <a class="boton boton--fantasma" href="https://app.hygeago.com.ar">Ingresar</a>
+      <a class="boton boton--primario" href="#contacto">Pedir un servicio</a>
+    </div>
+
+    <button class="cabecera__hamburguesa" type="button" aria-expanded="false" aria-controls="menu-movil">
+      <span class="solo-lectores">Abrir menú</span>
+      <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+    </button>
+  </div>
+
+  <div class="menu-movil" id="menu-movil" hidden>
+    <a href="#servicios">Servicios</a>
+    <a href="#como-funciona">Cómo funciona</a>
+    <a href="#plataforma">La plataforma</a>
+    <a href="#planes">Planes</a>
+    <a href="#preguntas">Preguntas</a>
+    <a href="https://app.hygeago.com.ar">Ingresar a mi cuenta</a>
+    <a class="boton boton--primario" href="#contacto">Pedir un servicio</a>
+  </div>
+</header>
+
+<main id="contenido">
+
+<!-- ================= HERO ================= -->
+<section class="hero" id="inicio">
+  <div class="hero__fondo" aria-hidden="true"></div>
+  <div class="contenedor hero__grilla">
+    <div class="hero__texto">
+      <p class="kicker"><span class="kicker__punto" aria-hidden="true"></span> La plataforma de Hygea Group</p>
+      <h1>Fumigación y limpieza de tanques, con turno online y todo registrado.</h1>
+      <p class="hero__bajada">
+        Pedís el servicio desde tu cuenta, elegís el día y seguís el estado sin perseguir a nadie
+        por WhatsApp. Cuando el técnico termina, la constancia con fotos y el detalle de lo aplicado
+        te quedan guardados.
+      </p>
+      <div class="hero__acciones">
+        <a class="boton boton--primario boton--grande" href="#contacto">Pedir un servicio <svg class="ico" aria-hidden="true"><use href="#i-flecha"/></svg></a>
+        <a class="boton boton--linea boton--grande" href="#como-funciona">Ver cómo funciona</a>
+      </div>
+      <ul class="hero__avales">
+        <li><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> Habilitada por el Gobierno de la Ciudad</li>
+        <li><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> Productos aprobados por el Ministerio de Salud</li>
+        <li><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> Coordinamos el turno en 24 a 48 h</li>
+      </ul>
+    </div>
+
+    <div class="hero__visual">
+      <figure class="mockup">
+        <figcaption class="solo-lectores">Ejemplo de la pantalla de un cliente dentro de la plataforma</figcaption>
+        <div class="mockup__barra" aria-hidden="true">
+          <span></span><span></span><span></span>
+          <em>app.hygeago.com.ar</em>
+        </div>
+        <div class="mockup__cuerpo" aria-hidden="true">
+          <div class="mk-encabezado">
+            <div class="mk-avatar">MP</div>
+            <div>
+              <strong>Hola, Marina</strong>
+              <small>Consorcio Av. Rivadavia 4820</small>
+            </div>
+          </div>
+
+          <div class="mk-orden">
+            <div class="mk-orden__alto">
+              <span class="mk-pill mk-pill--curso">En curso</span>
+              <span class="mk-orden__num">#1042</span>
+            </div>
+            <h4>Control de plagas · Áreas comunes</h4>
+            <dl class="mk-datos">
+              <div><dt>Fecha</dt><dd>Mié 26 de agosto</dd></div>
+              <div><dt>Horario</dt><dd>10:00</dd></div>
+              <div><dt>Técnico</dt><dd>Diego R.</dd></div>
+            </dl>
+            <ol class="mk-pasos">
+              <li class="hecho">Solicitada</li>
+              <li class="hecho">Asignada</li>
+              <li class="activo">En curso</li>
+              <li>Finalizada</li>
+            </ol>
+          </div>
+
+          <div class="mk-secundario">
+            <div class="mk-mini">
+              <span class="mk-pill mk-pill--ok">Finalizada</span>
+              <strong>Limpieza de tanque</strong>
+              <small>12 de junio · 6 fotos</small>
+            </div>
+            <div class="mk-mini">
+              <span class="mk-pill mk-pill--plan">Plan anual</span>
+              <strong>2 servicios disponibles</strong>
+              <small>Vence 30/11</small>
+            </div>
+          </div>
+        </div>
+      </figure>
+      <div class="hero__sello" aria-hidden="true">
+        <strong>15</strong>
+        <span>años de<br>trayectoria</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= NUMEROS ================= -->
+<section class="numeros" aria-label="Hygea Group en números">
+  <div class="contenedor numeros__grilla">
+    <div><strong>+15</strong><span>años de experiencia</span></div>
+    <div><strong>+1.000</strong><span>clientes atendidos</span></div>
+    <div><strong>+2.500</strong><span>trabajos realizados</span></div>
+    <div><strong>+10</strong><span>técnicos capacitados</span></div>
+  </div>
+</section>
+
+<!-- ================= SERVICIOS ================= -->
+<section class="seccion" id="servicios">
+  <div class="contenedor">
+    <header class="seccion__encabezado">
+      <p class="kicker"><span class="kicker__punto" aria-hidden="true"></span> Servicios</p>
+      <h2>Lo que resolvemos, y cómo se pide</h2>
+      <p class="seccion__bajada">Los mismos servicios de siempre de Hygea Group. Lo que cambia es que ahora se piden, se siguen y se archivan desde un solo lugar.</p>
+    </header>
+
+    <div class="tarjetas-3">
+      <article class="tarjeta">
+        <span class="tarjeta__icono"><svg class="ico" aria-hidden="true"><use href="#i-plaga"/></svg></span>
+        <h3>Control de plagas</h3>
+        <p>Desinsectación, desratización y desinfección con enfoque integral: primero entendemos de dónde viene el problema y después aplicamos. Productos aprobados por SENASA, seguros para las personas, sus mascotas y el ambiente.</p>
+        <ul class="tarjeta__lista">
+          <li>Cucarachas, hormigas y voladores</li>
+          <li>Roedores, con plan de cebado y monitoreo</li>
+          <li>Desinfección de ambientes</li>
+        </ul>
+      </article>
+
+      <article class="tarjeta">
+        <span class="tarjeta__icono"><svg class="ico" aria-hidden="true"><use href="#i-gota"/></svg></span>
+        <h3>Limpieza y desinfección de tanques</h3>
+        <p>El sedimento y la materia orgánica se acumulan aunque el agua se vea bien. Vaciado, cepillado, desinfección y control final, con la constancia que el consorcio necesita para cumplir la normativa.</p>
+        <ul class="tarjeta__lista">
+          <li>Tanques de reserva y cisternas</li>
+          <li>Registro fotográfico antes y después</li>
+          <li>Aviso cuando se acerca el próximo</li>
+        </ul>
+      </article>
+
+      <article class="tarjeta">
+        <span class="tarjeta__icono"><svg class="ico" aria-hidden="true"><use href="#i-repetir"/></svg></span>
+        <h3>Mantenimiento programado</h3>
+        <p>Para consorcios, comercios y gastronómicos que no pueden depender de acordarse. Definimos la frecuencia una vez y las visitas quedan agendadas, con el historial completo listo para mostrar.</p>
+        <ul class="tarjeta__lista">
+          <li>Frecuencia mensual, bimestral o trimestral</li>
+          <li>Un solo interlocutor para todas las sucursales</li>
+          <li>Historial ordenado para inspecciones</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= COMO FUNCIONA ================= -->
+<section class="seccion seccion--suave" id="como-funciona">
+  <div class="contenedor">
+    <header class="seccion__encabezado">
+      <p class="kicker"><span class="kicker__punto" aria-hidden="true"></span> Cómo funciona</p>
+      <h2>Cuatro pasos, y ninguno depende de que llames</h2>
+    </header>
+
+    <ol class="pasos">
+      <li class="paso">
+        <span class="paso__num">01</span>
+        <h3>Creás tu cuenta</h3>
+        <p>Cargás una vez la dirección y los datos del inmueble. Después cada pedido sale en dos toques.</p>
+      </li>
+      <li class="paso">
+        <span class="paso__num">02</span>
+        <h3>Pedís el servicio</h3>
+        <p>Elegís el tipo de trabajo y contás qué está pasando. Coordinamos el día y el horario dentro de las 24 a 48 h hábiles.</p>
+      </li>
+      <li class="paso">
+        <span class="paso__num">03</span>
+        <h3>El técnico ejecuta y deja constancia</h3>
+        <p>Sabés quién va a ir. En el momento registra lo que aplicó y sube las fotos del trabajo desde el celular.</p>
+      </li>
+      <li class="paso">
+        <span class="paso__num">04</span>
+        <h3>Te queda el historial</h3>
+        <p>Cada orden con su fecha, su técnico y su evidencia. Cuando el consorcio o un inspector lo pide, está ahí.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ================= PLATAFORMA ================= -->
+<section class="seccion" id="plataforma">
+  <div class="contenedor plataforma">
+    <div class="plataforma__texto">
+      <p class="kicker"><span class="kicker__punto" aria-hidden="true"></span> La plataforma</p>
+      <h2>El servicio es el mismo de siempre. Lo que cambia es que ahora lo ves.</h2>
+      <p class="seccion__bajada">Contratar una fumigación suele terminar en una cadena de mensajes sin respuesta. Hygea Go convierte cada pedido en una orden con estado, responsable y comprobante.</p>
+
+      <ul class="beneficios">
+        <li>
+          <span class="beneficios__ico"><svg class="ico" aria-hidden="true"><use href="#i-reloj"/></svg></span>
+          <div><strong>Horario concreto</strong><p>Te confirmamos día y hora, no una franja de ocho horas.</p></div>
+        </li>
+        <li>
+          <span class="beneficios__ico"><svg class="ico" aria-hidden="true"><use href="#i-lista"/></svg></span>
+          <div><strong>Estado en vivo</strong><p>Solicitada, asignada, en curso, finalizada. Sin preguntar.</p></div>
+        </li>
+        <li>
+          <span class="beneficios__ico"><svg class="ico" aria-hidden="true"><use href="#i-tecnico"/></svg></span>
+          <div><strong>Técnico identificado</strong><p>Sabés quién entra a tu edificio antes de que toque el timbre.</p></div>
+        </li>
+        <li>
+          <span class="beneficios__ico"><svg class="ico" aria-hidden="true"><use href="#i-camara"/></svg></span>
+          <div><strong>Evidencia del trabajo</strong><p>Fotos y detalle de lo aplicado, cargados en el momento.</p></div>
+        </li>
+        <li>
+          <span class="beneficios__ico"><svg class="ico" aria-hidden="true"><use href="#i-escudo"/></svg></span>
+          <div><strong>Productos habilitados</strong><p>Aprobados por SENASA y el Ministerio de Salud, con el plazo de reingreso indicado.</p></div>
+        </li>
+        <li>
+          <span class="beneficios__ico"><svg class="ico" aria-hidden="true"><use href="#i-repetir"/></svg></span>
+          <div><strong>Historial que sirve</strong><p>Todas las visitas del año en un solo lugar, listas para mostrar.</p></div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="plataforma__visual">
+      <div class="panel-app" aria-hidden="true">
+        <div class="panel-app__cabecera">
+          <strong>Mis órdenes</strong>
+          <span class="mk-pill mk-pill--neutro">Últimos 12 meses</span>
+        </div>
+        <ul class="panel-app__lista">
+          <li><span class="mk-pill mk-pill--curso">En curso</span><div><strong>Control de plagas</strong><small>26/08 · 10:00 · Diego R.</small></div></li>
+          <li><span class="mk-pill mk-pill--ok">Finalizada</span><div><strong>Limpieza de tanque</strong><small>12/06 · 6 fotos cargadas</small></div></li>
+          <li><span class="mk-pill mk-pill--ok">Finalizada</span><div><strong>Desratización</strong><small>04/04 · cebado en SUM y cocheras</small></div></li>
+          <li><span class="mk-pill mk-pill--ok">Finalizada</span><div><strong>Control de plagas</strong><small>19/01 · áreas comunes</small></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PLANES ================= -->
+<section class="seccion seccion--suave" id="planes">
+  <div class="contenedor planes">
+    <div class="planes__texto">
+      <p class="kicker"><span class="kicker__punto" aria-hidden="true"></span> Planes</p>
+      <h2>Un plan por año, en vez de un presupuesto por vez</h2>
+      <p>Para quienes necesitan una frecuencia fija, armamos un plan con una cantidad de servicios incluidos. Los usás cuando los necesitás y en tu cuenta ves cuántos te quedan.</p>
+      <p class="planes__aclaracion">
+        <svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>
+        El plan y la forma de pago se acuerdan directamente con Hygea Group. La plataforma se ocupa del turno, el seguimiento y el historial.
+      </p>
+      <a class="boton boton--primario boton--grande" href="#contacto">Consultar un plan</a>
+    </div>
+
+    <ul class="planes__lista">
+      <li><strong>Consorcios</strong><span>Control de plagas en áreas comunes más limpieza de tanque, con las visitas del año ya agendadas.</span></li>
+      <li><strong>Comercios y oficinas</strong><span>Visitas fuera del horario de atención, para no cortar la actividad.</span></li>
+      <li><strong>Gastronómicos</strong><span>Frecuencia alta y registro al día para presentar en cualquier inspección.</span></li>
+      <li><strong>Hogares</strong><span>Uno o dos servicios al año, con aviso cuando toca el próximo.</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ================= COBERTURA ================= -->
+<section class="seccion cobertura">
+  <div class="contenedor cobertura__caja">
+    <div>
+      <h2>Trabajamos en CABA y Gran Buenos Aires</h2>
+      <p>Base operativa en Lomas del Mirador. Si tu dirección queda fuera de la zona, te lo decimos antes de coordinar, no después.</p>
+    </div>
+    <ul class="cobertura__datos">
+      <li><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg> Quintana 4927, Lomas del Mirador, Buenos Aires</li>
+      <li><svg class="ico" aria-hidden="true"><use href="#i-reloj"/></svg> Lunes a viernes de 9 a 18 h</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ================= PREGUNTAS ================= -->
+<section class="seccion" id="preguntas">
+  <div class="contenedor preguntas">
+    <header class="seccion__encabezado seccion__encabezado--izq">
+      <p class="kicker"><span class="kicker__punto" aria-hidden="true"></span> Preguntas frecuentes</p>
+      <h2>Lo que más nos preguntan</h2>
+    </header>
+
+    <div class="acordeon">
+      <details>
+        <summary>¿Cuánto tarda en confirmarse el turno?</summary>
+        <p>Entre 24 y 48 horas hábiles desde que hacés el pedido. Cuando queda coordinado, la orden cambia de estado en tu cuenta y ves el día, el horario y el técnico asignado.</p>
+      </details>
+      <details>
+        <summary>¿Los productos son seguros para chicos y mascotas?</summary>
+        <p>Usamos productos aprobados por SENASA y por el Ministerio de Salud, con un enfoque integral que prioriza la seguridad de las personas, sus mascotas y el ambiente. El técnico te indica el plazo de reingreso y las precauciones de ese día.</p>
+      </details>
+      <details>
+        <summary>¿Me queda alguna constancia del servicio?</summary>
+        <p>Sí. El técnico registra en la orden qué aplicó y sube las fotos del trabajo. Eso queda guardado en tu cuenta y podés consultarlo cuando quieras. El certificado de limpieza de tanque se emite aparte y te lo entrega Hygea Group.</p>
+      </details>
+      <details>
+        <summary>¿Puedo cambiar la fecha después de coordinada?</summary>
+        <p>Sí. Escribinos por WhatsApp y lo reprogramamos; el cambio queda reflejado en la orden, así no quedan dos versiones de la misma historia.</p>
+      </details>
+      <details>
+        <summary>¿Se paga desde la plataforma?</summary>
+        <p>No. El pago se coordina directamente con Hygea Group, como siempre. Hygea Go se ocupa del pedido, el turno, el seguimiento y el historial.</p>
+      </details>
+      <details>
+        <summary>¿Atienden consorcios y administraciones?</summary>
+        <p>Sí, es buena parte de lo que hacemos. Una administración puede tener varios edificios bajo la misma cuenta y ver el estado de todos en la misma lista.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CTA / EMBUDO ================= -->
+<section class="cierre" id="contacto">
+  <div class="contenedor cierre__caja">
+    <div class="cierre__texto">
+      <h2>¿Empezamos por tu edificio?</h2>
+      <p>Contanos qué necesitás y te contactamos con el turno dentro de las 24 a 48 h hábiles. Si preferís, escribinos directo por WhatsApp y lo resolvemos ahí mismo.</p>
+      <ul class="cierre__datos">
+        <li><svg class="ico" aria-hidden="true"><use href="#i-wsp"/></svg> <a href="tel:+5491170646658">+54 9 11 7064-6658</a></li>
+        <li><svg class="ico" aria-hidden="true"><use href="#i-mail"/></svg> <a href="mailto:info@hygeagroup.com.ar">info@hygeagroup.com.ar</a></li>
+        <li><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg> Quintana 4927, Lomas del Mirador</li>
+        <li><svg class="ico" aria-hidden="true"><use href="#i-reloj"/></svg> Lunes a viernes, 9 a 18 h</li>
+      </ul>
+      <p class="cierre__alternativa">También podés <a href="https://app.hygeago.com.ar">crear tu cuenta</a> y pedir el servicio desde la plataforma.</p>
+    </div>
+
+    <form class="embudo" id="embudo" novalidate>
+      <h3>Pedí tu visita</h3>
+      <p class="embudo__ayuda">Seis datos y coordinamos. No te pedimos nada más.</p>
+
+      <div class="embudo__campo">
+        <label for="a-servicio">¿Qué necesitás?</label>
+        <select id="a-servicio" name="servicio">
+          <option value="">Elegí una opción</option>
+          <option>Control de plagas</option>
+          <option>Limpieza y desinfección de tanque</option>
+          <option>Las dos cosas</option>
+          <option>No estoy seguro, necesito asesoramiento</option>
+        </select>
+      </div>
+
+      <div class="embudo__par embudo__par--ancho">
+        <div class="embudo__campo">
+          <label for="a-lugar">¿Para qué lugar?</label>
+          <select id="a-lugar" name="lugar">
+            <option value="">Elegí una opción</option>
+            <option>Consorcio o edificio</option>
+            <option>Casa o departamento</option>
+            <option>Comercio u oficina</option>
+            <option>Gastronómico</option>
+            <option>Depósito o industria</option>
+          </select>
+        </div>
+        <div class="embudo__campo">
+          <label for="a-zona">Zona o barrio</label>
+          <input type="text" id="a-zona" name="zona" placeholder="Caballito" autocomplete="address-level2">
+        </div>
+      </div>
+
+      <div class="embudo__campo">
+        <label for="a-cuando">¿Para cuándo?</label>
+        <select id="a-cuando" name="cuando">
+          <option value="">Elegí una opción</option>
+          <option>Lo antes posible</option>
+          <option>Esta semana</option>
+          <option>Este mes</option>
+          <option>Estoy pidiendo presupuesto</option>
+        </select>
+      </div>
+
+      <div class="embudo__par">
+        <div class="embudo__campo">
+          <label for="a-nombre">Tu nombre</label>
+          <input type="text" id="a-nombre" name="nombre" placeholder="Marina Pereyra" autocomplete="name">
+        </div>
+        <div class="embudo__campo">
+          <label for="a-telefono">Teléfono</label>
+          <input type="tel" id="a-telefono" name="telefono" placeholder="11 5555-5555" autocomplete="tel">
+        </div>
+      </div>
+
+      <div class="embudo__campo">
+        <label for="a-detalle">¿Qué está pasando? <span>(opcional)</span></label>
+        <textarea id="a-detalle" name="detalle" rows="3" placeholder="Vimos cucarachas en el SUM y en el pasillo del primer piso."></textarea>
+      </div>
+
+      <p class="embudo__aviso" id="embudo-aviso" role="status" aria-live="polite"></p>
+
+      <button type="submit" class="boton boton--wsp boton--grande embudo__enviar">
+        <svg class="ico" aria-hidden="true"><use href="#i-wsp"/></svg> Enviar por WhatsApp
+      </button>
+
+      <p class="embudo__nota">Se abre WhatsApp con el mensaje ya escrito. Podés revisarlo antes de mandarlo.</p>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<!-- ================= PIE ================= -->
+<footer class="pie">
+  <div class="contenedor pie__grilla">
+    <div class="pie__marca">
+      <a class="marca marca--oscura" href="#inicio">
+        <svg class="marca__iso" viewBox="0 0 100 100" aria-hidden="true">
+          <mask id="isoPie"><path d="M50 14 88 46v30a6 6 0 0 1-6 6H18a6 6 0 0 1-6-6V46z" fill="#fff"/><path d="M50 40s11 12.4 11 19.4a11 11 0 0 1-22 0C39 52.4 50 40 50 40z" fill="#000"/></mask>
+          <rect width="100" height="100" rx="22" fill="currentColor"/>
+          <rect class="iso-hueco" width="100" height="100" rx="22" mask="url(#isoPie)"/>
+        </svg>
+        <span class="marca__texto">Hygea <span class="marca__go">Go</span></span>
+      </a>
+      <p>Hygea Go es la plataforma de Hygea Group, especialistas en control de plagas y saneamiento de tanques de agua en Buenos Aires.</p>
+      <div class="pie__redes">
+        <a href="https://www.instagram.com/" aria-label="Instagram"><svg class="ico" aria-hidden="true"><use href="#i-ig"/></svg></a>
+        <a href="https://www.linkedin.com/" aria-label="LinkedIn"><svg class="ico" aria-hidden="true"><use href="#i-in"/></svg></a>
+        <a href="https://wa.me/5491170646658" aria-label="WhatsApp"><svg class="ico" aria-hidden="true"><use href="#i-wsp"/></svg></a>
+      </div>
+    </div>
+
+    <nav class="pie__col" aria-label="Servicios">
+      <h3>Servicios</h3>
+      <a href="#servicios">Control de plagas</a>
+      <a href="#servicios">Limpieza de tanques</a>
+      <a href="#planes">Mantenimiento programado</a>
+    </nav>
+
+    <nav class="pie__col" aria-label="Plataforma">
+      <h3>Plataforma</h3>
+      <a href="#como-funciona">Cómo funciona</a>
+      <a href="#plataforma">Qué incluye</a>
+      <a href="https://app.hygeago.com.ar">Ingresar</a>
+    </nav>
+
+    <nav class="pie__col" aria-label="Contacto">
+      <h3>Contacto</h3>
+      <a href="https://wa.me/5491170646658">+54 9 11 7064-6658</a>
+      <a href="mailto:info@hygeagroup.com.ar">info@hygeagroup.com.ar</a>
+      <a href="https://hygeagroup.com.ar">hygeagroup.com.ar</a>
+    </nav>
+  </div>
+
+  <div class="contenedor pie__legal">
+    <p>© 2026 Hygea Group. Todos los derechos reservados.</p>
+    <p>Habilitada por el Gobierno de la Ciudad de Buenos Aires.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+    var boton = document.querySelector(".cabecera__hamburguesa");
+    var menu = document.getElementById("menu-movil");
+
+    boton.addEventListener("click", function () {
+        var abierto = boton.getAttribute("aria-expanded") === "true";
+        boton.setAttribute("aria-expanded", String(!abierto));
+        menu.hidden = abierto;
+        document.body.classList.toggle("menu-abierto", !abierto);
+    });
+
+    menu.addEventListener("click", function (evento) {
+        if (evento.target.closest("a")) {
+            boton.setAttribute("aria-expanded", "false");
+            menu.hidden = true;
+            document.body.classList.remove("menu-abierto");
+        }
+    });
+
+    var cabecera = document.getElementById("cabecera");
+    var marcarScroll = function () {
+        cabecera.classList.toggle("cabecera--fija", window.scrollY > 12);
+    };
+    marcarScroll();
+    window.addEventListener("scroll", marcarScroll, { passive: true });
+})();
+</script>
+<script src="../assets/embudo.js"></script>
+
+</body>
+</html>

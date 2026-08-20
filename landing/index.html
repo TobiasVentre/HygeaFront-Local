@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hygea Go — Propuestas de landing</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Karla:wght@400;500;600;700&family=Rubik:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/base.css">
+<style>
+    body { --iso-hueco: #fff; background: var(--fondo-suave); }
+
+    .envoltura { max-width: 980px; margin: 0 auto; padding: clamp(2.5rem, 6vw, 4.5rem) 1.5rem 4rem; }
+
+    .titulo { margin-bottom: 2.5rem; }
+    .titulo h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 600; margin-top: 1.5rem; }
+    .titulo p { color: var(--texto-suave); max-width: 46em; }
+
+    .opciones { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 1.5rem; }
+
+    .opcion {
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        border: 1px solid var(--linea);
+        border-radius: 20px;
+        overflow: hidden;
+        transition: box-shadow .2s, transform .2s;
+    }
+    .opcion:hover { box-shadow: var(--sombra); transform: translateY(-3px); }
+
+    .opcion__muestra { height: 150px; position: relative; }
+    .opcion--a .opcion__muestra {
+        background:
+            radial-gradient(70% 90% at 88% 8%, rgba(37, 99, 235, .14), transparent 62%),
+            radial-gradient(50% 70% at 4% 96%, rgba(183, 197, 35, .22), transparent 60%),
+            linear-gradient(180deg, #f2f6fc, #fff);
+        border-bottom: 1px solid var(--linea);
+    }
+    .opcion--b .opcion__muestra {
+        background:
+            radial-gradient(72% 90% at 82% 6%, rgba(37, 99, 235, .55), transparent 60%),
+            linear-gradient(160deg, #002b63, #004aad);
+    }
+    .opcion__muestra span {
+        position: absolute;
+        left: 1.5rem; bottom: 1.2rem;
+        font-family: var(--titulos);
+        font-size: 1.5rem;
+        font-weight: 600;
+        letter-spacing: -.03em;
+    }
+    .opcion--a .opcion__muestra span { color: var(--azul-corp-900); }
+    .opcion--b .opcion__muestra span { color: #fff; }
+
+    .opcion__cuerpo { padding: 1.5rem; display: flex; flex-direction: column; flex: 1; }
+    .opcion__cuerpo h2 { font-size: 1.3rem; font-weight: 600; }
+    .opcion__cuerpo p { color: var(--texto-suave); font-size: .96rem; }
+    .opcion__rasgos { display: grid; gap: .45rem; margin: 1rem 0 1.5rem; }
+    .opcion__rasgos li { position: relative; padding-left: 1.4rem; font-size: .92rem; }
+    .opcion__rasgos li::before {
+        content: "";
+        position: absolute; left: 0; top: .55em;
+        width: 8px; height: 8px; border-radius: 999px; background: var(--lima);
+    }
+
+    .ver {
+        margin-top: auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        font-family: var(--titulos);
+        font-weight: 500;
+        padding: .9rem 1.4rem;
+        border-radius: 999px;
+        background: var(--azul-app);
+        color: #fff;
+        text-decoration: none;
+    }
+    .ver:hover { background: var(--azul-app-hover); text-decoration: none; }
+
+    .nota {
+        margin-top: 2.5rem;
+        background: #fff;
+        border: 1px solid var(--linea);
+        border-left: 3px solid var(--lima);
+        border-radius: 14px;
+        padding: 1.2rem 1.4rem;
+        font-size: .94rem;
+        color: var(--texto-suave);
+    }
+    .nota strong { color: var(--tinta); font-family: var(--titulos); }
+    .nota ul { margin-top: .6rem; display: grid; gap: .35rem; }
+    .nota li { padding-left: 1.1rem; position: relative; }
+    .nota li::before { content: "—"; position: absolute; left: 0; color: var(--texto-tenue); }
+</style>
+</head>
+<body>
+<div class="envoltura">
+
+    <div class="titulo">
+        <a class="marca" href="#">
+            <svg class="marca__iso" viewBox="0 0 100 100" aria-hidden="true">
+                <mask id="isoSel"><path d="M50 14 88 46v30a6 6 0 0 1-6 6H18a6 6 0 0 1-6-6V46z" fill="#fff"/><path d="M50 40s11 12.4 11 19.4a11 11 0 0 1-22 0C39 52.4 50 40 50 40z" fill="#000"/></mask>
+                <rect width="100" height="100" rx="22" fill="currentColor"/>
+                <rect class="iso-hueco" width="100" height="100" rx="22" mask="url(#isoSel)"/>
+            </svg>
+            <span class="marca__texto">Hygea <span class="marca__go">Go</span></span>
+        </a>
+        <h1>Dos propuestas de landing institucional</h1>
+        <p>
+            Mismo contenido, mismos textos y misma estructura de secciones en las dos.
+            Lo único que cambia es el tratamiento visual: el color, el ritmo de las secciones
+            y el peso de la tipografía.
+        </p>
+    </div>
+
+    <div class="opciones">
+        <article class="opcion opcion--a">
+            <div class="opcion__muestra"><span>Aa</span></div>
+            <div class="opcion__cuerpo">
+                <h2>Opción A · Institucional clara</h2>
+                <p>Fondo claro, mucho aire y tarjetas. Se lee como la evolución natural del sitio actual: sobria y confiable, en continuidad con lo que ya existe.</p>
+                <ul class="opcion__rasgos">
+                    <li>Hero a dos columnas con la app en una tarjeta flotante</li>
+                    <li>Servicios en tres tarjetas parejas</li>
+                    <li>Cierre en bloque azul corporativo</li>
+                </ul>
+                <a class="ver" href="opcion-a/index.html">Ver opción A</a>
+            </div>
+        </article>
+
+        <article class="opcion opcion--b">
+            <div class="opcion__muestra"><span>Aa</span></div>
+            <div class="opcion__cuerpo">
+                <h2>Opción B · Producto en primer plano</h2>
+                <p>Hero azul profundo a sangre, tipografía grande y secciones que alternan claro y oscuro. Más contemporánea, con el lima corporativo como acento fuerte.</p>
+                <ul class="opcion__rasgos">
+                    <li>Hero oscuro con los números integrados</li>
+                    <li>Servicios como lista editorial numerada</li>
+                    <li>Franja oscura para la plataforma</li>
+                </ul>
+                <a class="ver" href="opcion-b/index.html">Ver opción B</a>
+            </div>
+        </article>
+    </div>
+
+    <div class="nota">
+        <strong>Sobre estas versiones</strong>
+        <ul>
+            <li>Las dos usan la paleta del sitio actual: el azul corporativo para la marca y el lima como acento, con Karla y Rubik como tipografías.</li>
+            <li>Todavía no hay fotos propias: está todo resuelto con tipografía, color y una maqueta de la plataforma. Las fotos de campo entran después sin rehacer el diseño.</li>
+        </ul>
+    </div>
+
+</div>
+</body>
+</html>
